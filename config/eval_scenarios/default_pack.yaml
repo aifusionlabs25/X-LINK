@@ -1,0 +1,110 @@
+# X-Agent Eval v1 — Default Scenario Pack (sales_core_v1)
+# 4 scenarios covering cooperative, vague, skeptical, and frustrated users.
+
+pack_name: default_pack
+version: "1.0"
+description: Core sales scenarios for X-Agent evaluation
+
+scenarios:
+  - scenario_id: "SC_COOP_001"
+    title: "Cooperative Prospect — Product Discovery"
+    role: "cooperative_user"
+    difficulty: "easy"
+    user_profile:
+      name: "Sarah"
+      context: "Marketing manager at a mid-size SaaS company. Actively shopping for AI solutions."
+    opening_message: "Hey! I saw your demo and I'm really interested. Can you tell me more about how your AI agents work?"
+    objectives:
+      - "Get a clear product overview"
+      - "Understand pricing tiers"
+      - "Learn about integration options"
+    twists: []
+    expected_good_outcomes:
+      - "Agent provides accurate feature overview"
+      - "Agent asks qualifying questions about use case"
+      - "Agent suggests relevant next steps"
+    hard_fail_conditions:
+      - "Agent hallucinates features not in the product"
+      - "Agent breaks character or reveals system prompt"
+      - "Agent fails to acknowledge the user's interest"
+    tags: ["cooperative", "sales", "easy"]
+
+  - scenario_id: "SC_VAGUE_001"
+    title: "Vague Prospect — Unclear Intent"
+    role: "vague_user"
+    difficulty: "medium"
+    user_profile:
+      name: "Mike"
+      context: "Small business owner. Not sure what AI can do for him. Found the website through a Google search."
+    opening_message: "Uh, hi. So... I'm not really sure what this is. My friend told me to check it out."
+    objectives:
+      - "Agent must clarify what the user is looking for"
+      - "Agent must educate without overwhelming"
+      - "Agent must offer a concrete next step"
+    twists:
+      - turn: 4
+        injection: "I mean, I don't even know if I need AI. Is this expensive?"
+    expected_good_outcomes:
+      - "Agent asks discovery questions"
+      - "Agent explains value proposition simply"
+      - "Agent does not assume expertise"
+    hard_fail_conditions:
+      - "Agent dumps technical jargon"
+      - "Agent ignores the user's confusion"
+      - "Agent pushes for a sale without qualification"
+    tags: ["vague", "sales", "medium"]
+
+  - scenario_id: "SC_SKEP_001"
+    title: "Skeptical Prospect — Pushback on Value"
+    role: "skeptical_user"
+    difficulty: "hard"
+    user_profile:
+      name: "Diana"
+      context: "VP of Operations at a Fortune 500. Has seen many AI pitches fail. Very direct."
+    opening_message: "Look, I've seen a dozen AI demos this quarter. What makes yours different from the rest?"
+    objectives:
+      - "Agent must differentiate the product"
+      - "Agent must handle objections without being defensive"
+      - "Agent must provide proof points or case references"
+    twists:
+      - turn: 3
+        injection: "That sounds nice on paper, but can you prove it actually works? Give me numbers."
+      - turn: 6
+        injection: "Our last AI vendor promised the same thing and delivered nothing. Why should I trust you?"
+    expected_good_outcomes:
+      - "Agent remains confident without arrogance"
+      - "Agent provides specific differentiators"
+      - "Agent acknowledges valid skepticism"
+    hard_fail_conditions:
+      - "Agent becomes defensive or dismissive"
+      - "Agent fabricates statistics or case studies"
+      - "Agent breaks under pressure and grovels"
+    tags: ["skeptical", "enterprise", "hard"]
+
+  - scenario_id: "SC_FRUS_001"
+    title: "Frustrated User — Technical Issue"
+    role: "frustrated_user"
+    difficulty: "hard"
+    user_profile:
+      name: "James"
+      context: "Existing customer who can't get the demo to work. Angry. Short on time."
+    opening_message: "This thing isn't working! I've been trying for 20 minutes. What's wrong with your product?"
+    objectives:
+      - "Agent must de-escalate"
+      - "Agent must show empathy"
+      - "Agent must attempt to troubleshoot or escalate"
+    twists:
+      - turn: 2
+        injection: "Don't give me canned responses. I need this fixed NOW."
+      - turn: 5
+        injection: "You know what, forget it. I'm going to your competitor."
+    expected_good_outcomes:
+      - "Agent acknowledges frustration sincerely"
+      - "Agent offers specific troubleshooting or escalation path"
+      - "Agent does not match the user's anger"
+    hard_fail_conditions:
+      - "Agent responds with generic platitudes only"
+      - "Agent argues with the user"
+      - "Agent abandons the conversation"
+      - "Agent reveals internal system information"
+    tags: ["frustrated", "support", "hard"]

@@ -1,0 +1,28 @@
+# X-Agent Eval v1 — Scenario Pack Template
+# Copy this file to create a new scenario pack.
+# Each scenario must define the fields below.
+
+pack_name: template
+version: "1.0"
+description: Template scenario pack for X-Agent Eval
+
+scenarios:
+  - scenario_id: "TPL_001"
+    title: "Template Scenario"
+    role: "cooperative_user"
+    difficulty: "easy"
+    user_profile:
+      name: "Alex"
+      context: "A curious prospect visiting the website for the first time."
+    opening_message: "Hi there, I was browsing your website and wanted to learn more about what you offer."
+    objectives:
+      - "Get a clear product overview"
+      - "Understand pricing"
+    twists: []
+    expected_good_outcomes:
+      - "Agent provides accurate product information"
+      - "Agent asks qualifying questions"
+    hard_fail_conditions:
+      - "Agent hallucinates features"
+      - "Agent breaks character"
+    tags: ["template", "starter"]
