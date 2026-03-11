@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>X-LINK | Strategic Command Hub</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Outfit:wght@300;500;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="/assets/style.css">
+</head>
+
+<body>
+    <div class="ambient-glow"></div>
+
+    <!-- COMMAND SIDEBAR -->
+    <nav class="sidebar">
+        <div class="sidebar-logo">
+            <span class="sidebar-icon">🛰️</span>
+            <span class="sidebar-label">X-LINK v2.0</span>
+        </div>
+        <div class="sidebar-item" onclick="triggerTool('sync')" title="Full Data Sync">
+            <span class="sidebar-icon">🔄</span>
+            <span class="sidebar-label">Sync Engines</span>
+        </div>
+        <div class="sidebar-item" onclick="triggerTool('audit')" title="Run Usage Audit">
+            <span class="sidebar-icon">📊</span>
+            <span class="sidebar-label">Usage Auditor</span>
+        </div>
+        <div class="sidebar-item" onclick="triggerTool('scout')" title="Scout Intelligence (Keep.md)">
+            <span class="sidebar-icon">🕵️‍♀️</span>
+            <span class="sidebar-label">Intelligence Scout</span>
+        </div>
+        <div class="sidebar-item" onclick="triggerTool('briefing')" title="Email Executive Briefing">
+            <span class="sidebar-icon">📧</span>
+            <span class="sidebar-label">Direct Briefing</span>
+        </div>
+        <div class="sidebar-item" onclick="triggerTool('sub_scout')" title="Scout Subscription Billing">
+            <span class="sidebar-icon">📦</span>
+            <span class="sidebar-label">Sub Scout</span>
+        </div>
+
+        <div style="margin-top: auto;"></div>
+
+        <div class="sidebar-item" id="hub-status-btn">
+            <span class="sidebar-icon">📡</span>
+            <span class="sidebar-label" id="hub-status-text">Bridge Offline</span>
+        </div>
+        <div class="sidebar-item" onclick="toggleChat()" title="Chat with Sloane">
+            <span class="sidebar-icon">💬</span>
+            <span class="sidebar-label">Direct Line</span>
+        </div>
+    </nav>
+
+    <main class="main-content">
+        <header class="hub-header">
+            <div class="header-left">
+                <span class="tag">Autonomous Command Center</span>
+                <h1>X-LINK HUB</h1>
+            </div>
+            <div class="header-right meta">
+                <div class="meta-item">
+                    <span class="meta-label">Last Synchronization:</span>
+                    <span id="sync-time" class="meta-value">SYNCING...</span>
+                </div>
+                <div class="meta-item">
+                    <span class="meta-label">System Pulse:</span>
+                    <span id="system-pulse" class="meta-value pulse-green">SEARCHING...</span>
+                </div>
+            </div>
+        </header>
+
+        <section id="security-alert-banner" class="security-alert-banner" style="display: none;">
+            <span class="alert-icon">🚨</span>
+            <div id="security-alert-text" class="alert-text"></div>
+        </section>
+
+        <section id="sloanes-desk" class="sloane-desk-card">
+            <div class="card-header">
+                <div class="header-avatar-container">
+                    <img src="/assets/sloane_avatar.png" alt="Sloane" class="sloane-avatar-large">
+                </div>
+                <div class="header-text-container">
+                    <h2 class="premium-serif gold-text">Sloane's Desk</h2>
+                    <div class="cos-badge">CHIEF OF STAFF</div>
+                </div>
+            </div>
+            <div id="sloane-summary" class="briefing-quote">
+                "One moment, Rob. I'm organizing the chaos..."
+            </div>
+            <div class="dept-grid">
+                <div class="dept-card">
+                    <h3>R&D Briefing</h3>
+                    <p id="rd-summary">Waiting for telemetry...</p>
+                    <ul id="rd-priorities" class="priority-list"></ul>
+                </div>
+                <div class="dept-card">
+                    <h3>Sales & Marketing</h3>
+                    <p id="sales-summary">Waiting for telemetry...</p>
+                    <ul id="sales-priorities" class="priority-list"></ul>
+                </div>
+                <div class="dept-card">
+                    <h3>Operations</h3>
+                    <p id="ops-summary">Waiting for telemetry...</p>
+                    <ul id="ops-priorities" class="priority-list"></ul>
+                </div>
+            </div>
+        </section>
+
+        <section class="stats-overview" id="stats-hero">
+            <!-- Dynamically Injected -->
+        </section>
+
+        <section class="renewal-timeline" id="renewal-timeline">
+            <!-- Dynamically Injected by app.js -->
+        </section>
+
+        <section class="platform-grid" id="audit-grid">
+            <!-- Dynamically Injected -->
+        </section>
+
+        <!-- CHAT OVERLAY -->
+        <section id="chat-container" class="chat-container">
+            <div class="chat-header">
+                <div class="chat-title">
+                    <img src="/assets/sloane_avatar.png" alt="Sloane" class="sloane-avatar-mini">
+                    <span class="pulse-green">●</span> Sloane Direct Line
+                </div>
+                <button class="close-chat" onclick="toggleChat()">×</button>
+            </div>
+            <div id="chat-messages" class="chat-messages">
+                <div class="message sloane">Good evening, Founder. How can I assist with the mission?</div>
+            </div>
+            <div class="chat-input-area">
+                <input type="text" id="chat-input" placeholder="Enter directive..."
+                    onkeypress="if(event.key === 'Enter') sendMessage()">
+                <button id="send-btn" onclick="sendMessage()">➤</button>
+            </div>
+        </section>
+
+        <footer class="hub-footer">
+            &copy; 2026 X-LINK | Command-In-Chief Protocol v2.5
+        </footer>
+    </main>
+
+    <!-- FOUNDER INTERVENTION OVERLAY -->
+    <div id="intervention-overlay" class="intervention-overlay" style="display: none;">
+        <div class="intervention-card">
+            <div class="intervention-icon">🚨</div>
+            <h2 class="intervention-title">Sloane Needs Your Help</h2>
+            <div class="intervention-service" id="intervention-service">Unknown Service</div>
+            <div class="intervention-issue" id="intervention-issue">Unknown Issue</div>
+            <p class="intervention-message" id="intervention-message">
+                Details loading...
+            </p>
+            <div class="intervention-url" id="intervention-url"></div>
+            <button class="intervention-resume-btn" onclick="clearIntervention()">
+                ✅ Done — Resume Mission
+            </button>
+        </div>
+    </div>
+
+    <!-- Notification Toast -->
+    <div id="toast" class="toast"></div>
+
+    <script src="/assets/app.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,16 @@
+playwright==1.49.1
+pytest-playwright==0.6.2
+python-dotenv==1.0.1
+colorama==0.4.6
+beautifulsoup4
+lxml
+pandas
+pyautogui
+pynput
+pytesseract
+schedule
+fastapi
+uvicorn
+python-multipart
+requests
+resend

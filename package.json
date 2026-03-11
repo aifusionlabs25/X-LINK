@@ -1,0 +1,12 @@
+{
+    "name": "x-link-orchestrator",
+    "version": "1.0.0",
+    "description": "X-Link: Safe Local Browser Orchestration for Solo Founders on Windows 11",
+    "scripts": {
+        "test": "playwright test"
+    },
+    "devDependencies": {
+        "@playwright/test": "^1.49.1",
+        "@types/node": "^22.5.4"
+    }
+}

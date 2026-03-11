@@ -1,0 +1,61 @@
+targets:
+  - name: "Tavus Usage"
+    url: "https://platform.tavus.io/dev/usage"
+    metric: "Conversation Minutes Used"
+    selectors:
+      usage_block: "div.text-card-foreground.shadow-xs > div:last-child"
+
+  - name: "Tavus Billing"
+    url: "https://platform.tavus.io/dev/billing"
+    metric: "Plan & Billing Details"
+    selectors:
+      plan_name: "div.flex.flex-wrap"
+
+  - name: "Anam Lab Dashboard"
+    url: "https://lab.anam.ai/dashboard"
+    metric: "Session Minutes Used"
+    selectors:
+      usage_overview: "#usage-overview"
+
+  - name: "Anam Lab Sessions"
+    url: "https://lab.anam.ai/sessions"
+    metric: "Session History & Usage"
+    selectors:
+      plan_price: "span.rounded-full.border"
+
+  # ── WEEKLY MANUAL CHECK (not auto-audited) ──────────────────────
+  # OpenAI requires MFA/Cloudflare — Sloane reminds Rob weekly
+  # - name: "OpenAI Usage"
+  #   url: "https://platform.openai.com/usage"
+  #   metric: "Monthly Spend / Tokens / Requests"
+  #   schedule: weekly_manual
+
+  # Google Cloud is under rvicks@gmail.com (legacy) — Sloane reminds Rob weekly
+  # - name: "Google Cloud Billing"
+  #   url: "https://console.cloud.google.com/billing"
+  #   metric: "Current Spend per Account"
+  #   schedule: weekly_manual
+
+  - name: "Vercel Usage"
+    url: "http://vercel.com/robs-projects-e72bad73/~/usage"
+    metric: "Bandwidth/Execution"
+    selectors:
+      fallback: "body"
+
+  - name: "Resend Billing"
+    url: "https://resend.com/settings/billing"
+    metric: "Email Quota & Usage"
+    selectors:
+      fallback: "body"
+
+  - name: "Cartesia Console"
+    url: "https://play.cartesia.ai/console"
+    metric: "Total Usage Credits"
+    selectors:
+      total_usage_label: "h4.text-lg.font-medium"
+
+  - name: "Elevenlabs Usage"
+    url: "https://elevenlabs.io/app/usage"
+    metric: "Characters Remaining"
+    selectors:
+      credits_remaining: "div.text-2xl"

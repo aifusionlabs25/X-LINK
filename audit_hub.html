@@ -1,0 +1,893 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>X-LINK | Executive Command Center</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Outfit:wght@300;500;700&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0a0a0f;
+            --card-bg: rgba(255, 255, 255, 0.03);
+            --border: rgba(255, 255, 255, 0.08);
+            --accent: #4f46e5;
+            --accent-glow: rgba(79, 70, 229, 0.3);
+            --text: #f8fafc;
+            --text-dim: #94a3b8;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        .security-alert-banner {
+            background: linear-gradient(90deg, #8b0000, #ff4444);
+            color: white;
+            padding: 15px 25px;
+            border-radius: 12px;
+            margin-bottom: 30px;
+            display: none;
+            /* Hidden by default */
+            align-items: center;
+            gap: 15px;
+            font-weight: 600;
+            box-shadow: 0 10px 30px rgba(255, 68, 68, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            animation: pulse-danger 2s infinite;
+        }
+
+        @keyframes pulse-danger {
+            0% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.02);
+            }
+
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        body {
+            background: radial-gradient(circle at top right, #1a1a1a, #0d0d0d);
+            font-family: 'Inter', -apple-system, sans-serif;
+            color: #f5f5f7;
+            margin: 0;
+            padding: 0; /* Changed for sidebar */
+            display: flex; /* Sidebar layout */
+            min-height: 100vh;
+        }
+
+        /* Sidebar Styling */
+        .sidebar {
+            width: 80px;
+            background: rgba(0, 0, 0, 0.4);
+            border-right: 1px solid var(--border);
+            height: 100vh;
+            position: fixed;
+            left: 0;
+            top: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 30px 0;
+            gap: 20px;
+            backdrop-filter: blur(20px);
+            z-index: 1000;
+            transition: width 0.3s ease;
+        }
+
+        .sidebar:hover {
+            width: 260px;
+        }
+
+        .sidebar-item {
+            display: flex;
+            align-items: center;
+            width: 100%;
+            padding: 12px 20px;
+            color: var(--text-dim);
+            text-decoration: none;
+            cursor: pointer;
+            border-left: 4px solid transparent;
+            transition: all 0.2s ease;
+            white-space: nowrap;
+            overflow: hidden;
+        }
+
+        .sidebar-item:hover {
+            color: var(--text);
+            background: rgba(255, 255, 255, 0.05);
+            border-left-color: var(--accent);
+        }
+
+        .sidebar-icon {
+            font-size: 1.5rem;
+            min-width: 40px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .sidebar-label {
+            margin-left: 15px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .sidebar:hover .sidebar-label {
+            opacity: 1;
+        }
+
+        .main-content {
+            flex: 1;
+            margin-left: 80px;
+            padding: 40px;
+            max-width: 1400px;
+        }
+
+        .premium-serif {
+            font-family: 'Playfair Display', serif;
+            letter-spacing: -0.02em;
+        }
+
+        .gold-text {
+            background: linear-gradient(to right, #d4af37, #f7e08a);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-weight: 700;
+        }
+
+        .ambient-glow {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background:
+                radial-gradient(circle at 10% 20%, rgba(79, 70, 229, 0.1) 0%, transparent 40%),
+                radial-gradient(circle at 90% 80%, rgba(139, 92, 246, 0.08) 0%, transparent 40%);
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            margin-bottom: 40px;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 20px;
+        }
+
+        h1 {
+            font-family: 'Outfit', sans-serif;
+            font-size: 2.5rem;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            background: linear-gradient(to right, #fff, #94a3b8);
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .meta {
+            text-align: right;
+            color: var(--text-dim);
+            font-size: 0.9rem;
+        }
+
+        /* Urgent Alert Banner */
+        #urgent-alert {
+            display: none;
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid var(--danger);
+            color: var(--danger);
+            padding: 15px 25px;
+            border-radius: 12px;
+            margin-bottom: 30px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            animation: pulse-danger 2s infinite;
+        }
+
+        @keyframes pulse-danger {
+            0% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.7;
+            }
+
+            100% {
+                opacity: 1;
+            }
+        }
+
+        /* Executive Briefing Card */
+        .executive-card {
+            background: linear-gradient(135deg, rgba(79, 70, 229, 0.1) 0%, rgba(0, 0, 0, 0) 100%);
+            border: 1px solid rgba(79, 70, 229, 0.3);
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 40px;
+            backdrop-filter: blur(12px);
+        }
+
+        .executive-card h2 {
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.5rem;
+            margin-bottom: 15px;
+            color: #818cf8;
+        }
+
+        .briefing-summary {
+            font-size: 1.05rem;
+            line-height: 1.6;
+            margin-bottom: 20px;
+            color: #e2e8f0;
+        }
+
+        .priority-list {
+            list-style: none;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 15px;
+        }
+
+        .priority-item {
+            background: rgba(255, 255, 255, 0.03);
+            padding: 12px 18px;
+            border-radius: 10px;
+            border: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            font-size: 0.9rem;
+        }
+
+        .priority-item::before {
+            content: '→';
+            margin-right: 12px;
+            color: var(--accent);
+            font-weight: bold;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+            gap: 25px;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 24px;
+            backdrop-filter: blur(12px);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card:hover {
+            border-color: rgba(255, 255, 255, 0.2);
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5);
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: var(--accent);
+            opacity: 0.5;
+        }
+
+        .tag {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--accent);
+            font-weight: 700;
+            margin-bottom: 12px;
+            display: block;
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 20px;
+        }
+
+        .card-title {
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.25rem;
+            font-weight: 600;
+        }
+
+        .metric-main {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 20px;
+            font-family: 'Outfit', sans-serif;
+        }
+
+        .details {
+            display: grid;
+            gap: 12px;
+        }
+
+        .detail-item {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.85rem;
+            color: var(--text-dim);
+            padding-bottom: 8px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .detail-value {
+            color: var(--text);
+            font-weight: 500;
+        }
+
+        .bar-container {
+            height: 6px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 3px;
+            margin: 15px 0;
+            overflow: hidden;
+        }
+
+        .bar {
+            height: 100%;
+            background: linear-gradient(to right, var(--accent), #818cf8);
+            width: 0%;
+            transition: width 1s ease-out;
+        }
+
+        .footer {
+            margin-top: 80px;
+            text-align: center;
+            color: var(--text-dim);
+            font-size: 0.8rem;
+        }
+
+        .error-tag {
+            color: #ef4444;
+            font-size: 0.75rem;
+            margin-top: 10px;
+            display: block;
+        }
+
+        .stats-hero {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+
+        .stat-box {
+            background: rgba(255, 255, 255, 0.02);
+            padding: 20px;
+            border-radius: 15px;
+            border: 1px solid var(--border);
+        }
+
+        .stat-box h4 {
+            font-size: 0.8rem;
+            color: var(--text-dim);
+            margin-bottom: 10px;
+            text-transform: uppercase;
+        }
+
+        .stat-box .value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--success);
+        }
+
+        .dept-layout {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
+            gap: 25px;
+            margin-bottom: 40px;
+        }
+
+        .priority-list-dept {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="ambient-glow"></div>
+    
+    <!-- COMMAND SIDEBAR -->
+    <nav class="sidebar">
+        <div class="sidebar-item" onclick="triggerTool('sync')" title="Full Data Sync">
+            <span class="sidebar-icon">🔄</span>
+            <span class="sidebar-label">Sync Engines</span>
+        </div>
+        <div class="sidebar-item" onclick="triggerTool('audit')" title="Run Usage Audit">
+            <span class="sidebar-icon">📊</span>
+            <span class="sidebar-label">Usage Auditor</span>
+        </div>
+        <div class="sidebar-item" onclick="triggerTool('scout')" title="Scout Intelligence (Keep.md)">
+            <span class="sidebar-icon">🕵️‍♀️</span>
+            <span class="sidebar-label">Intelligence Scout</span>
+        </div>
+        <div class="sidebar-item" onclick="triggerTool('briefing')" title="Email Executive Briefing">
+            <span class="sidebar-icon">📧</span>
+            <span class="sidebar-label">Direct Briefing</span>
+        </div>
+        
+        <div style="margin-top: auto;"></div>
+        
+        <div class="sidebar-item" id="hub-status-btn">
+            <span class="sidebar-icon">📡</span>
+            <span class="sidebar-label" id="hub-status-text">Bridge Offline</span>
+        </div>
+    </nav>
+
+    <div class="main-content">
+        <header>
+            <div>
+                <span class="tag" style="color: var(--text-dim)">Autonomous Command Center</span>
+                <h1>X-LINK HUB</h1>
+            </div>
+            <div class="meta">
+                Morning Audit: <span id="sync-time">UNDEFINED</span><br>
+                System Pulse: <span style="color: var(--success)">Operational</span>
+            </div>
+        </header>
+
+        <div id="security-alert-banner" class="security-alert-banner">
+            <span style="font-size: 1.5rem;">🚨</span>
+            <div id="security-alert-text">
+                Moneypenny here. I've hit a security wall. Please resolve it so I can continue my rounds.
+            </div>
+        </div>
+
+        <div id="urgent-alert">
+            ⚠️ URGENT ACTION REQUIRED: Low Balance Detected in Active Pipelines
+        </div>
+
+        <div id="sloanes-desk" class="executive-card"
+            style="border-top: 4px solid #d4af37; background: rgba(26, 26, 26, 0.4);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h1 class="premium-serif gold-text" style="font-size: 2.2rem; margin: 0;">Sloane's Desk</h1>
+                <div class="tag"
+                    style="background: rgba(212, 175, 55, 0.1); color: #d4af37; border: 1px solid rgba(212, 175, 55, 0.3);">
+                    Chief of Staff</div>
+            </div>
+
+            <div id="sloane-summary" class="briefing-summary"
+                style="font-style: italic; font-size: 1.1rem; line-height: 1.6; border-left: 2px solid #d4af37; padding-left: 20px; margin-bottom: 30px;">
+                "Darling, I'm just getting settled. Give me a moment to judge your progress..."
+            </div>
+
+            <div class="dept-layout">
+                <!-- Departmental Cards -->
+                <div id="briefing-rd" class="executive-card" style="background: rgba(255, 255, 255, 0.03);">
+                    <h2 class="premium-serif">R&D Briefing</h2>
+                    <div class="briefing-summary" id="rd-summary">Drafting technical briefing...</div>
+                    <ul class="priority-list-dept" id="rd-priorities"></ul>
+                </div>
+                <div id="briefing-sales" class="executive-card" style="background: rgba(255, 255, 255, 0.03);">
+                    <h2 class="premium-serif">Sales & Marketing</h2>
+                    <div class="briefing-summary" id="sales-summary">Drafting growth briefing...</div>
+                    <ul class="priority-list-dept" id="sales-priorities"></ul>
+                </div>
+                <div id="briefing-ops" class="executive-card" style="background: rgba(255, 255, 255, 0.03);">
+                    <h2 class="premium-serif">Operations</h2>
+                    <div class="briefing-summary" id="ops-summary">Drafting health briefing...</div>
+                    <ul class="priority-list-dept" id="ops-priorities"></ul>
+                </div>
+            </div>
+
+            <div id="calendar-section"
+                style="margin-top: 30px; border-top: 1px solid rgba(212, 175, 55, 0.2); padding-top: 20px;">
+                <h3 class="premium-serif gold-text" style="font-size: 1.2rem;">Today's Commitments</h3>
+                <ul id="calendar-events" class="priority-list-dept" style="font-size: 0.9rem; opacity: 0.8;">
+                    <!-- Calendar events injected here -->
+                </ul>
+            </div>
+        </div>
+
+        <div class="stats-hero" id="stats-hero">
+            <!-- Global Stats Baked In -->
+        </div>
+
+        <div class="grid" id="audit-grid">
+            <!-- Cards Baked In -->
+        </div>
+
+        <div class="footer">
+            &copy; 2026 X-LINK Engine. Self-healing morning routine enabled.
+        </div>
+    </div>
+
+    <script>
+        const auditData = {
+  "Tavus Usage": {
+    "url": "https://platform.tavus.io/dev/usage",
+    "metric_type": "Conversation Minutes Used",
+    "timestamp": "2026-03-10T12:06:03.703679",
+    "data": {}
+  },
+  "Tavus Billing": {
+    "url": "https://platform.tavus.io/dev/billing",
+    "metric_type": "Plan & Billing Details",
+    "timestamp": "2026-03-10T12:06:12.098172",
+    "data": {
+      "plan": "Starter",
+      "conversation_minutes_used": "5.5",
+      "replicas_used": "0",
+      "video_gen_minutes_used": "0"
+    }
+  },
+  "Anam Lab Dashboard": {
+    "url": "https://lab.anam.ai/dashboard",
+    "metric_type": "Session Minutes Used",
+    "timestamp": "2026-03-10T12:06:26.683545",
+    "data": {
+      "dashboard_minutes": "Feb 11\nFeb 18\nFeb 25\nMar 3\nMar 9\n0m\n20m\n40m\n64m\nView Details",
+      "minutes_used_total": "60"
+    }
+  },
+  "Anam Lab Sessions": {
+    "url": "https://lab.anam.ai/sessions",
+    "metric_type": "Session History & Usage",
+    "timestamp": "2026-03-10T12:06:35.252441",
+    "data": {
+      "dashboard_minutes": "Total Usage\n2h 17m",
+      "minutes_used_total": "60"
+    }
+  },
+  "Vercel Usage": {
+    "url": "http://vercel.com/robs-projects-e72bad73/~/usage",
+    "metric_type": "Bandwidth/Execution",
+    "timestamp": "2026-03-10T12:06:46.055150",
+    "data": {
+      "bandwidth": "10 GB\n100 GB"
+    }
+  },
+  "Resend Billing": {
+    "url": "https://resend.com/settings/billing",
+    "metric_type": "Email Quota & Usage",
+    "timestamp": "2026-03-10T12:06:54.933564",
+    "data": {
+      "cost_found": "$0"
+    }
+  },
+  "Cartesia Console": {
+    "url": "https://play.cartesia.ai/console",
+    "metric_type": "Total Usage Credits",
+    "timestamp": "2026-03-10T12:07:03.484290",
+    "data": {
+      "capabilities": []
+    }
+  },
+  "Elevenlabs Usage": {
+    "url": "https://elevenlabs.io/app/usage",
+    "metric_type": "Characters Remaining",
+    "timestamp": "2026-03-10T12:07:41.859004",
+    "data": {
+      "error": "Locator.click: Timeout 30000ms exceeded.\nCall log:\n  - waiting for locator(\"button:has-text(\\\"%\\\"), .rounded-full, [aria-label*=\\\"Account\\\"]\").last\n  -     - locator resolved to <img width=\"40\" height=\"40\" data-nimg=\"1\" loading=\"lazy\" decoding=\"async\" alt=\"AI Fusion Labs\" class=\"rounded-full shrink-0 bg-gray-50 object-cover h-full w-full\" src=\"/app_assets/image_assets/_next/image?url=https%3A%2F%2Flh3.googleusercontent.com%2Fa%2FACg8ocL05AkJeJ3ol7dCYVXJkl_TtjQV5W8uIopPcWw51o6NDZLxneU%3Ds96-c&w=96&q=75\" srcset=\"/app_assets/image_assets/_next/image?url=https%3A%2F%2Flh3.googleusercontent.com%2Fa%2FACg8ocL05AkJeJ3ol7dCYVXJkl_TtjQV5W8uIopPcWw51o6NDZLxneU%3Ds96-c&w=48&q=75 1x, \u2026/>\n  -   - attempting click action\n  -     2 \u00d7 waiting for element to be visible, enabled and stable\n  -       - element is not visible\n  -     - retrying click action\n  -     - waiting 20ms\n  -     2 \u00d7 waiting for element to be visible, enabled and stable\n  -       - element is not visible\n  -     - retrying click action\n  -       - waiting 100ms\n  -     56 \u00d7 waiting for element to be visible, enabled and stable\n  -        - element is not visible\n  -      - retrying click action\n  -        - waiting 500ms\n"
+    }
+  }
+};
+        const briefingData = {
+  "timestamp": "2026-03-10T12:05:37.938457",
+  "sloane": {
+    "name": "Moneypenny",
+    "summary": "\"Good morning, Rob. Current mission status: we're running smoothly, with all active agents in position. However, I do need to bring to your attention that Morgan's task is currently blocked, and I'm working on resolving the issue with James. All other tasks are proceeding as scheduled, with Dani, Amy, and Sarah on track to meet their objectives.\"",
+    "calendar_events": []
+  },
+  "departments": {
+    "rd": {
+      "summary": "Infrastructure stable. Mission parameters nominal.",
+      "priorities": [
+        "Anam SDK.",
+        "Hetzner Scale."
+      ]
+    },
+    "sales": {
+      "summary": "8 agents live.",
+      "priorities": [
+        "Legal Pro.",
+        "Sarah Fix."
+      ]
+    },
+    "ops": {
+      "summary": "System is stable.",
+      "priorities": [
+        "Heartbeat.",
+        "Cost Audit."
+      ]
+    }
+  }
+};
+
+        function init() {
+            const grid = document.getElementById('audit-grid');
+            const syncTime = document.getElementById('sync-time');
+            const hero = document.getElementById('stats-hero');
+            const summaryEl = document.getElementById('briefing-summary');
+            const priorityEl = document.getElementById('priority-list');
+            const alertEl = document.getElementById('urgent-alert');
+
+            let totalSpend = 0;
+            let activePlatforms = 0;
+            let urgentCount = 0;
+
+            // 1. Inject Sloane's Briefing
+            if (briefingData && briefingData.sloane) {
+                const sloane = briefingData.sloane;
+                document.getElementById('sloane-summary').innerText = `"${sloane.summary}"`;
+
+                if (sloane.efficiency_risk) {
+                    document.getElementById('sloanes-desk').style.borderTopColor = '#ff4444';
+                    document.getElementById('urgent-alert').style.display = 'block';
+                    document.getElementById('urgent-alert').innerText = "⚠️ SLOANE WARNING: High Efficiency Risk Detected";
+                }
+
+                if (sloane.calendar_events) {
+                    document.getElementById('calendar-events').innerHTML = sloane.calendar_events.map(e => `<li>📅 ${e}</li>`).join('');
+                }
+
+                // Departmental Synthesis
+                const depts = briefingData.departments;
+                if (depts) {
+                    if (depts.rd) {
+                        document.getElementById('rd-summary').innerText = depts.rd.summary;
+                        document.getElementById('rd-priorities').innerHTML = depts.rd.priorities.map(p => `<li class="priority-item">${p}</li>`).join('');
+                    }
+                    if (depts.sales) {
+                        document.getElementById('sales-summary').innerText = depts.sales.summary;
+                        document.getElementById('sales-priorities').innerHTML = depts.sales.priorities.map(p => `<li class="priority-item">${p}</li>`).join('');
+                    }
+                    if (depts.ops) {
+                        document.getElementById('ops-summary').innerText = depts.ops.summary;
+                        document.getElementById('ops-priorities').innerHTML = depts.ops.priorities.map(p => `<li class="priority-item">${p}</li>`).join('');
+                    }
+                }
+            }
+
+            // 3. Process Audit Data & Check for Security Walls
+            if (auditData) {
+                let securityBlocked = false;
+                let blockedPlatform = "";
+
+                Object.entries(auditData).forEach(([platform, result]) => {
+                    if (result.status === 'blocked') {
+                        securityBlocked = true;
+                        blockedPlatform = platform;
+                    }
+                });
+
+                if (securityBlocked) {
+                    const banner = document.getElementById('security-alert-banner');
+                    const text = document.getElementById('security-alert-text');
+                    banner.style.display = 'flex';
+                    text.innerText = `Moneypenny here. I've hit a ${blockedPlatform} security wall. Please resolve it so I can continue my rounds.`;
+                } else {
+                    document.getElementById('security-alert-banner').style.display = 'none';
+                }
+            }
+
+            // 2. Process Audit Data (for card generation)
+            const platforms = Object.keys(auditData);
+            activePlatforms = platforms.length;
+
+            platforms.forEach(name => {
+                const item = auditData[name];
+                const data = item.data || {};
+
+                if (data.total_spend) {
+                    const spendVal = parseFloat(data.total_spend.replace('$', ''));
+                    if (!isNaN(spendVal)) totalSpend += spendVal;
+                }
+
+                const card = document.createElement('div');
+                card.className = 'card';
+
+                let mainVal = item.metric_type || "Syncing...";
+                let subMetrics = "";
+                let barHtml = "";
+                let isUrgent = false;
+                let isBlocked = item.status === 'blocked';
+
+                if (isBlocked) {
+                    card.style.border = '1px solid #ff4444';
+                    card.style.background = 'rgba(255, 68, 68, 0.05)';
+                    mainVal = "AUTH REQUIRED";
+                    subMetrics = `<div style="color: #ff4444; font-weight: bold;">🚨 ${item.issue || 'MFA/Login Wall'}</div>`;
+                }
+
+                // --- PLATFORM SPECIFIC PARSING ---
+                if (isBlocked) {
+                    // Skip detailed parsing if blocked
+                }
+
+                // 1. Tavus (Minutes Used)
+                if (data.conversation_minutes_used !== undefined) {
+                    mainVal = `${data.conversation_minutes_used} min`;
+                    subMetrics += `<div class="detail-item"><span>Plan</span><span class="detail-value">${data.plan || 'Starter'}</span></div>`;
+                    if (data.replicas_used) subMetrics += `<div class="detail-item"><span>Replicas</span><span class="detail-value">${data.replicas_used}</span></div>`;
+                    if (data.video_gen_minutes_used) subMetrics += `<div class="detail-item"><span>Video Gen</span><span class="detail-value">${data.video_gen_minutes_used} min</span></div>`;
+                }
+
+                // 2. Anam (Minutes Used)
+                else if (data.free_minutes_used) {
+                    const used = parseInt(data.free_minutes_used);
+                    const total = parseInt(data.free_minutes_total);
+                    mainVal = `${used}/${total} min`;
+                    const perc = (used / total) * 100;
+                    barHtml = `<div class="bar-container"><div class="bar" style="width: ${perc}%"></div></div>`;
+                    if (perc > 90) { isUrgent = true; urgentCount++; }
+                    if (data.overage_rate) subMetrics += `<div class="detail-item"><span>Overage</span><span class="detail-value">${data.overage_rate}</span></div>`;
+                }
+
+                // 3. OpenAI / Spend Focused
+                else if (data.total_spend) {
+                    mainVal = data.total_spend;
+                    subMetrics += `<div class="detail-item"><span>Budget</span><span class="detail-value">${data.budget || 'N/A'}</span></div>`;
+                    if (data.total_tokens) subMetrics += `<div class="detail-item"><span>Tokens</span><span class="detail-value">${data.total_tokens}</span></div>`;
+                    if (data.budget && data.budget.includes('$')) {
+                        const b = parseFloat(data.budget.replace('$', ''));
+                        const s = parseFloat(data.total_spend.replace('$', ''));
+                        const perc = (s / b) * 100;
+                        barHtml = `<div class="bar-container"><div class="bar" style="width: ${perc}%"></div></div>`;
+                    }
+                }
+
+                // 4. Elevenlabs / Credits
+                else if (data.credits_remaining) {
+                    const val = parseInt(data.credits_remaining.replace(/,/g, ''));
+                    mainVal = `${data.credits_remaining}`;
+                    subMetrics += `<div class="detail-item"><span>Plan</span><span class="detail-value">${data.plan || 'Free'}</span></div>`;
+                    const perc = (val / 10000) * 100; // Normalized to 10k
+                    barHtml = `<div class="bar-container"><div class="bar" style="width: ${perc}%"></div></div>`;
+                    if (perc < 10) { isUrgent = true; urgentCount++; }
+                }
+
+                // 5. Cartesia (Usage Credits)
+                else if (data.total_usage_value) {
+                    mainVal = data.total_usage_value;
+                    if (data.capabilities) {
+                        data.capabilities.slice(0, 3).forEach(c => {
+                            subMetrics += `<div class="detail-item"><span>${c.name}</span><span class="detail-value">${c.value}</span></div>`;
+                        });
+                    }
+                }
+
+                // 6. GCloud / Multi-Account
+                else if (data.accounts) {
+                    const sum = data.accounts.reduce((acc, a) => acc + parseFloat(a.spend.replace('$', '') || 0), 0);
+                    mainVal = `$${sum.toFixed(2)}`;
+                    subMetrics += `<div class="detail-item"><span>Accounts</span><span class="detail-value">${data.accounts.length}</span></div>`;
+                    data.accounts.slice(0, 2).forEach(a => {
+                        subMetrics += `<div class="detail-item"><span>${a.name.substring(0, 10)}...</span><span class="detail-value">${a.spend}</span></div>`;
+                    });
+                }
+
+                // 7. Fallback Patterns (Vercel / Resend)
+                else if (data.bandwidth || data.emails_quota || data.emails_sent) {
+                    mainVal = data.bandwidth || data.emails_quota || "Active";
+                    if (data.execution_hours) subMetrics += `<div class="detail-item"><span>Execution</span><span class="detail-value">${data.execution_hours}</span></div>`;
+                    if (data.emails_sent) subMetrics += `<div class="detail-item"><span>Emails Sent</span><span class="detail-value">${data.emails_sent}</span></div>`;
+                }
+
+                // If no specific value found but metric name isn't placeholder
+                if (mainVal === item.metric_type && !data.error) {
+                    // Check if there's raw preview data
+                    if (data.raw_preview) subMetrics += `<p style="font-size: 0.6rem; color: var(--text-dim)">${data.raw_preview.substring(0, 40)}...</p>`;
+                }
+
+                if (isUrgent) card.style.borderColor = 'var(--danger)';
+
+                card.innerHTML = `
+                    <span class="tag">${item.metric_type || 'Sync'}</span>
+                    <div class="card-header">
+                        <div class="card-title">${name}</div>
+                    </div>
+                    <div class="metric-main">${mainVal}</div>
+                    ${barHtml}
+                    <div class="details">
+                        ${subMetrics || '<p style="font-size: 0.8rem; color: var(--text-dim)">Awaiting granular telemetry...</p>'}
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+
+            if (urgentCount > 0) alertEl.style.display = 'block';
+
+            const firstPlatform = platforms[0];
+            if (firstPlatform) {
+                const ts = new Date(auditData[firstPlatform].timestamp);
+                syncTime.innerText = ts.toLocaleString();
+            }
+
+            hero.innerHTML = `
+                <div class="stat-box"><h4>Month Spend</h4><div class="value">$${totalSpend.toFixed(2)}</div></div>
+                <div class="stat-box"><h4>Platform Nodes</h4><div class="value" style="color: var(--text)">${activePlatforms}</div></div>
+                <div class="stat-box"><h4>Sync Quality</h4><div class="value" style="color: var(--accent)">Optimal</div></div>
+            `;
+
+            // Check bridge status
+            checkBridge();
+        }
+
+        async function triggerTool(name) {
+            console.log(`📡 Triggering tool: ${name}`);
+            try {
+                const response = await fetch(`http://127.0.0.1:5001/trigger/${name}`, { method: 'POST' });
+                const result = await response.json();
+                if (result.status === "initiated") {
+                    showNotification(`🚀 ${name.toUpperCase()} Mission Initiated.`);
+                }
+            } catch (e) {
+                console.error("❌ Synapse Bridge Connection Failed.");
+                showNotification("❌ Bridge Offline. Launch tools/synapse_bridge.py", true);
+            }
+        }
+
+        async function checkBridge() {
+            try {
+                const response = await fetch(`http://127.0.0.1:5001/heartbeat`);
+                const result = await response.json();
+                if (result.status === "online") {
+                    document.getElementById('hub-status-text').innerText = "Bridge Online";
+                    document.getElementById('hub-status-btn').style.color = "var(--success)";
+                }
+            } catch (e) {
+                document.getElementById('hub-status-text').innerText = "Bridge Offline";
+                document.getElementById('hub-status-btn').style.color = "var(--danger)";
+            }
+        }
+
+        function showNotification(text, isError = false) {
+            const banner = document.getElementById('security-alert-banner');
+            const alertText = document.getElementById('security-alert-text');
+            banner.style.display = 'flex';
+            banner.style.background = isError ? 'rgba(239, 68, 68, 0.4)' : 'rgba(16, 185, 129, 0.4)';
+            banner.style.animation = 'none';
+            alertText.innerText = text;
+            setTimeout(() => {
+                banner.style.display = 'none';
+            }, 4000);
+        }
+
+        window.onload = init;
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,68 @@
+Here are the findings from the research agents regarding the Fulton Homes Sales Concierge:
+
+--- GROK (Unfiltered Pulse) ---
+Identifying common complaints • 50s
+
+Searched 𝕏
+sentiment buying new homes Phoenix Arizona complaints delays fees communication
+10 posts
+
+Searched web
+site:x.com "new construction homes" Phoenix complaints delays hidden fees poor communication 2026
+2 results
+
+--- PERPLEXITY (Deep Researcher) ---
+No response found
+
+--- GEMINI (Policy Auditor) ---
+Deploying an AI Sales Concierge for a home builder introduces high-stakes liability because real estate transactions are governed by strict federal and state consumer protection laws. When an AI "hallucinates," it isn't just a technical glitch; it is potentially a binding misrepresentation.
+
+Liability Profile: The "Hallucination" Impact
+
+If your AI provides incorrect data regarding interest rates, pricing, or timelines, the liability generally falls into three legal buckets:
+
+1. UDAAP Violations (Unfair, Deceptive, or Abusive Acts or Practices)
+
+Under the Dodd-Frank Act and FTC guidelines, providing false information about the cost of a "product" (the home) or the "financing" (the rate) is a primary trigger.
+
+The Risk: Even if a human eventually corrects the AI, the "bait and switch" argument can be made if the buyer relied on that initial data to enter a contract or pay a reservation fee.
+
+2. TILA/RESPA Non-Compliance
+
+If the AI quotes a specific interest rate without the required disclosures (like the APR, down payment requirements, or repayment terms), it violates the Truth in Lending Act (TILA).
+
+The Risk: Regulators do not distinguish between a typo made by a human and a hallucination made by an LLM. The builder could face statutory damages and "Right of Rescission" claims, where buyers may attempt to back out of contracts based on non-compliant disclosures.
+
+3. Breach of Contract & Negligent Misrepresentation
+
+In many jurisdictions, if an AI agent is authorized to "represent" the builder, its statements can be viewed as Equitable Estoppel.
+
+The Risk: If a buyer signs a contract believing the "Base Price" was $450,000 (per the AI) but the contract says $500,000, the builder faces a PR nightmare and potential litigation for negligent misrepresentation.
+
+3 Strict Guardrails for Prevention
+
+To mitigate these risks, you must move beyond simple system prompts and implement structural technical barriers.
+
+Guardrail 1: RAG with "Hard-Coded" Truth Anchors
+
+Do not allow the AI to generate numbers from its internal weights. Use Retrieval-Augmented Generation (RAG) connected to a verified SQL database or ERP (like Enertia or BuilderMT).
+
+The Rule: If the API returns a null value for "Current Phase 2 Pricing," the AI must be programmed to say, "I don't have the live pricing for that lot yet," rather than guessing.
+
+Verification: Implement a "NLI" (Natural Language Inference) check where a second, smaller model verifies that the AI's output numerically matches the source data before the message is sent to the user.
+
+Guardrail 2: Dynamic Disclosure Injection
+
+The AI should be incapable of mentioning a percentage sign (%) or a dollar sign ($) without an accompanying, legally-vetted disclaimer.
+
+The Rule: Program a "Trigger-Response" layer. If the AI mentions a "4.9% rate," the system automatically appends: "Rate based on 740+ FICO, 20% down, and builder's preferred lender. See full disclosures at [URL]."
+
+Guardrail 3: Human-in-the-Loop "Redline" Thresholds
+
+Establish "High-Volatility" triggers that escalate the chat to a human agent immediately.
+
+The Rule: Any query involving "Contract," "Interest Rate," "Closing Date," or "Discount" triggers a pre-formatted response or a mandatory transfer. The AI can act as a concierge for floor plans and amenities, but must be "lobotomized" regarding specific financial commitments.
+
+Would you like me to draft a specific System Prompt for your AI that incorporates these legal disclaimers and escalation triggers?
+
+Now, act as the Dojo Master and generate the ultimate, highly-refined System Prompt for this Fulton Homes 'Sales Concierge' agent.
