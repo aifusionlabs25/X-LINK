@@ -156,11 +156,11 @@ def test_tool_registry_parses():
 
 
 def test_scoring_rubrics_parses():
-    """scoring_rubrics.yaml must parse and contain default rubric."""
+    """scoring_rubrics.yaml must parse and contain default_v1 rubric."""
     import yaml
     path = os.path.join(ROOT_DIR, "config", "scoring_rubrics.yaml")
     with open(path, "r", encoding="utf-8") as f:
         data = yaml.safe_load(f)
-    assert "default" in data
-    assert "categories" in data["default"]
-    assert len(data["default"]["categories"]) == 5
+    assert "default_v1" in data
+    assert "categories" in data["default_v1"]
+    assert len(data["default_v1"]["categories"]) == 9
