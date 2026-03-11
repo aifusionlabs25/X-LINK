@@ -1,0 +1,72 @@
+# X-LINK HUB v3 — Menu Configuration
+# This file drives the sidebar UI. Do NOT hard-code menu items in HTML.
+
+sections:
+  - key: primary
+    label: Primary Workspace
+    items:
+      - key: direct_line
+        label: Direct Line
+        icon: "💬"
+        type: tool
+        description: Freeform command/input lane to Sloane
+        route: direct_line
+
+      - key: usage_auditor
+        label: Usage Auditor
+        icon: "📊"
+        type: tool
+        description: Inspect usage/billing/consumption targets
+        route: usage_auditor
+
+      - key: intelligence_scout
+        label: Intelligence Scout
+        icon: "🕵️"
+        type: tool
+        description: Research, gather, compare, synthesize
+        route: intelligence_scout
+
+      - key: xagent_eval
+        label: X-Agent Eval
+        icon: "🎯"
+        type: tool
+        description: Automated X Agent test sessions and scoring
+        route: xagent_eval
+
+  - key: reports
+    label: Reports
+    items:
+      - key: briefing
+        label: Direct Briefing
+        icon: "📧"
+        type: output
+        description: Executive summaries from tool outputs
+        route: briefing
+
+  - key: system
+    label: System
+    items:
+      - key: sync_status
+        label: Sync Status
+        icon: "🔄"
+        type: status
+        description: Sync routine state and last run
+        status_source: sync
+
+      - key: bridge_status
+        label: Bridge Status
+        icon: "📡"
+        type: status
+        description: CDP bridge connectivity state
+        status_source: bridge
+
+  - key: advanced
+    label: Advanced
+    items:
+      - key: scout_workers
+        label: Scout Workers
+        icon: "📦"
+        type: internal
+        description: Internal delegated execution lane for Intelligence Scout
+        route: scout_workers
+        visibility: collapsed

@@ -1,45 +1,55 @@
 /** 
- * X-LINK Hub v2.5 - Command-In-Chief Protocol
- * Handles real-time polling and tool orchestration.
+ * X-LINK Hub v3.0 — Command Center Protocol
+ * Config-driven menu, explicit tool routing, separated status layer.
  */
 
 const API_BASE = "http://127.0.0.1:5001";
 
-async function fetchStatus() {
+// ── Status Polling ────────────────────────────────────────────
+
+async function refreshStatus() {
     try {
         const response = await fetch(`${API_BASE}/api/data`);
         if (!response.ok) throw new Error("Bridge response error");
         const data = await response.json();
         updateUI(data);
+        setBridgeStatus(true);
     } catch (e) {
-        console.error("📡 Bridge Sync Failed:", e);
-        document.getElementById('hub-status-text').innerText = "Bridge Offline";
-        document.getElementById('hub-status-btn').style.color = "var(--danger)";
+        console.warn("📡 Bridge Sync Failed:", e.message);
+        setBridgeStatus(false);
+    }
+}
+
+function setBridgeStatus(online) {
+    const text = document.getElementById('bridge-status-text');
+    const btn = document.getElementById('bridge-status-btn');
+    const pulse = document.getElementById('system-pulse');
+
+    if (online) {
+        text.innerText = "Bridge Online";
+        btn.style.color = "var(--success)";
+        pulse.innerText = "ACTIVE";
+        pulse.className = "meta-value pulse-green";
+    } else {
+        text.innerText = "Bridge Offline";
+        btn.style.color = "var(--danger)";
+        pulse.innerText = "OFFLINE";
+        pulse.className = "meta-value";
     }
 }
 
 function updateUI(data) {
     const { audit, briefing, subscriptions } = data;
 
-    // Update Sync Time
     if (data.server_time) {
         const time = new Date(data.server_time);
         document.getElementById('sync-time').innerText = time.toLocaleTimeString();
+        document.getElementById('sync-status-text').innerText = `Synced ${time.toLocaleTimeString()}`;
     }
 
-    // Update Pulse
-    const pulse = document.getElementById('system-pulse');
-    pulse.innerText = "ACTIVE";
-    pulse.className = "meta-value pulse-green";
-
-    document.getElementById('hub-status-text').innerText = "Bridge Online";
-    document.getElementById('hub-status-btn').style.color = "var(--success)";
-
-    // 1. Update Sloane's Summary
+    // Sloane's Summary
     if (briefing && briefing.sloane) {
         document.getElementById('sloane-summary').innerText = `"${briefing.sloane.summary}"`;
-
-        // Update Departments
         const depts = briefing.departments;
         if (depts) {
             updateDept("rd", depts.rd);
@@ -48,15 +58,11 @@ function updateUI(data) {
         }
     }
 
-    // 2. Update Audit Grid
-    if (audit) {
-        renderAuditGrid(audit, subscriptions);
-    }
+    // Audit Grid
+    if (audit) renderAuditGrid(audit, subscriptions);
 
-    // 3. Update Renewal Timeline
-    if (subscriptions) {
-        renderRenewalTimeline(subscriptions);
-    }
+    // Renewal Timeline
+    if (subscriptions) renderRenewalTimeline(subscriptions);
 }
 
 function updateDept(id, data) {
@@ -68,16 +74,16 @@ function updateDept(id, data) {
     }
 }
 
+// ── Audit Grid ────────────────────────────────────────────────
+
 function renderAuditGrid(audit, subscriptions) {
     const grid = document.getElementById('audit-grid');
     const hero = document.getElementById('stats-hero');
     grid.innerHTML = "";
 
-    let totalSpend = 0;
     let totalMonthlyCost = 0;
     let activeNodes = 0;
 
-    // Build lookup from subscription registry
     const subLookup = {};
     if (subscriptions && subscriptions.subscriptions) {
         subscriptions.subscriptions.forEach(s => {
@@ -104,7 +110,6 @@ function renderAuditGrid(audit, subscriptions) {
         const sub = subLookup[subKey] || {};
         const plan = sub.plan || '—';
         const cost = sub.cost || '—';
-        const renewalDate = sub.renewal_date || null;
 
         if (cost && cost !== '—') {
             const costVal = parseFloat(cost.replace(/[^0-9.]/g, ''));
@@ -117,24 +122,6 @@ function renderAuditGrid(audit, subscriptions) {
             showSecurityAlert(name, result.issue);
         }
 
-        if (data.total_spend) {
-            const val = parseFloat(data.total_spend.replace('$', ''));
-            if (!isNaN(val)) totalSpend += val;
-        }
-
-        let renewalHtml = '';
-        if (renewalDate) {
-            const diff = Math.ceil((new Date(renewalDate) - new Date()) / 86400000);
-            const cls = diff <= 3 ? 'renewal-urgent' : diff <= 7 ? 'renewal-soon' : 'renewal-ok';
-            renewalHtml = `<div class="renewal-countdown ${cls}">🗓 Renews in ${diff}d</div>`;
-        }
-
-        let extraHtml = '';
-        if (sub.bandwidth) extraHtml += `<span class="data-pill">📡 ${sub.bandwidth}</span>`;
-        if (sub.email_quota) extraHtml += `<span class="data-pill">📧 ${sub.email_quota}</span>`;
-        if (sub.character_quota) extraHtml += `<span class="data-pill">🔤 ${sub.character_quota}</span>`;
-        if (sub.credits_remaining) extraHtml += `<span class="data-pill">🎫 ${sub.credits_remaining}</span>`;
-
         card.innerHTML = `
             <div class="card-top-row">
                 <span class="plan-badge">${plan}</span>
@@ -142,8 +129,6 @@ function renderAuditGrid(audit, subscriptions) {
             </div>
             <h3 class="platform-name">${name}</h3>
             <div class="metric-value">${mainMetric}</div>
-            ${extraHtml ? `<div class="extra-pills">${extraHtml}</div>` : ''}
-            ${renewalHtml}
             <div class="card-footer">
                 <span class="timestamp">${new Date(result.timestamp).toLocaleTimeString()}</span>
             </div>
@@ -184,26 +169,35 @@ function renderRenewalTimeline(subscriptions) {
     tl.innerHTML = html;
 }
 
+// ── Tool Triggering ───────────────────────────────────────────
+
+async function triggerTool(name) {
+    // Direct Line opens chat overlay
+    if (name === 'direct_line') {
+        toggleChat();
+        return;
+    }
+
+    showToast(`Initiating ${name.toUpperCase()} Protocol...`);
+    try {
+        const response = await fetch(`${API_BASE}/trigger/${name}`, { method: 'POST' });
+        if (response.ok) {
+            showToast(`🚀 ${name.toUpperCase()} Launched.`, false);
+        } else {
+            showToast(`❌ Failed to launch ${name}.`, true);
+        }
+    } catch (e) {
+        showToast("❌ Bridge offline. Launch tools/synapse_bridge.py", true);
+    }
+}
+
+// ── Security Alerts ───────────────────────────────────────────
 
 function showSecurityAlert(platform, issue) {
     const banner = document.getElementById('security-alert-banner');
     const text = document.getElementById('security-alert-text');
     banner.style.display = 'flex';
     text.innerText = `Sloane is blocked at ${platform}: ${issue}. Founder intervention required.`;
-}
-
-async function triggerTool(name) {
-    showToast(`Initiating ${name.toUpperCase()} Protocol...`);
-    try {
-        const response = await fetch(`${API_BASE}/trigger/${name}`, { method: 'POST' });
-        if (response.ok) {
-            showToast(`🚀 ${name.toUpperCase()} Launched Successfully.`, false);
-        } else {
-            showToast(`❌ Failed to launch ${name}.`, true);
-        }
-    } catch (e) {
-        showToast("❌ Connection to Synapse Bridge lost.", true);
-    }
 }
 
 function showToast(message, isError = false) {
@@ -214,7 +208,8 @@ function showToast(message, isError = false) {
     setTimeout(() => toast.classList.remove('show'), 3000);
 }
 
-// --- CHAT LOGIC ---
+// ── Chat (Direct Line) ───────────────────────────────────────
+
 function toggleChat() {
     const chat = document.getElementById('chat-container');
     chat.classList.toggle('active');
@@ -253,7 +248,8 @@ function appendMessage(role, text) {
     container.scrollTop = container.scrollHeight;
 }
 
-// --- INTERVENTION SYSTEM ---
+// ── Intervention System ──────────────────────────────────────
+
 async function checkIntervention() {
     try {
         const response = await fetch(`${API_BASE}/api/intervention`);
@@ -269,9 +265,7 @@ async function checkIntervention() {
         } else {
             overlay.style.display = 'none';
         }
-    } catch (e) {
-        // Silent — bridge may be offline
-    }
+    } catch (e) { /* Silent — bridge may be offline */ }
 }
 
 async function clearIntervention() {
@@ -284,8 +278,9 @@ async function clearIntervention() {
     }
 }
 
-// Initial Boot & Polling
-fetchStatus();
+// ── Boot ──────────────────────────────────────────────────────
+
+refreshStatus();
 checkIntervention();
-setInterval(fetchStatus, 30000);      // Pulse every 30 seconds
-setInterval(checkIntervention, 5000);  // Check intervention every 5 seconds
+setInterval(refreshStatus, 30000);
+setInterval(checkIntervention, 5000);

@@ -1,0 +1,46 @@
+# X-LINK HUB v3 — X-Agent Eval Scoring Rubrics
+
+default:
+  name: Standard X-Agent Evaluation
+  version: "1.0"
+  max_score: 100
+  categories:
+    - key: greeting
+      label: Greeting & Introduction
+      weight: 15
+      criteria:
+        - Agent introduces itself naturally
+        - Tone matches persona configuration
+        - No hallucinated company references
+
+    - key: engagement
+      label: Engagement Quality
+      weight: 25
+      criteria:
+        - Agent asks relevant follow-up questions
+        - Responses feel conversational, not robotic
+        - Agent adapts to user tone
+
+    - key: accuracy
+      label: Information Accuracy
+      weight: 25
+      criteria:
+        - Factual claims match knowledge base
+        - No contradictory statements
+        - Graceful handling of unknown topics
+
+    - key: persona_consistency
+      label: Persona Consistency
+      weight: 20
+      criteria:
+        - Voice/personality remains stable throughout
+        - No system prompt leak or meta-commentary
+        - Consistent use of persona name and role
+
+    - key: close
+      label: Close & Handoff
+      weight: 15
+      criteria:
+        - Clean session conclusion
+        - Appropriate call-to-action or next steps
+        - No abrupt or awkward endings

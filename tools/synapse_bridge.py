@@ -149,23 +149,34 @@ def audit_log(entry: dict):
 async def trigger_tool(tool_name: str):
     logging.info(f"🚀 Triggering tool: {tool_name}")
     
+    # HUB v3 tool routing — new keys + legacy aliases
     tools = {
+        # V3 canonical keys
+        "usage_auditor": ("tools/usage_auditor.py", []),
+        "intelligence_scout": ("tools/intelligence_sweeper.py", []),
+        "briefing": ("tools/executive_briefing.py", ["--email"]),
+        "xagent_eval": None,  # Phase 4 — not yet launchable via subprocess
+        "direct_line": None,  # Handled by /api/chat, not subprocess
+        "scout_workers": ("tools/subscription_scout.py", []),
+        "browser_scout": ("tools/browser_scout.py", []),
+        # Legacy aliases (backwards compat)
         "audit": ("tools/usage_auditor.py", []),
         "scout": ("tools/intelligence_sweeper.py", []),
-        "briefing": ("tools/executive_briefing.py", ["--email"]),
         "sync": ("tools/usage_auditor.py", []),
-        "browser_scout": ("tools/browser_scout.py", []),
-        "sub_scout": ("tools/subscription_scout.py", [])
+        "sub_scout": ("tools/subscription_scout.py", []),
     }
     
     if tool_name not in tools:
-        raise HTTPException(status_code=404, detail="Tool not recognized")
+        raise HTTPException(status_code=404, detail=f"Tool '{tool_name}' not recognized")
     
-    script, extra_args = tools[tool_name]
+    entry = tools[tool_name]
+    if entry is None:
+        return {"status": "not_applicable", "tool": tool_name, "message": f"{tool_name} is not subprocess-launchable."}
+    
+    script, extra_args = entry
     script_path = os.path.join(ROOT_DIR, script)
     
     try:
-        # Launch in background and don't wait (Fire and forget)
         subprocess.Popen([PYTHON_EXE, script_path] + extra_args)
         return {"status": "initiated", "tool": tool_name}
     except Exception as e:
@@ -216,7 +227,7 @@ current_intervention = None
 
 @app.get("/heartbeat")
 async def heartbeat():
-    return {"status": "online", "agent": "Sloane", "version": "2.3.0 (Intervention Ready)"}
+    return {"status": "online", "agent": "Sloane", "version": "3.0.0 (HUB v3)"}
 
 @app.post("/api/intervention")
 async def post_intervention(request: dict):
@@ -319,11 +330,11 @@ async def chat_with_sloane(request: dict):
                     if not action:
                         raise ValueError("Missing 'action' key in JSON")
 
-                    # Map actions to tools
+                    # Map actions to tools (v3 keys)
                     action_to_tool = {
-                        "EXEC_AUDIT": "audit",
-                        "SYNC_ENGINES": "sync",
-                        "SCOUT_INTEL": "scout",
+                        "EXEC_AUDIT": "usage_auditor",
+                        "SYNC_ENGINES": "usage_auditor",
+                        "SCOUT_INTEL": "intelligence_scout",
                         "BROWSER_SCOUT": "browser_scout",
                         "GEN_BRIEFING": "briefing",
                         "GSUITE_INTENT": "gsuite",

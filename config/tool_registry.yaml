@@ -1,0 +1,97 @@
+# X-LINK HUB v3 — Tool Registry
+# Maps tool keys to modules, schemas, and runtime dependencies.
+
+tools:
+  direct_line:
+    module: tools.direct_line.tool
+    class: DirectLineTool
+    description: Freeform conversational command lane to Sloane
+    runtime_deps: [ollama]
+    artifact_path: vault/sessions/
+    inputs:
+      message:
+        type: string
+        required: true
+
+  usage_auditor:
+    module: tools.usage_auditor.tool
+    class: UsageAuditorTool
+    description: Inspect usage/billing across platform targets
+    runtime_deps: [browser]
+    artifact_path: vault/reports/
+    config_file: config/usage_targets.yaml
+    inputs:
+      targets:
+        type: list
+        required: false
+        description: Optional subset of platform targets to audit
+
+  intelligence_scout:
+    module: tools.intelligence_scout.tool
+    class: IntelligenceScoutTool
+    description: Research, gather, compare, and synthesize intelligence
+    runtime_deps: [ollama, keep_api]
+    artifact_path: vault/intel/
+    inputs:
+      query:
+        type: string
+        required: false
+      source:
+        type: string
+        required: false
+        enum: [keep_md, browser, manual]
+
+  xagent_eval:
+    module: tools.xagent_eval.tool
+    class: XAgentEvalTool
+    description: Automated X Agent test sessions, scoring, and review packets
+    runtime_deps: [browser]
+    artifact_path: vault/evals/runs/
+    config_file: config/scoring_rubrics.yaml
+    inputs:
+      target_agent:
+        type: string
+        required: true
+      environment:
+        type: string
+        required: false
+        default: production
+      scenario_pack:
+        type: string
+        required: false
+        default: default
+      difficulty:
+        type: string
+        required: false
+        enum: [easy, medium, hard]
+        default: medium
+      runs:
+        type: integer
+        required: false
+        default: 3
+      transcript_mode:
+        type: string
+        required: false
+        enum: [full, summary]
+        default: full
+      scoring_rubric:
+        type: string
+        required: false
+        default: default
+
+  briefing:
+    module: tools.briefing.tool
+    class: BriefingTool
+    description: Transform tool outputs into executive summaries
+    runtime_deps: [ollama]
+    artifact_path: vault/reports/
+    inputs:
+      source_tools:
+        type: list
+        required: false
+        description: Tools whose outputs to summarize
+      format:
+        type: string
+        required: false
+        enum: [email, markdown, json]
+        default: markdown
