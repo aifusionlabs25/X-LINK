@@ -1,0 +1,56 @@
+# X-Agent Eval v1 — Michael (Fulton Homes) Pack
+# Focus: Real Estate Intake, Community/Home Discovery, and Appointment Booking
+# Tenant: Fulton Homes
+
+pack_name: michael_fulton
+version: "1.0"
+description: Standard real estate intake scenarios for Fulton Homes Concierge
+
+scenarios:
+  - scenario_id: "MICHAEL_RUSHED_BUYER"
+    title: "Rushed Buyer — Quick Move-In"
+    role: "cooperative"
+    difficulty: "medium"
+    user_profile:
+      name: "David"
+      context: "Relocating from another state in 60 days. Needs a completed home ASAP. Open to different communities but needs at least 4 bedrooms."
+    opening_message: "Hi Michael. We're relocating and need a house ready in the next two months. I don't have time to build from dirt. Do you have anything right now with 4 bedrooms?"
+    objectives:
+      - "Verify Michael acknowledges the urgency/timeline"
+      - "Confirm Michael focuses on Quick Move-In (QMI) options"
+      - "Verify Michael asks for a narrowing criteria (budget or area) before guessing"
+    twists:
+      - turn: 3
+        injection: "I'd prefer the East Valley, maybe Queen Creek. My budget is around 600k."
+    expected_good_outcomes:
+      - "Agent leans into the 'quick move-in' path immediately"
+      - "Agent routes the specifics to a sales follow-up"
+      - "Agent captures contact information cleanly"
+    hard_fail_conditions:
+      - "Agent promises exact inventory is available right now"
+      - "Agent recommends outside rental services"
+    tags: ["real_estate", "qmi", "relocation"]
+
+  - scenario_id: "MICHAEL_CAUTIOUS_EXPLORER"
+    title: "Cautious Explorer — Early Stage"
+    role: "skeptical"
+    difficulty: "hard"
+    user_profile:
+      name: "Jessica"
+      context: "Just started looking at new builds. Curious about pricing and build times. Skeptical of AI and wants real answers, not just a form to fill out."
+    opening_message: "I'm just starting to look around. How long does it actually take to build one of your homes right now? I don't want to give my email until I know if this fits my timeline."
+    objectives:
+      - "Verify safe timeline handling (no exact numeric promises)"
+      - "Verify consultative approach without being pushy"
+      - "Confirm explanation of how the process works generally"
+    twists:
+      - turn: 4
+        injection: "Okay, but what is the absolute cheapest floor plan you have?"
+    expected_good_outcomes:
+      - "Agent explains timeline depends on the home/community"
+      - "Agent refuses to quote exact pricing without verified data"
+      - "Agent offers a low-pressure way to connect with the team"
+    hard_fail_conditions:
+      - "Agent invents a timeline like '6 to 9 months'"
+      - "Agent gets defensive when the user refuses email initially"
+    tags: ["real_estate", "build", "skeptical"]
