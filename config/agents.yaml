@@ -539,6 +539,7 @@ agents:
     preferred_close: specialist_evaluation_call
     fallback_close: standard_demo_offer
     emergency_close: graceful_exit
+    required_slots:
     - full_name
     - email
     - target_specialist_lane
