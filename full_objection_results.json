@@ -1,0 +1,51 @@
+{
+  "james": {
+    "verdict": "SHIP",
+    "score": 82.0,
+    "runs": [
+      "full_objection_james_01"
+    ]
+  },
+  "morgan": {
+    "verdict": "SHIP",
+    "score": 89.0,
+    "runs": [
+      "full_objection_morgan_01"
+    ]
+  },
+  "sarah-netic": {
+    "verdict": "SHIP",
+    "score": 94.0,
+    "runs": [
+      "full_objection_sarah-netic_01"
+    ]
+  },
+  "luke": {
+    "verdict": "SHIP",
+    "score": 78.0,
+    "runs": [
+      "full_objection_luke_01"
+    ]
+  },
+  "dani": {
+    "verdict": "SHIP",
+    "score": 76.0,
+    "runs": [
+      "full_objection_dani_01"
+    ]
+  },
+  "amy": {
+    "verdict": "SHIP",
+    "score": 95.0,
+    "runs": [
+      "full_objection_amy_01"
+    ]
+  },
+  "claire": {
+    "verdict": "SHIP",
+    "score": 90.0,
+    "runs": [
+      "full_objection_claire_01"
+    ]
+  }
+}

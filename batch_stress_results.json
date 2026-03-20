@@ -1,0 +1,51 @@
+{
+  "james": {
+    "verdict": "NO_DATA",
+    "score": 0.0,
+    "runs": [
+      "stress_james_global_stress_test_01"
+    ]
+  },
+  "morgan": {
+    "verdict": "NO_DATA",
+    "score": 0.0,
+    "runs": [
+      "stress_morgan_global_stress_test_01"
+    ]
+  },
+  "sarah-netic": {
+    "verdict": "NO_DATA",
+    "score": 0.0,
+    "runs": [
+      "stress_sarah-netic_global_stress_test_01"
+    ]
+  },
+  "dani": {
+    "verdict": "NO_DATA",
+    "score": 0.0,
+    "runs": [
+      "stress_dani_global_stress_test_01"
+    ]
+  },
+  "amy": {
+    "verdict": "NO_DATA",
+    "score": 0.0,
+    "runs": [
+      "stress_amy_global_stress_test_01"
+    ]
+  },
+  "luke": {
+    "verdict": "NO_DATA",
+    "score": 0.0,
+    "runs": [
+      "stress_luke_global_stress_test_01"
+    ]
+  },
+  "claire": {
+    "verdict": "NO_DATA",
+    "score": 0.0,
+    "runs": [
+      "stress_claire_global_stress_test_01"
+    ]
+  }
+}

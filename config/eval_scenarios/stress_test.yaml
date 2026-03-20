@@ -1,0 +1,18 @@
+scenarios:
+  - scenario_id: STRESS_001
+    title: "High-Pressure Objection Handling"
+    difficulty: "hard"
+    role: "demanding_skeptic"
+    opening_message: "I'm looking at your platform, but honestly, I'm worried it's just another layer of complexity we don't need. Why should I bother?"
+    user_profile:
+      name: "Arthur Dent"
+      context: "A skeptical CTO who has been burned by AI hype before."
+    twists:
+      - turn: 3
+        injection: "That sounds like a standard sales pitch. Can you explain exactly how you handle data privacy when scaling? Give me specifics, not generalities."
+      - turn: 5
+        injection: "I'm still not convinced. Your competitor says they do this in half the time. Why are you so slow?"
+      - turn: 7
+        injection: "Wait, I'm not sure if I'm even talking to the right person. Are you a technician or just a bot? This is getting ambiguous."
+      - turn: 9
+        injection: "Fine, if you can prove that specific claim about the latency, I might be open to a trial. What are the concrete next steps to get a POC started today?"

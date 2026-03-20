@@ -1,0 +1,55 @@
+# X-Agent Eval v1 — Taylor Generic SDR Pack
+# Focus: Discovery, Qualification, and Routing
+# Tenant: Canyon Ridge Solutions
+
+pack_name: taylor_generic_sdr
+version: "1.0"
+description: Standard SDR discovery and routing scenarios for Canyon Ridge Solutions
+
+scenarios:
+  - scenario_id: "TAYLOR_RUSHED_OPERATOR"
+    title: "Rushed Operator — Immediate Need"
+    role: "owner_operator"
+    difficulty: "medium"
+    user_profile:
+      name: "Mark"
+      context: "Owner of a busy HVAC shop. High lead volume but low conversion because his team takes 2 days to call people back. He's in a rush."
+    opening_message: "Hey Taylor. I'm Mark. We're losing thousands of dollars because my front office is slow on follow-up. Do you just handle the calls or can you actually route them to my guys in the field?"
+    objectives:
+      - "Verify Taylor identifies the primary pain (slow follow-up/routing)"
+      - "Confirm Taylor qualifies urgency"
+      - "Verify capture of email for follow-up"
+    twists:
+      - turn: 3
+        injection: "I've only got a minute. Just tell me if you integrate with ServiceTitan."
+    expected_good_outcomes:
+      - "Agent acknowledges the speed-to-lead pain"
+      - "Agent routes technical integration talk to the specialized 'Automation' lane"
+      - "Agent moves toward a short evaluation call with two time options"
+    hard_fail_conditions:
+      - "Agent tries to explain exact technical implementation of ServiceTitan"
+      - "Agent fails to ask for contact details before the user disconnects"
+    tags: ["sdr", "rushed", "routing"]
+
+  - scenario_id: "TAYLOR_SKEPTICAL_EXEC"
+    title: "Skeptical Executive — ROI Focus"
+    role: "ops_lead"
+    difficulty: "hard"
+    user_profile:
+      name: "Sarah"
+      context: "Head of RevOps for a mid-market manufacturing firm. Skeptical of AI 'chatbots'. Wants to know about qualified lead reporting."
+    opening_message: "We've seen plenty of these AI assistants. Most of them just frustrate our customers. How do you ensure the leads you hand off are actually qualified?"
+    objectives:
+      - "Verify consultative positioning (workflow vs chatbot)"
+      - "Confirm explanation of 'qualified lead reporting'"
+    twists:
+      - turn: 4
+        injection: "What's the typical implementation timeline for a custom routing flow? I don't want to sign up for a six-month project."
+    expected_good_outcomes:
+      - "Agent uses 'done-for-you intake' and 'qualified lead reporting' terminology"
+      - "Agent refuses to anchor a specific implementation timeline"
+      - "Agent clarifies they are a demo assistant when pressed for internal policy"
+    hard_fail_conditions:
+      - "Agent promises a specific launch date (e.g., 'two weeks')"
+      - "Agent gets defensive about the 'chatbot' label"
+    tags: ["sdr", "skeptical", "reporting"]

@@ -1,0 +1,25 @@
+scenarios:
+  - scenario_id: "SARAH_PRICE_SKEPTIC"
+    title: "Pricing vs Answering Service"
+    difficulty: "hard"
+    role: "frugal_business_owner"
+    context: "A user comparing Netic to a cheap $100/mo call center."
+    goal: "Get Sarah to defend why Netic is more expensive and better than a human answering service."
+    opening_message: "I already have an answering service in the Philippines that costs me a hundred bucks a month. Why would I switch to you guys for five times that?"
+    user_profile:
+      name: "Dave"
+      archetype: "service_business_owner"
+    twists:
+      - turn: 5
+        injection: "But the humans can also transfer the call to me. Can your AI do that? It sounds like it just 'captures' and I still have to do the work."
+
+  - scenario_id: "SARAH_TRUST_DEFICIT"
+    title: "The AI Trust Deficit"
+    difficulty: "hard"
+    role: "traditionalist"
+    context: "A user who hates AI and thinks it's going to annoy their customers."
+    goal: "Force Sarah to admit that 'some customers will be annoyed by the AI'."
+    opening_message: "I don't like talking to robots and I don't think my customers do either. They want to talk to a person when their pipe is leaking. Isn't this just going to drive them to my competitor?"
+    user_profile:
+      name: "Old School Pete"
+      archetype: "service_business_owner"

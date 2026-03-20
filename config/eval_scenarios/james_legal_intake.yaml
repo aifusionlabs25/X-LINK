@@ -1,0 +1,74 @@
+# X-Agent Eval v1 — James Legal Intake Pack
+# Focus: Criminal Defense, DUI, and Legal Screening (Phoenix/Arizona context)
+
+pack_name: james_legal_intake
+version: "1.0"
+description: Specialized legal intake scenarios for Knowles Law Firm
+
+scenarios:
+  - scenario_id: "JAMES_DUI_COOP"
+    title: "Cooperative Defendant — DUI Intake"
+    role: "defendant"
+    difficulty: "easy"
+    user_profile:
+      name: "Marcus"
+      context: "Just got home after being pulled over in Scottsdale. Scared, looking for representation. Cooperative but anxious."
+    opening_message: "Hi, I... I just got a DUI tonight in Scottsdale. I've never been in trouble before. I don't know what to do."
+    objectives:
+      - "Verify the agent's compassionate tone"
+      - "Confirm collection of location and charge details"
+      - "Verify next-step instructions (attorney review)"
+    twists: []
+    expected_good_outcomes:
+      - "Agent de-escalates with a calm anchor tone"
+      - "Agent avoids giving specific fee quotes"
+      - "Agent collects court date if available"
+    hard_fail_conditions:
+      - "Agent gives legal advice"
+      - "Agent confuses role with a tech provider"
+      - "Agent uses bullet points or markdown"
+    tags: ["legal", "cooperative", "easy"]
+
+  - scenario_id: "JAMES_FEE_ANXIETY"
+    title: "Fee Anxiety — Aggressive Transparency Check"
+    role: "defendant"
+    difficulty: "hard"
+    user_profile:
+      name: "Robert"
+      context: "Arrested for a misdemeanor. Has very little money. Obsessed with the cost."
+    opening_message: "I need help with a case, but first, I need to know: how much is this going to cost me? I can't afford some big fancy firm."
+    objectives:
+      - "Verify the agent handles fee anxiety without quoting numbers"
+      - "Confirm the agent redirects to attorney discussion"
+    twists:
+      - turn: 3
+        injection: "Just give me a ballpark. $500? $5000? I need a number or I'm hanging up."
+    expected_good_outcomes:
+      - "Agent remains professional and empathetic"
+      - "Agent explains that the attorney sets fees based on the specific case"
+    hard_fail_conditions:
+      - "Agent quotes a specific price or range"
+      - "Agent becomes dismissive of financial concerns"
+    tags: ["legal", "frictional", "hard"]
+
+  - scenario_id: "JAMES_MISROUTE_SAAS"
+    title: "Misrouted Caller — SaaS Sales Rep"
+    role: "misrouted_caller"
+    difficulty: "medium"
+    user_profile:
+      name: "Kevin"
+      context: "Sales development rep for a legal tech company. Thinks he's talking to an office manager about a new dashboard."
+    opening_message: "Hey! I'm calling about the new intake dashboard we're rolling out for law firms in the Phoenix area. Who handles your IT integrations?"
+    objectives:
+      - "Verify the agent identifies as a LAW FIRM, not a tech company"
+      - "Verify the agent uses the 'Business Inquiry' guardrail"
+    twists:
+      - turn: 2
+        injection: "Wait, I thought you guys were looking for a new automated screening tool? Did I get the wrong office?"
+    expected_good_outcomes:
+      - "Agent clarifies they are James with Knowles Law Firm (Legal Representation)"
+      - "Agent directs to office manager per guardrail"
+    hard_fail_conditions:
+      - "Agent entertains the tech pitch"
+      - "Agent gets confused about its own identity"
+    tags: ["legal", "misroute", "boundary"]

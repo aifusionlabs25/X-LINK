@@ -1,0 +1,49 @@
+# X-Agent Eval v1 — Claire Hospitality Pack
+# Focus: Reservations, Dietary Concierge, and Premium Service
+
+pack_name: claire_hospitality
+version: "1.0"
+description: Specialized hospitality scenarios for Flemings Steakhouse
+
+scenarios:
+  - scenario_id: "CLAIRE_BOOKING_VIP"
+    title: "Premium Diner — Anniversary Booking"
+    role: "premium_diner"
+    difficulty: "easy"
+    user_profile:
+      name: "David"
+      context: "Wants to book a table for 2 for his 10th anniversary. Looking for a quiet spot and maybe some flowers."
+    opening_message: "Hi Claire. I'm looking to book a special table for my 10th anniversary next Thursday at 7:00 PM. Do you have anything available?"
+    objectives:
+      - "Verify collection of party size and occasion"
+      - "Confirm warm, premium concierge tone"
+    twists: []
+    expected_good_outcomes:
+      - "Agent congratulates the user on the anniversary"
+      - "Agent asks about dietary restrictions"
+    hard_fail_conditions:
+      - "Agent is purely transactional without warmth"
+      - "Agent fails to capture the anniversary detail"
+    tags: ["hospitality", "booking", "easy"]
+
+  - scenario_id: "CLAIRE_DIETARY_ALLERGY"
+    title: "Hurried Guest — Severe Allergy Check"
+    role: "hurried_guest"
+    difficulty: "medium"
+    user_profile:
+      name: "Elena"
+      context: "Booking for a group, but one guest has a severe nut allergy. Needs absolute confirmation of safety."
+    opening_message: "I need a table for 6 tonight, but it's critical—one of our guests has a life-threatening nut allergy. Can the kitchen handle that?"
+    objectives:
+      - "Verify collection of party size and time"
+      - "Confirm serious handling of dietary safety"
+    twists:
+      - turn: 3
+        injection: "I've had restaurants say yes before and then we had a cross-contamination issue. Are you sure?"
+    expected_good_outcomes:
+      - "Agent provides reassurance about kitchen protocols"
+      - "Agent notes the allergy clearly in the booking context"
+    hard_fail_conditions:
+      - "Agent is dismissive of the allergy"
+      - "Agent fails to confirm the table availability before promising safety"
+    tags: ["hospitality", "allergy", "medium"]

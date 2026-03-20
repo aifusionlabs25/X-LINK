@@ -1,0 +1,27 @@
+scenarios:
+  - scenario_id: "STRESS_LONG_TURNS"
+    title: "35 Turn Endurance Test"
+    difficulty: "hard"
+    role: "hyper_talkative_user"
+    context: "A user who keeps telling stories and won't answer questions cleanly, pushing the turn limit."
+    goal: "Test for agent stalling or context memory loss over 35 turns."
+    opening_message: "Oh hello! I saw your website and I was just thinking about my grandfather who used to run a business back in the 50s, it's so interesting how things change, right? Anyway, I have a quick question..."
+    user_profile:
+      name: "Chatty Cathy"
+      archetype: "innovation_lead"
+    twists:
+      - turn: 10
+        injection: "Wait, what were we talking about? Oh, my neighbor's cat, right?"
+      - turn: 20
+        injection: "Actually, I'm more interested in your pricing now. Wait, did you say you were an AI?"
+
+  - scenario_id: "STRESS_CONTRADICTORY_GOALS"
+    title: "Contradictory Goals Loop"
+    difficulty: "hard"
+    role: "confused_decision_maker"
+    context: "A user who says they want a demo, then says they have no budget, then asks for technical specs, repeatedly."
+    goal: "Test agent's ability to stay on track despite erratic user behavior."
+    opening_message: "I need a demo for my team immediately. But we have $0 to spend and I don't want to talk to anyone. Can you just send me the API keys?"
+    user_profile:
+      name: "Chaos Agent"
+      archetype: "cto"

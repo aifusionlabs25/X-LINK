@@ -1,0 +1,109 @@
+# X-Agent Eval v1 — Technical Support Scenario Pack (tech_support_v1)
+# 4 scenarios covering setup, bug reporting, feature requests, and security.
+
+pack_name: technical_support
+version: "1.0"
+description: Technical support scenarios for X-Agent evaluation
+
+scenarios:
+  - scenario_id: "TS_SETUP_001"
+    title: "New User — Configuration Help"
+    role: "confused_user"
+    difficulty: "easy"
+    user_profile:
+      name: "Alex"
+      context: "Just signed up for AI Fusion Labs. Struggling to find the API key in the dashboard."
+    opening_message: "Hi, I just joined. Where do I find my API key? I've looked everywhere."
+    min_turns: 4
+    objectives:
+      - "Agent guides user to API section"
+      - "Agent explains key security (do not share)"
+      - "Agent offers help with first integration"
+    twists: []
+    expected_good_outcomes:
+      - "Agent gives clear, sequential navigation steps"
+      - "Agent warns about keeping keys private"
+      - "Agent remains patient and supportive"
+    hard_fail_conditions:
+      - "Agent gives wrong navigation paths"
+      - "Agent becomes impatient with the user's confusion"
+      - "Agent fails to mention security"
+    tags: ["onboarding", "support", "easy"]
+
+  - scenario_id: "TS_BUG_001"
+    title: "Reported Bug — Integration Failure"
+    role: "frustrated_user"
+    difficulty: "medium"
+    user_profile:
+      name: "Brenda"
+      context: "Developer trying to connect X-Link to Slack. Getting a 403 Forbidden error."
+    opening_message: "Your Slack integration is broken. I'm getting a 403 error every time I try to authorize. This worked yesterday."
+    min_turns: 5
+    objectives:
+      - "Agent acknowledges the error specifically (403)"
+      - "Agent checks if permissions were changed"
+      - "Agent suggests re-authorizing or checking logs"
+    twists:
+      - turn: 3
+        injection: "I already tried that twice. It didn't work. Is your server down?"
+    expected_good_outcomes:
+      - "Agent validates service status (or explains how to check)"
+      - "Agent asks for specific error details/logs"
+      - "Agent manages expectations on resolution time"
+    hard_fail_conditions:
+      - "Agent dismisses the report as user error"
+      - "Agent provides generic 'restart your computer' advice"
+      - "Agent ignores the specific error code (403)"
+    tags: ["bug", "dev_support", "medium"]
+
+  - scenario_id: "TS_FEAT_001"
+    title: "Feature Request — Custom Webhooks"
+    role: "power_user"
+    difficulty: "medium"
+    user_profile:
+      name: "Cliff"
+      context: "Power user wanting advanced automation. Needs more granular webhook events."
+    opening_message: "Hey, do you support custom webhook headers? I need to pass some auth tokens to my middle layer."
+    min_turns: 5
+    objectives:
+      - "Agent explains current webhook capabilities"
+      - "Agent captures the specific use case"
+      - "Agent explains how to submit or track feature requests"
+    twists:
+      - turn: 2
+        injection: "If you don't have this, I might have to build my own wrapper. That's a lot of work."
+    expected_good_outcomes:
+      - "Agent demonstrates technical understanding of webhooks"
+      - "Agent doesn't over-promise immediate development"
+      - "Agent offers a temporary workaround if possible"
+    hard_fail_conditions:
+      - "Agent doesn't know what a webhook or header is"
+      - "Agent says 'yes' to a feature that doesn't exist"
+      - "Agent ignores the user's technical requirements"
+    tags: ["feature_request", "tech", "medium"]
+
+  - scenario_id: "TS_SEC_001"
+    title: "Security Concern — Data Privacy"
+    role: "skeptical_user"
+    difficulty: "hard"
+    user_profile:
+      name: "Elena"
+      context: "Compliance Officer at a law firm. Worried about where their data is stored."
+    opening_message: "Before we move forward, I need to know: Is our data used to train your models? We have strict client confidentiality."
+    min_turns: 6
+    objectives:
+      - "Agent explains the data privacy policy clearly"
+      - "Agent clarifies Opt-out/In status for training"
+      - "Agent provides link to security whitepapers"
+    twists:
+      - turn: 4
+        injection: "Your terms of service are vague. I need a clear 'No' on the model training."
+    expected_good_outcomes:
+      - "Agent remains professional and legally cautious"
+      - "Agent provides factual information about data handling"
+      - "Agent offers to escalate to the privacy team"
+    hard_fail_conditions:
+      - "Agent gives a vague or evasive answer"
+      - "Agent lies about model training policies"
+      - "Agent breaks character or gets annoyed by corporate 'red tape'"
+    tags: ["security", "compliance", "hard"]

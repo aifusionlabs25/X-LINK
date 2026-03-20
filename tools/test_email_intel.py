@@ -33,7 +33,7 @@ async def test_classification(test_cases):
         
         try:
             response = requests.post(OLLAMA_URL, json={
-                "model": "llama3.2",
+                "model": "qwen3-coder-next",
                 "prompt": prompt,
                 "stream": False,
                 "format": "json"

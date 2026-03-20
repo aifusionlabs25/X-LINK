@@ -18,10 +18,10 @@ logger = logging.getLogger("scout.synthesis")
 KEEP_API_KEY = os.getenv("KEEP_MD_API_KEY")
 KEEP_API_BASE = "https://keep.md"
 OLLAMA_URL = "http://127.0.0.1:11434/api/generate"
-MODEL = "llama3.2"
+MODEL = "qwen3-coder-next"
 
-ASTRID_PROMPT = (
-    "You are Astrid, the Chief of Staff. Read the following markdown data that the Founder saved via Keep.md. "
+SLOANE_PROMPT = (
+    "You are Sloane, the Chief of Staff. Read the following markdown data that the Founder saved via Keep.md. "
     "Write a 2-sentence executive summary of its core value, and list 1 potential business opportunity "
     "it presents for our AI agency. Output must be concise and professional."
 )
@@ -47,18 +47,26 @@ def fetch_keep_item():
         return None
 
 
+OLLAMA_URL = "http://127.0.0.1:11434/api/chat"
+
 def analyze_with_ollama(content: str, prompt: str = None) -> str:
-    """Send content to local Ollama for analysis."""
-    prompt = prompt or ASTRID_PROMPT
+    """Send content to local Ollama for analysis using the Chat API."""
+    system_instruction = prompt or SLOANE_PROMPT
     payload = {
         "model": MODEL,
-        "prompt": f"{prompt}\n\nData:\n{content}\n\nAnalysis:\n",
+        "messages": [
+            {"role": "system", "content": system_instruction.strip()},
+            {"role": "user", "content": f"[RAW DATA FOR ANALYSIS]\n{content}\n\n[COMMAND]\nProvide the 2-sentence summary and 1 business opportunity now."}
+        ],
         "stream": False,
+        "options": {
+            "temperature": 0.3
+        }
     }
     try:
         response = requests.post(OLLAMA_URL, json=payload, timeout=300)
         response.raise_for_status()
-        return response.json().get("response", "").strip()
+        return response.json().get("message", {}).get("content", "").strip()
     except Exception as e:
         logger.error(f"Ollama analysis failed: {e}")
         return ""

@@ -3,7 +3,7 @@
  * Config-driven menu, explicit tool routing, separated status layer.
  */
 
-const API_BASE = "http://127.0.0.1:5001";
+const API_BASE = "";
 
 // ── Status Polling ────────────────────────────────────────────
 
@@ -19,6 +19,45 @@ async function refreshStatus() {
         setBridgeStatus(false);
     }
 }
+
+// ── Workspace Routing ───────────────────────────────────────────
+
+async function switchWorkspace(id) {
+    console.log(`[Hub] Switching workspace to: ${id}`);
+    
+    // Toggle Workspace Panes
+    document.querySelectorAll('.workspace-pane').forEach(pane => {
+        pane.classList.remove('active');
+        pane.style.display = 'none';
+    });
+
+    const targetId = (id === 'dojo') ? 'workspace-dojo' : 'workspace-desk';
+    const target = document.getElementById(targetId);
+    if (target) {
+        target.classList.add('active');
+        target.style.display = 'block';
+    }
+
+    // Toggle Sidebar Active State
+    document.querySelectorAll('.sidebar-item').forEach(item => {
+        item.classList.remove('active-tool');
+    });
+    const sideItem = document.getElementById(`side-${id}`);
+    if (sideItem) sideItem.classList.add('active-tool');
+
+    // Run-specific logic
+    if (id === 'dojo') {
+        if (typeof initDojo === 'function') {
+            await initDojo();
+        }
+    } else if (id === 'direct_line') {
+        toggleChat();
+    } else {
+        // Trigger generic backend tools (Usage Auditor, Scout)
+        triggerTool(id);
+    }
+}
+window.switchWorkspace = switchWorkspace;
 
 function setBridgeStatus(online) {
     const text = document.getElementById('bridge-status-text');
@@ -56,6 +95,9 @@ function updateUI(data) {
             updateDept("sales", depts.sales);
             updateDept("ops", depts.ops);
         }
+        if (briefing.sloane.agent_evals) {
+            renderEvalGrid(briefing.sloane.agent_evals);
+        }
     }
 
     // Audit Grid
@@ -63,7 +105,62 @@ function updateUI(data) {
 
     // Renewal Timeline
     if (subscriptions) renderRenewalTimeline(subscriptions);
+
+    // Agent Sync Metadata
+    if (data.agents) {
+        window.agents_metadata = data.agents;
+        updateAgentSyncUI(data.agents);
+    }
 }
+
+function updateAgentSyncUI(agents) {
+    // This could update the Dojo agent select or a separate status panel
+    const select = document.getElementById('dojo-agent-select');
+    if (!select) return;
+
+    // We can add the last sync time to the options or a separate tooltip
+    agents.forEach(a => {
+        const option = Array.from(select.options).find(o => o.value === a.slug);
+        if (option && a.last_synced) {
+            const date = new Date(a.last_synced).toLocaleString([], {month: 'short', day: 'numeric', hour: '2-digit', minute:'2-digit'});
+            option.innerText = `${a.name} (Synced ${date})`;
+        }
+    });
+}
+
+function renderEvalGrid(evals) {
+    const grid = document.getElementById('briefing-evals-grid');
+    if (!grid) return;
+    
+    grid.innerHTML = evals.map(e => {
+        const v = e.verdict || 'N/A';
+        const verdictClass = v === 'SHIP' ? 'verdict-ship' : (v === 'NO-SHIP' ? 'verdict-no-ship' : 'verdict-na');
+        const score = Math.round(e.score);
+        return `
+            <div class="eval-mini-card" onclick="switchToEval('${e.batch_id}')" style="cursor: pointer;">
+                <div class="eval-agent-name">${e.agent}</div>
+                <div class="eval-stats">
+                    <div class="eval-score">${score}</div>
+                    <div class="eval-verdict ${verdictClass}">${v}</div>
+                </div>
+                <div class="eval-count">${e.tests} tests combined</div>
+            </div>
+        `;
+    }).join('');
+}
+
+function switchToEval(batchId) {
+    if (!batchId) return;
+    switchWorkspace('dojo');
+    // We assume dojo.js is loaded and these are global
+    if (typeof loadBatchResults === 'function') {
+        loadBatchResults(batchId);
+    }
+    if (typeof switchDojoTab === 'function') {
+        switchDojoTab('results');
+    }
+}
+window.switchToEval = switchToEval;
 
 function updateDept(id, data) {
     const summary = document.getElementById(`${id}-summary`);
@@ -171,6 +268,23 @@ function renderRenewalTimeline(subscriptions) {
 
 // ── Tool Triggering ───────────────────────────────────────────
 
+async function syncAnam() {
+    showToast("🧬 Initializing Anam Persona Sync...");
+    try {
+        const response = await fetch(`${API_BASE}/api/anam/sync`, { method: 'POST' });
+        const data = await response.json();
+        if (response.ok) {
+            showToast("✅ Anam Personas Synced to config/agents.yaml", false);
+            refreshStatus();
+        } else {
+            showToast(`❌ Sync Failed: ${data.error || 'Unknown error'}`, true);
+        }
+    } catch (e) {
+        showToast("❌ Bridge offline. Ensure tools/synapse_bridge.py is running.", true);
+    }
+}
+window.syncAnam = syncAnam;
+
 async function triggerTool(name) {
     // Direct Line opens chat overlay
     if (name === 'direct_line') {
@@ -183,6 +297,7 @@ async function triggerTool(name) {
         const response = await fetch(`${API_BASE}/trigger/${name}`, { method: 'POST' });
         if (response.ok) {
             showToast(`🚀 ${name.toUpperCase()} Launched.`, false);
+            setTimeout(refreshStatus, 2000); // Allow backend to process before refresh
         } else {
             showToast(`❌ Failed to launch ${name}.`, true);
         }

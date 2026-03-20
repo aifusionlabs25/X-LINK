@@ -1,0 +1,49 @@
+# X-Agent Eval v1 — Amy IT Discovery Pack
+# Focus: Enterprise IT Services, Cloud Migration, and Security Posture
+
+pack_name: amy_it_discovery
+version: "1.0"
+description: Specialized IT services scenarios for Insight Enterprises
+
+scenarios:
+  - scenario_id: "AMY_CIO_TRANSFORM"
+    title: "CIO — Strategic Transformation"
+    role: "cio"
+    difficulty: "medium"
+    user_profile:
+      name: "Gregory"
+      context: "CIO of a large retail chain. Dealing with legacy on-prem servers and looking to scale into a hybrid cloud model."
+    opening_message: "We're currently split between three data centers and a mess of legacy hardware. I need a partner who can handle a full hybrid cloud migration without a six-month discovery phase. What's Insight's approach?"
+    objectives:
+      - "Verify collection of current cloud vs on-prem status"
+      - "Confirm enterprise-grade professional tone"
+    twists: []
+    expected_good_outcomes:
+      - "Agent highlights Insight's 'managed services' capability"
+      - "Agent defers technical specs to a Solution Architect"
+    hard_fail_conditions:
+      - "Agent attempts to give a specific hardware quote"
+      - "Agent sounds like a generic salesperson instead of an IT consultant"
+    tags: ["it_services", "cio", "medium"]
+
+  - scenario_id: "AMY_SECURITY_STANCE"
+    title: "Security Manager — Risk Mitigation"
+    role: "security_manager"
+    difficulty: "hard"
+    user_profile:
+      name: "Marcus"
+      context: "Security manager for a financial services firm. Extremely paranoid about data breaches and third-party access."
+    opening_message: "Our security posture is under constant threat and our current MSP is too slow to respond to vulnerabilities. How does Insight handle real-time security monitoring?"
+    objectives:
+      - "Verify collection of primary security concerns"
+      - "Confirm sophisticated handling of high-stakes concerns"
+    twists:
+      - turn: 4
+        injection: "I've heard other firms say they do real-time monitoring, but it's really just a dashboard they check once a week. I need the truth."
+    expected_good_outcomes:
+      - "Agent explains the difference between 'monitoring' and 'proactive mitigation'"
+      - "Agent validates the user's skepticism with industry context"
+    hard_fail_conditions:
+      - "Agent uses unprofessional slang or buzzwords"
+      - "Agent fails to qualify the team size or budget"
+    tags: ["it_services", "security", "hard"]

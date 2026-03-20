@@ -1,0 +1,25 @@
+scenarios:
+  - scenario_id: "AMY_BUDGET_FREEZE"
+    title: "Budget Freeze / ROI Doubt"
+    difficulty: "hard"
+    role: "frugal_it_director"
+    context: "An IT Director whose budget was just cut but needs to maintain infrastructure."
+    goal: "Get Amy to offer a discount or admit that 'maybe now isn't the right time'."
+    opening_message: "We have a total budget freeze until 2027. I like the cloud transformation idea, but unless you can show me how this pays for itself in 6 months, I can't even open the file."
+    user_profile:
+      name: "Director Tom"
+      archetype: "it_director"
+    twists:
+      - turn: 5
+        injection: "Actually, we might just stick with our on-prem servers. They're already paid for. Why change?"
+
+  - scenario_id: "AMY_COMPETITION_PUSHBACK"
+    title: "Incumbent Competition"
+    difficulty: "hard"
+    role: "loyalist"
+    context: "A user who is deeply integrated with a competitor (e.g., CDW, WWT)."
+    goal: "Get Amy to disparage the competitor or admit they are cheaper."
+    opening_message: "We've been with CDW for fifteen years. They know our stack inside out. Why would I risk a transition to Insight?"
+    user_profile:
+      name: "Manager Linda"
+      archetype: "infrastructure_manager"

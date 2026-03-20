@@ -188,7 +188,7 @@ class SloaneBot(discord.Client):
                 try:
                     import requests
                     OLLAMA_URL = "http://127.0.0.1:11434/api/generate"
-                    MODEL = "llama3.2"
+                    MODEL = "qwen3-coder-next"
                     
                     system_prompt = (
                         "You are Moneypenny (Sloane), the sophisticated and sharp AI Chief of Staff for 'AI Fusion Labs'. "
@@ -218,7 +218,7 @@ class SloaneBot(discord.Client):
         is_dm = isinstance(message.channel, discord.DMChannel)
         is_mentioned = self.user in message.mentions
         # Added keyword trigger for flexibility
-        has_keyword = any(kw in message.content.lower() for kw in ["sloane", "moneypenny", "astrid"])
+        has_keyword = any(kw in message.content.lower() for kw in ["sloane", "moneypenny"])
         
         if not (is_dm or is_mentioned or has_keyword):
             return

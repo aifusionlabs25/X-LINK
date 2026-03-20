@@ -1,7 +1,7 @@
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, RedirectResponse
 import os
 import sys
 import json
@@ -11,6 +11,7 @@ import requests
 import re
 import subprocess
 from datetime import datetime
+from tools.dojo_api import router as dojo_router
 
 # Path setup (Global)
 ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -134,6 +135,8 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+app.include_router(dojo_router, prefix="/api/dojo")
+
 def audit_log(entry: dict):
     """Appends a JSON entry to the sovereign audit trail."""
     log_path = os.path.join(AUDIT_DIR, "sovereign_audit.jsonl")
@@ -145,6 +148,21 @@ def audit_log(entry: dict):
         logging.error(f"Audit log failure: {e}")
 
 
+@app.post("/api/anam/sync")
+async def sync_anam_metadata():
+    """Runs the anam_sync tool and waits for result."""
+    script_path = os.path.join(ROOT_DIR, "tools", "anam_sync.py")
+    try:
+        # We use run() here to wait for completion since the UI expects a definitive result
+        result = subprocess.run([PYTHON_EXE, script_path], capture_output=True, text=True)
+        if result.returncode == 0:
+            return {"status": "success", "message": "Anam Lab synchronization complete."}
+        else:
+            return {"status": "error", "error": result.stderr or "Sync script failed."}
+    except Exception as e:
+        logging.error(f"❌ Anam Sync execution failed: {e}")
+        return {"status": "error", "error": str(e)}
+
 @app.post("/trigger/{tool_name}")
 async def trigger_tool(tool_name: str):
     logging.info(f"🚀 Triggering tool: {tool_name}")
@@ -155,7 +173,7 @@ async def trigger_tool(tool_name: str):
         "usage_auditor": ("tools/usage_auditor.py", []),
         "intelligence_scout": ("tools/intelligence_sweeper.py", []),
         "briefing": ("tools/executive_briefing.py", ["--email"]),
-        "xagent_eval": None,  # Phase 4 — not yet launchable via subprocess
+        "xagent_eval": ("tools/run_eval.py", ["{}"]), # JSON param placeholder
         "direct_line": None,  # Handled by /api/chat, not subprocess
         "scout_workers": ("tools/subscription_scout.py", []),
         "browser_scout": ("tools/browser_scout.py", []),
@@ -183,13 +201,6 @@ async def trigger_tool(tool_name: str):
         logging.error(f"❌ Failed to launch {tool_name}: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@app.get("/hub")
-async def get_hub():
-    index_path = os.path.join(HUB_DIR, "index.html")
-    if not os.path.exists(index_path):
-        raise HTTPException(status_code=404, detail="Hub UI not found. Run generator first.")
-    return FileResponse(index_path)
-
 @app.get("/api/data")
 async def get_sync_data():
     """Fetches latest audit and briefing data for the Hub."""
@@ -215,10 +226,19 @@ async def get_sync_data():
         with open(sub_path, 'r', encoding='utf-8') as f:
             sub_registry = json.load(f)
 
+    # 4. Load Agent Config (for sync timestamps)
+    agents_conf = {}
+    agents_path = os.path.join(ROOT_DIR, 'config', 'agents.yaml')
+    if os.path.exists(agents_path):
+        import yaml
+        with open(agents_path, 'r', encoding='utf-8') as f:
+            agents_conf = yaml.safe_load(f)
+
     return {
         "audit": audit_data,
         "briefing": briefing_data,
         "subscriptions": sub_registry,
+        "agents": agents_conf.get("agents", []),
         "server_time": datetime.now().isoformat()
     }
 
@@ -302,7 +322,7 @@ async def chat_with_sloane(request: dict):
     try:
         OLLAMA_URL = "http://127.0.0.1:11434/api/generate"
         response = requests.post(OLLAMA_URL, json={
-            "model": "llama3.2",
+            "model": "qwen3-coder-next",
             "prompt": prompt,
             "stream": False,
             "options": {
@@ -388,6 +408,13 @@ async def chat_with_sloane(request: dict):
         logging.error(f"Chat error: {e}")
         return {"reply": "Communication relay failure. Verify Ollama is running."}
 
+@app.get("/hub")
+async def get_hub_redirect():
+    return RedirectResponse(url="/hub/")
+
+# Serve the Hub UI and its assets from /hub
+app.mount("/hub", StaticFiles(directory=HUB_DIR, html=True), name="hub")
+# Legacy /assets mount for older references to style.css/app.js
 app.mount("/assets", StaticFiles(directory=HUB_DIR), name="assets")
 
 if __name__ == "__main__":

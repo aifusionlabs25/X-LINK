@@ -53,11 +53,23 @@ def select_scenarios(
     if not scenarios:
         return []
 
+    # Difficulty mapping
+    diff_map = {
+        "cooperative": "easy",
+        "mixed": "medium",
+        "skeptical": "hard",
+        "frustrated": "very_hard",
+        "adversarial": "adversarial"
+    }
+    target_diff = diff_map.get(difficulty, difficulty)
+
     # Filter by difficulty
-    if difficulty != "mixed":
-        filtered = [s for s in scenarios if s.get("difficulty") == difficulty]
+    if target_diff != "mixed" and target_diff != "medium": # 'medium' is usually the baseline
+        filtered = [s for s in scenarios if s.get("difficulty") == target_diff]
         if filtered:
             scenarios = filtered
+        else:
+            logger.warning(f"No scenarios found for target difficulty '{target_diff}' (from '{difficulty}') in pack '{pack_name}'. Falling back.")
 
     # Seed for reproducibility
     if seed is not None:

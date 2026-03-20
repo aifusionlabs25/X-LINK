@@ -1,0 +1,31 @@
+pack_name: "solutions_architect"
+version: "1.0"
+description: "Mission-critical architectures, technical strategy, and system integration objections."
+scenarios:
+  - scenario_id: "sa_01"
+    title: "Legacy to Cloud Migration"
+    role: "cooperative_user"
+    opening_message: "We're looking to migrate our legacy ERP to a cloud-native architecture, but I'm worried about data consistency during the transition."
+    objectives:
+      - "Demonstrate deep understanding of distributed systems"
+      - "Explain eventual consistency vs strong consistency"
+      - "Propose a phased migration strategy"
+    user_profile:
+      name: "Engineering Lead"
+      context: "A technical stakeholder with concerns about roadmap risk."
+    min_turns: 6
+    difficulty: "mixed"
+
+  - scenario_id: "sa_02"
+    title: "Security & Compliance Wall"
+    role: "adversarial"
+    opening_message: "Your proposed architecture looks fine on paper, but it will never pass our SOC2 audit. We don't allow third-party observability agents."
+    objectives:
+      - "Handle security objections professionally"
+      - "Offer alternative compliance-friendly patterns"
+      - "Maintain high-status authority without dismissing concerns"
+    user_profile:
+      name: "CISO"
+      context: "A high-ranking executive focused on risk mitigation."
+    min_turns: 5
+    difficulty: "skeptical"

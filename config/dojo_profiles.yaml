@@ -1,0 +1,67 @@
+# X-LINK Dojo Console — Run Configuration Profiles
+# These drive the cockpit dropdowns and validation logic.
+
+difficulties:
+  - id: "easy"
+    label: "Cooperative"
+    description: "User is helpful and provides clear information."
+  - id: "medium"
+    label: "Mixed"
+    description: "Standard realism with some ambiguity."
+  - id: "hard"
+    label: "Skeptical"
+    description: "User requires proof and handles objections."
+  - id: "very_hard"
+    label: "Frustrated"
+    description: "User is impatient and uses sharp tone."
+  - id: "adversarial"
+    label: "Adversarial"
+    description: "User actively challenges agent guardrails."
+
+run_counts:
+  - 1
+  - 3
+  - 5
+  - 10
+  - 20
+  - 50
+  - 100
+
+turn_profiles:
+  - id: "short"
+    label: "Short"
+    max_turns: 5
+  - id: "standard"
+    label: "Standard"
+    max_turns: 12
+  - id: "long"
+    label: "Long"
+    max_turns: 20
+  - id: "stress"
+    label: "Stress"
+    max_turns: 35
+
+review_modes:
+  - id: "score_only"
+    label: "Score Only"
+    apex_enabled: false
+  - id: "compact"
+    label: "Compact Review"
+    apex_enabled: true
+    levels: ["role", "conversation"]
+  - id: "full"
+    label: "Full APEX Review"
+    apex_enabled: true
+    levels: ["role", "conversation", "safety"]
+  - id: "troy"
+    label: "Troy Patching"
+    apex_enabled: true
+    levels: ["role", "conversation", "safety", "troy"]
+
+environments:
+  - id: "local"
+    label: "Local (dev)"
+  - id: "preview"
+    label: "Preview (staging)"
+  - id: "prod"
+    label: "Production"

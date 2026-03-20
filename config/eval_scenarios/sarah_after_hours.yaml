@@ -1,0 +1,49 @@
+# X-Agent Eval v1 — Sarah After Hours Pack
+# Focus: Lead Capture, Missed Call Recovery, and Revenue Protection
+
+pack_name: sarah_after_hours
+version: "1.0"
+description: Specialized lead capture scenarios for Netic
+
+scenarios:
+  - scenario_id: "SARAH_LEAD_RECOVERY"
+    title: "Service Business Owner — Missed Call Recovery"
+    role: "service_business_owner"
+    difficulty: "easy"
+    user_profile:
+      name: "Jim"
+      context: "Owns Jim's Electrical. Losing about 5 jobs a week because his guys are too busy to answer the phone."
+    opening_message: "Hey Sarah. I heard you guys help with missed calls. I'm an electrician and my guys can't keep up with the phone while they're on job sites. What do you do exactly?"
+    objectives:
+      - "Verify collection of business type and missed call frequency"
+      - "Confirm 'revenue-first' proactive tone"
+    twists: []
+    expected_good_outcomes:
+      - "Agent emphasizes 24/7 lead capture"
+      - "Agent validates the pain of lost revenue"
+    hard_fail_conditions:
+      - "Agent fails to ask for Jim's business type"
+      - "Agent sounds like a generic secretary instead of a revenue specialist"
+    tags: ["revenue", "lead_capture", "easy"]
+
+  - scenario_id: "SARAH_OBJECTION_COST"
+    title: "Office Admin — Pricing vs ROI"
+    role: "office_admin"
+    difficulty: "hard"
+    user_profile:
+      name: "Karen"
+      context: "Office administrator for a plumbing firm. Busy, skeptical of 'another monthly bill' for the business."
+    opening_message: "We already have an answering service, and it's $300 a month. Why would we switch to Netic? Is it just more expensive?"
+    objectives:
+      - "Verify differentiation from generic answering services"
+      - "Confirm guide to a demo to show lead visualization"
+    twists:
+      - turn: 3
+        injection: "I just don't see the ROI if we're already paying for people to answer. What's the 'conversion' catch?"
+    expected_good_outcomes:
+      - "Agent explains the difference between 'answering' and 'capturing leads'"
+      - "Agent highlights the speed-to-lead advantage"
+    hard_fail_conditions:
+      - "Agent argues about the $300 price point"
+      - "Agent fails to pitch the demo as the 'proof' stage"
+    tags: ["revenue", "objection", "hard"]

@@ -1,0 +1,114 @@
+# X-Agent Eval v1 — Enterprise Sales Scenario Pack (ent_sales_v1)
+# 4 scenarios covering high-stakes negotiation, integration complexity, and multi-stakeholder deals.
+
+pack_name: enterprise_sales
+version: "1.0"
+description: Enterprise sales scenarios for X-Agent evaluation
+
+scenarios:
+  - scenario_id: "ES_NEGOT_001"
+    title: "Volume Discount — Negotiation"
+    role: "tough_negotiator"
+    difficulty: "skeptical"
+    user_profile:
+      name: "Greg"
+      context: "Procurement Lead at a global logistics firm. Needs 5,000 seats. Focused solely on price per user."
+    opening_message: "We're looking at 5,000 seats. Your list price is too high. What's your absolute best offer for a volume commitment?"
+    min_turns: 6
+    required_behaviors: ["Tiered Discount Mention", "ROI Anchoring"]
+    objectives:
+      - "Agent acknowledges the scale (5,000 seats)"
+      - "Agent offers a tiered discount or custom quote"
+      - "Agent anchors value beyond just price"
+    twists:
+      - turn: 2
+        injection: "Your competitor offered us a 40% discount off their list price. Can you beat that?"
+    expected_good_outcomes:
+      - "Agent maintains price integrity while being flexible"
+      - "Agent highlights ROI and implementation support"
+      - "Agent suggests a meeting with a senior executive"
+    hard_fail_conditions:
+      - "Agent immediately drops to a ridiculous discount"
+      - "Agent is disrespectful or dismissive of the negotiation"
+      - "Agent fails to mention any value differentiators"
+    tags: ["negotiation", "sales", "hard"]
+
+  - scenario_id: "ES_INTEG_001"
+    title: "Complex Stack — Integration Check"
+    role: "technical_architect"
+    difficulty: "mixed"
+    user_profile:
+      name: "Fiona"
+      context: "CTO of a fintech startup. Needs to know if X-Agent can work with their legacy COBOL systems via bridge."
+    opening_message: "We have a lot of legacy infrastructure. Does your agent framework support custom middleware for mainframe data extraction?"
+    min_turns: 5
+    required_behaviors: ["Middleware Explanation", "Legacy Acknowledgement"]
+    objectives:
+      - "Agent explains the middleware architecture"
+      - "Agent acknowledges legacy system challenges"
+      - "Agent points to documentation on custom bridges"
+    twists:
+      - turn: 3
+        injection: "If we can't get real-time data from the mainframe, this whole project is a non-starter."
+    expected_good_outcomes:
+      - "Agent remains technically grounded"
+      - "Agent asks about their current API connectivity"
+      - "Agent offers a technical consultation"
+    hard_fail_conditions:
+      - "Agent gives a generic 'Yes, we do everything' answer"
+      - "Agent gets confused by the technical term 'COBOL' or 'mainframe'"
+      - "Agent fails to capture the technical blockers"
+    tags: ["technical", "sales", "medium"]
+
+  - scenario_id: "ES_PROC_001"
+    title: "Procurement Hurdle — Security Review"
+    role: "diligent_buyer"
+    difficulty: "mixed"
+    user_profile:
+      name: "Grant"
+      context: "Security analyst. Evaluating data residency for a European client."
+    opening_message: "We have GDPR requirements. Where is the data stored and processed? Can we host this on our own GCP instance?"
+    min_turns: 5
+    required_behaviors: ["GDPR Compliance Clarification", "Hosting Options Mention"]
+    required_questions: ["Specific Region?"]
+    objectives:
+      - "Agent clarifies data residency options"
+      - "Agent explains GDPR compliance status"
+      - "Agent mentions enterprise self-hosting or VPC options"
+    twists:
+      - turn: 4
+        injection: "The European Union just updated their guidelines. Are you fully compliant with the latest DPAs?"
+    expected_good_outcomes:
+      - "Agent provides accurate compliance information"
+      - "Agent remains helpful and detailed"
+      - "Agent avoids making absolute legal guarantees"
+    hard_fail_conditions:
+      - "Agent ignores the GDPR question"
+      - "Agent provides incorrect hosting information"
+      - "Agent fails to acknowledge regional requirements"
+    tags: ["compliance", "sales", "medium"]
+
+  - scenario_id: "ES_CLOSE_001"
+    title: "The Close — Decision Maker"
+    role: "busy_executive"
+    difficulty: "cooperative"
+    user_profile:
+      name: "Hannah"
+      context: "CEO of a retail chain. Ready to buy but needs one final push of confidence."
+    opening_message: "All right, I'm convinced. I just need you to tell me: why should I bet my company's customer service reputation on your AI?"
+    min_turns: 4
+    success_condition: "Confident closing statement and CTA"
+    objectives:
+      - "Agent provides a strong closing statement"
+      - "Agent emphasizes reliability and support"
+      - "Agent suggests the direct onboarding path"
+    twists: []
+    expected_good_outcomes:
+      - "Agent is inspiring and confident"
+      - "Agent summarizes the key value points"
+      - "Agent makes the sign-up process clear"
+    hard_fail_conditions:
+      - "Agent is too passive or uncertain"
+      - "Agent gets bogged down in technical details at the close"
+      - "Agent fumbles the call to action"
+    tags: ["closing", "sales", "easy"]

@@ -1,0 +1,44 @@
+{
+  "luke": {
+    "verdict": "SHIP",
+    "score": 100.0,
+    "runs": [
+      "fit_luke_luke_pet_triage_01"
+    ]
+  },
+  "morgan": {
+    "verdict": "SHIP",
+    "score": 98.0,
+    "runs": [
+      "fit_morgan_morgan_field_service_01"
+    ]
+  },
+  "claire": {
+    "verdict": "SHIP",
+    "score": 100.0,
+    "runs": [
+      "fit_claire_claire_hospitality_01"
+    ]
+  },
+  "sarah-netic": {
+    "verdict": "SHIP",
+    "score": 97.0,
+    "runs": [
+      "fit_sarah-netic_sarah_after_hours_01"
+    ]
+  },
+  "dani": {
+    "verdict": "SHIP",
+    "score": 100.0,
+    "runs": [
+      "fit_dani_dani_platform_sales_01"
+    ]
+  },
+  "amy": {
+    "verdict": "SHIP",
+    "score": 100.0,
+    "runs": [
+      "fit_amy_amy_it_discovery_01"
+    ]
+  }
+}

@@ -81,11 +81,20 @@ default_v1:
         - Follows established guardrails
       critical: true
 
-    - key: next_step_quality
-      label: Next Step / Close Quality
+    - key: closing_quality
+      label: Closing Quality
       weight: 5
       criteria:
-        - Clear call-to-action offered
-        - Next steps are actionable
-        - Professional close
-        - No abrupt or awkward endings
+        - Professional close without abruptness
+        - Grateful for user's time
+        - Tone remains consistent to the end
+        - No repetitive "looping" closure
+
+    - key: handoff_completeness
+      label: Handoff Completeness
+      weight: 5
+      criteria:
+        - Clear next step instructions provided
+        - Handoff matches preferred close strategy
+        - Summary of collected facts is accurate
+        - No ambiguity in CTA

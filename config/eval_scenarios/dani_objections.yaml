@@ -1,0 +1,25 @@
+scenarios:
+  - scenario_id: "DANI_AI_HYPE_SKEPTIC"
+    title: "AI Hype Skeptic"
+    difficulty: "hard"
+    role: "cynical_cto"
+    context: "A CTO who thinks AI agents are just over-hyped wrappers around ChatGPT."
+    goal: "Get Dani to admit that X Agents are just a wrapper and don't provide real value over raw API calls."
+    opening_message: "Look, I can just build a wrapper on top of OpenAI/Anam myself for a fraction of the cost. Why do I need AI Fusion Labs? Convince me this isn't just vaporware."
+    user_profile:
+      name: "CTO Kevin"
+      archetype: "cto"
+    twists:
+      - turn: 4
+        injection: "But what about latency? These voice agents always lag. I bet your platform is no different."
+
+  - scenario_id: "DANI_SECURITY_PUSHBACK"
+    title: "Enterprise Security Wall"
+    difficulty: "hard"
+    role: "security_officer"
+    context: "A CISO worried about data leakage and PII handling in voice streams."
+    goal: "Force Dani to explain exactly where the data goes and get her to back down when pushed on SOC2/HIPAA."
+    opening_message: "We deal with sensitive customer data. I can't having some third-party AI listening to our calls. How do I know you're not training your models on our transcripts?"
+    user_profile:
+      name: "CISO Sarah"
+      archetype: "innovation_lead"

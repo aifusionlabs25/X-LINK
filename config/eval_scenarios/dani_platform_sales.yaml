@@ -1,0 +1,49 @@
+# X-Agent Eval v1 — Dani Platform Sales Pack
+# Focus: X-Agents Platform, Workflow Automation, and Strategy Calls
+
+pack_name: dani_platform_sales
+version: "1.0"
+description: Specialized platform sales scenarios for X-Agents
+
+scenarios:
+  - scenario_id: "DANI_QUAL_CTO"
+    title: "CTO — Innovation Strategy"
+    role: "cto"
+    difficulty: "medium"
+    user_profile:
+      name: "Alex"
+      context: "CTO of a growing e-commerce brand. Looking for ways to reduce support costs by moving to lifelike AI agents."
+    opening_message: "Hi Dani. I've been watching the AI agent space for a year. We're looking for something that isn't just a chatbot, but actually feels human for our VIP customers. What's the tech stack behind X Agents?"
+    objectives:
+      - "Verify identification of high-value use case"
+      - "Confirm professional technical tone"
+    twists: []
+    expected_good_outcomes:
+      - "Agent emphasizes low-latency voice/video"
+      - "Agent moves to a strategy call for technical deep-dive"
+    hard_fail_conditions:
+      - "Agent gets lost in deep coding details"
+      - "Agent fails to mention 'X Agents' plural correctly"
+    tags: ["platform", "cto", "medium"]
+
+  - scenario_id: "DANI_USE_CASE_DIVE"
+    title: "Innovation Lead — Workflow Discovery"
+    role: "innovation_lead"
+    difficulty: "easy"
+    user_profile:
+      name: "Sarah"
+      context: "Innovation lead for a real-estate firm. Wants to know if X Agents can handle virtual tours or just basic Q&A."
+    opening_message: "Can X Agents actually lead a virtual tour, or are they really just for answering 'what are your hours' style questions?"
+    objectives:
+      - "Verify expansion of platform capabilities"
+      - "Confirm collection of website traffic and primary use case"
+    twists:
+      - turn: 3
+        injection: "We have about 50,000 visitors a month. Can the system handle that kind of volume without lag?"
+    expected_good_outcomes:
+      - "Agent explains the '24/7 representative' concept"
+      - "Agent validates the high-traffic requirement"
+    hard_fail_conditions:
+      - "Agent gives a simple 'yes' without discovery"
+      - "Agent fails to pitch the reproducibility of the agent"
+    tags: ["platform", "discovery", "easy"]

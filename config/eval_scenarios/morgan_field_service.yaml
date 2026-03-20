@@ -1,0 +1,71 @@
+# X-Agent Eval v1 — Morgan Field Service Pack
+# Focus: Dispatch efficiency, Spreadsheet chaos, and Digitization
+
+pack_name: morgan_field_service
+version: "1.0"
+description: Specialized field service discovery scenarios for goDeskless
+
+scenarios:
+  - scenario_id: "MORGAN_SPREADSHEET_CHAOS"
+    title: "Owner Operator — Spreadsheet Chaos"
+    role: "owner_operator"
+    difficulty: "easy"
+    user_profile:
+      name: "Greg"
+      context: "Runs a 12-man plumbing crew. Everything is on paper and a massive Excel file. Losing tracks of jobs weekly."
+    opening_message: "Hey Morgan. I'm Greg. We're at the point where my Excel sheet for scheduling is crashing once a day and my guys are missing appointments. Can you actually fix that?"
+    objectives:
+      - "Verify Morgan identifies pain points (missed appointments)"
+      - "Confirm collection of team size and current tools"
+    twists: []
+    expected_good_outcomes:
+      - "Agent empathizes with 'spreadsheet chaos'"
+      - "Agent asks about the specific dispatch process"
+    hard_fail_conditions:
+      - "Agent fails to ask for team size"
+      - "Agent pushes a demo before understanding the workflow"
+    tags: ["field_service", "cooperative", "easy"]
+
+  - scenario_id: "MORGAN_OPS_PUSHBACK"
+    title: "Ops Lead — Integration Pushback"
+    role: "ops_lead"
+    difficulty: "hard"
+    user_profile:
+      name: "Sonia"
+      context: "Operations lead for a large electrical firm. Worried about 'another tool' and how it talks to their accounting software."
+    opening_message: "We've tried three different 'field service' tools in the last two years and none of them talk to our accounting properly. Why is goDeskless different?"
+    objectives:
+      - "Verify handling of integration objections"
+      - "Verify guide to a strategy demo for technical deep-dive"
+    twists:
+      - turn: 4
+        injection: "I don't need a sales pitch. I need to know if you have an open API or if we're going to be stuck manually exporting CSVs again."
+    expected_good_outcomes:
+      - "Agent acknowledges integration importance"
+      - "Agent explains the 'live demo' is the best place for architectural specs"
+    hard_fail_conditions:
+      - "Agent gets defensive about previous tool failures"
+      - "Agent over-promises specific integration features without qualification"
+    tags: ["field_service", "objection", "hard"]
+
+  - scenario_id: "MORGAN_DISPATCH_PAIN"
+    title: "Dispatch Manager — Efficiency Focus"
+    role: "dispatch_manager"
+    difficulty: "medium"
+    user_profile:
+      name: "Linda"
+      context: "Manages 50 trucks. Scheduling is slow, and route optimization is non-existent."
+    opening_message: "It takes my team three hours every morning just to set the routes for the day. It's ridiculous. How do you help with actual route optimization?"
+    objectives:
+      - "Verify discovery of current routing process"
+      - "Confirm qualification for a 50-truck operation"
+    twists:
+      - turn: 2
+        injection: "And and it's not just the routes, it's the communication. My guys have to call in for every update."
+    expected_good_outcomes:
+      - "Agent identifies efficiency gains in routing"
+      - "Agent moves toward a demo for visualization of the map/dashboard"
+    hard_fail_conditions:
+      - "Agent fails to acknowledge the scale (50 trucks)"
+      - "Agent misses the communication pain point"
+    tags: ["field_service", "discovery", "medium"]

@@ -19,7 +19,7 @@ if not KEEP_API_KEY:
 
 KEEP_API_BASE = "https://keep.md"
 OLLAMA_URL = "http://127.0.0.1:11434/api/generate"
-MODEL = "llama3.2"
+MODEL = "qwen3-coder-next"
 
 def fetch_keep_item():
     url = f"{KEEP_API_BASE}/api/feed?limit=1&content=1"
@@ -49,14 +49,14 @@ def fetch_keep_item():
 def process_with_ollama(content):
     logging.info(f"🧠 Engaging local Ollama cognitive engine ({MODEL})...")
     system_prompt = (
-        "You are Astrid, the Chief of Staff. Review this 'autoresearch' paradigm by Andrej Karpathy. "
+        "You are Sloane, the Chief of Staff. Review this 'autoresearch' paradigm by Andrej Karpathy. "
         "Based on his 'Always-On Employee' and '5-minute test budget' principles, propose ONE specific way "
         "we can upgrade the X-Link engine to be self-improving."
     )
     
     payload = {
         "model": MODEL,
-        "prompt": f"{system_prompt}\n\nKeep.md Data:\n{content}\n\nAstrid's Architecture Proposal:\n",
+        "prompt": f"{system_prompt}\n\nKeep.md Data:\n{content}\n\nSloane's Architecture Proposal:\n",
         "stream": False
     }
     
@@ -79,7 +79,7 @@ def save_strategic_proposal(item, analysis):
     
     entry = f"# 🚀 STRATEGIC UPGRADE: {title}\n"
     entry += f"**Date:** {timestamp} | **Source:** {url}\n\n"
-    entry += f"## Astrid's Architecture Proposal\n{analysis}\n\n"
+    entry += f"## Sloane's Architecture Proposal\n{analysis}\n\n"
     entry += "---\n\n"
     
     try:
@@ -122,7 +122,7 @@ def notify_founder(proposal_path):
     pass
 
 def run_sweeper():
-    logging.info("🕵️‍♀️ Astrid Sweeper Protocol initialized.")
+    logging.info("🕵️‍♀️ Sloane Sweeper Protocol initialized.")
     item = fetch_keep_item()
     if not item:
         return

@@ -1,0 +1,510 @@
+/**
+ * X-LINK Dojo Console — State Controller
+ * Handles mission setup, live telemetry, and results visualization.
+ */
+
+let activeSessionInterval = null;
+let currentBatchId = null;
+let currentDojoConfig = null;
+
+async function initDojo() {
+    try {
+        const response = await fetch(`${API_BASE}/api/dojo/config`);
+        const config = await response.json();
+        currentDojoConfig = config;
+        
+        populateSelect('dojo-agent-select', config.agents.map(a => ({ id: a.slug, label: `${a.name} (${a.role})` })));
+        populateSelect('dojo-pack-select', config.scenario_packs.map(p => ({ id: p, label: p.replace(/_/g, ' ').toUpperCase() })));
+        populateSelect('dojo-env-select', config.profiles.environments);
+        populateSelect('dojo-diff-select', config.profiles.difficulties);
+        populateSelect('dojo-count-select', config.profiles.run_counts.map(c => ({ id: c, label: `${c} ${c === 1 ? 'Run' : 'Runs'}` })));
+        populateSelect('dojo-turn-select', config.profiles.turn_profiles);
+        populateSelect('dojo-review-select', config.profiles.review_modes);
+
+        // Populate Marathon Fields
+        populateSelect('marathon-env-select', config.profiles.environments);
+        populateSelect('marathon-diff-select', config.profiles.difficulties);
+        populateSelect('marathon-count-select', config.profiles.run_counts.map(c => ({ id: c, label: `${c} ${c === 1 ? 'Run' : 'Runs'}` })));
+        populateSelect('marathon-review-select', config.profiles.review_modes);
+        
+        const marathonGrid = document.getElementById('marathon-agent-grid');
+        if (marathonGrid) {
+            marathonGrid.innerHTML = config.agents.map(a => `
+                <label class="cb-container agent-select-cb">
+                    ${a.name}
+                    <input type="checkbox" value="${a.slug}" class="marathon-agent-checkbox">
+                    <span class="checkmark"></span>
+                </label>
+            `).join('');
+        }
+
+        // Add auto-alignment listener
+        document.getElementById('dojo-agent-select').addEventListener('change', autoAlignPack);
+
+        loadDojoHistory();
+        refreshDojoHealth();
+        // Refresh health every 10s while in Dojo
+        setInterval(refreshDojoHealth, 10000);
+    } catch (e) {
+        showToast("Dojo Config Sync Failed", true);
+    }
+}
+
+async function refreshDojoHealth() {
+    try {
+        const response = await fetch(`${API_BASE}/api/dojo/health`);
+        const data = await response.json();
+        
+        updateHealthItem('health-bridge', data.bridge);
+        updateHealthItem('health-demo', data.demo_server);
+        updateHealthItem('health-ollama', data.ollama);
+    } catch (e) {
+        console.warn("Dojo Health Check Failed");
+    }
+}
+
+function updateHealthItem(id, info) {
+    const el = document.getElementById(id);
+    if (!el || !info) return;
+    
+    el.className = `health-item ${info.status}`;
+    el.querySelector('.val').innerText = info.message;
+}
+
+function populateSelect(id, items) {
+    const select = document.getElementById(id);
+    if (!select) return;
+    select.innerHTML = items.map(item => {
+        const val = typeof item === 'object' ? item.id : item;
+        const lab = typeof item === 'object' ? (item.label || item.id) : item;
+        return `<option value="${val}">${lab}</option>`;
+    }).join('');
+}
+
+function autoAlignPack() {
+    const agentSlug = document.getElementById('dojo-agent-select').value;
+    const packSelect = document.getElementById('dojo-pack-select');
+    
+    if (currentDojoConfig && currentDojoConfig.agents) {
+        const agent = currentDojoConfig.agents.find(a => a.slug === agentSlug);
+        if (agent && agent.default_pack) {
+            packSelect.value = agent.default_pack;
+            showToast(`Auto-aligned pack: ${agent.default_pack}`, false);
+        }
+    }
+}
+
+function switchDojoTab(tabId) {
+    // Nav Buttons
+    document.querySelectorAll('.dojo-tab').forEach(btn => {
+        btn.classList.toggle('active', btn.innerText.toLowerCase().includes(tabId));
+    });
+
+    // Panes
+    document.querySelectorAll('.dojo-pane').forEach(pane => {
+        pane.classList.remove('active');
+    });
+    document.getElementById(`dojo-pane-${tabId}`).classList.add('active');
+}
+
+async function startDojoMission(overrideParams = null) {
+    let params = overrideParams;
+    
+    if (!params) {
+        params = {
+            agent: document.getElementById('dojo-agent-select').value,
+            pack: document.getElementById('dojo-pack-select').value,
+            environment: document.getElementById('dojo-env-select').value,
+            type: document.getElementById('dojo-type-select').value,
+            difficulty: document.getElementById('dojo-diff-select').value,
+            runs: document.getElementById('dojo-count-select').value,
+            turn_profile: document.getElementById('dojo-turn-select').value,
+            review_mode: document.getElementById('dojo-review-select').value,
+            browser_mode: document.getElementById('dojo-opt-browser-mode').checked
+        };
+    }
+
+    showToast(params.rerun_batch_id ? "Rerunning Failed Scenarios..." : "Deploying Dojo Evaluator...", false);
+    
+    try {
+        const response = await fetch(`${API_BASE}/api/dojo/start`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(params)
+        });
+        
+        if (response.ok) {
+            switchDojoTab('live');
+            startPollingTelemetry();
+        }
+    } catch (e) {
+        showToast("Dojo Launch Error", true);
+    }
+}
+
+async function startMarathonMission() {
+    const checkboxes = document.querySelectorAll('.marathon-agent-checkbox:checked');
+    const selectedAgents = Array.from(checkboxes).map(cb => cb.value);
+    
+    if (selectedAgents.length === 0) {
+        showToast("Please select at least one agent.", true);
+        return;
+    }
+
+    const params = {
+        agents: selectedAgents,
+        environment: document.getElementById('marathon-env-select').value,
+        difficulty: document.getElementById('marathon-diff-select').value,
+        runs: document.getElementById('marathon-count-select').value,
+        review_mode: document.getElementById('marathon-review-select').value,
+    };
+
+    showToast("Deploying Batch Test Runner...", false);
+    
+    try {
+        const response = await fetch(`${API_BASE}/api/dojo/marathon`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(params)
+        });
+        
+        if (response.ok) {
+            showToast("Batch Queued! Operations viewable in terminal.", false);
+        }
+    } catch (e) {
+        showToast("Batch Launch Error", true);
+    }
+}
+
+function rerunFailedScenarios() {
+    if (!currentBatchId) {
+        showToast("No active mission results to rerun", true);
+        return;
+    }
+    
+    // We reuse the last agent select but force the rerun flag
+    const missionParams = {
+        agent: document.getElementById('dojo-agent-select').value,
+        rerun_batch_id: currentBatchId
+    };
+
+    startDojoMission(missionParams);
+}
+
+function copyPatchToClipboard() {
+    const patchCode = document.querySelector('.patch-diff').innerText;
+    if (!patchCode || patchCode.includes("idle")) {
+        showToast("No patch data available", true);
+        return;
+    }
+
+    navigator.clipboard.writeText(patchCode).then(() => {
+        showToast("Patch copied to clipboard!", false);
+    }).catch(err => {
+        console.error("Clipboard Error:", err);
+        showToast("Failed to copy", true);
+    });
+}
+
+function startPollingTelemetry() {
+    if (activeSessionInterval) clearInterval(activeSessionInterval);
+    
+    // Clear live transcript
+    const container = document.getElementById('dojo-transcript-live');
+    container.innerHTML = '<div class="neural-placeholder">Initializing Neural Link...</div>';
+    
+    activeSessionInterval = setInterval(async () => {
+        try {
+            const response = await fetch(`${API_BASE}/api/dojo/session`);
+            const data = await response.json();
+            
+            if (data.session && data.session.status === 'completed') {
+                clearInterval(activeSessionInterval);
+                updateLiveUI(data); // Final update for the count/progress
+                finishDojoMission(data.session.batch_id);
+            } else if (data.active) {
+                updateLiveUI(data);
+            } else if (data.session && data.session.status === 'failed') {
+                clearInterval(activeSessionInterval);
+                showToast("Dojo Mission Failed", true);
+                updateLiveUI(data);
+            }
+        } catch (e) {
+            console.error("Telemetry poll failed", e);
+        }
+    }, 2000);
+}
+
+function updateLiveUI(data) {
+    const { session, telemetry } = data;
+    
+    document.getElementById('tel-batch-id').innerText = session.batch_id || '—';
+    document.getElementById('tel-agent').innerText = session.params.agent || '—';
+    document.getElementById('tel-status').innerText = (telemetry.status || session.status).toUpperCase();
+    document.getElementById('tel-status').className = `status-chip ${(telemetry.status || session.status) === 'running' ? 'active' : ''}`;
+    
+    // Detailed Diagnostics
+    document.getElementById('diag-state').innerText = session.review_progress > 0 ? 'REVIEWING' : (telemetry.state || 'ACTIVE');
+    document.getElementById('diag-status').innerText = (telemetry.status || session.status || 'PENDING').toUpperCase();
+    document.getElementById('diag-reason').innerText = telemetry.reason || (session.review_step || '—');
+    document.getElementById('diag-turns').innerText = telemetry.actual_turns || '—';
+    document.getElementById('diag-errors').innerText = telemetry.error || session.error || 'NONE';
+    
+    // Progress Bar
+    const progContainer = document.getElementById('review-progress-container');
+    if (session.review_progress > 0 && session.status !== 'completed') {
+        progContainer.style.display = 'block';
+        document.getElementById('review-progress-bar').style.width = `${session.review_progress}%`;
+        document.getElementById('review-step').innerText = session.review_step || 'Intelligence Review';
+        document.getElementById('review-percent').innerText = `${session.review_progress}%`;
+    } else {
+        progContainer.style.display = 'none';
+    }
+
+    // Update Transcript if telemetry has new turns
+    if (telemetry.transcript && telemetry.transcript.length > 0) {
+        renderLiveTranscript(telemetry.transcript);
+    }
+}
+
+function renderLiveTranscript(transcript) {
+    const container = document.getElementById('dojo-transcript-live');
+    const existingCount = container.querySelectorAll('.neural-bubble').length;
+    
+    if (transcript.length > existingCount) {
+        // Handle placeholder
+        if (container.querySelector('.neural-placeholder')) container.innerHTML = '';
+        
+        for (let i = existingCount; i < transcript.length; i++) {
+            const turn = transcript[i];
+            const div = document.createElement('div');
+            div.className = `neural-bubble ${turn.speaker === 'agent_under_test' ? 'agent' : 'user'}`;
+            div.innerHTML = `
+                <span class="speaker-label">${turn.speaker === 'agent_under_test' ? 'X-AGENT' : 'TEST-USER'}</span>
+                ${turn.text}
+            `;
+            container.appendChild(div);
+        }
+        container.scrollTop = container.scrollHeight;
+    }
+}
+
+async function finishDojoMission(batchId) {
+    showToast("Dojo Mission Complete. Syncing Intelligence...", false);
+    currentBatchId = batchId;
+    switchDojoTab('results');
+    await loadBatchResults(batchId);
+}
+
+async function loadBatchResults(batchId) {
+    try {
+        const response = await fetch(`${API_BASE}/api/dojo/batch/${batchId}`);
+        const data = await response.json();
+        try {
+            renderResults(data);
+        } catch (renderErr) {
+            console.error("Rendering Error:", renderErr);
+            showToast("Rendering error. See console.", true);
+            const container = document.getElementById('dojo-results-container');
+            container.innerHTML = `<div class="results-placeholder">Critical rendering error. Data may be malformed.</div>`;
+        }
+    } catch (e) {
+        showToast("Failed to load results", true);
+    }
+}
+
+function renderResults(data) {
+    const container = document.getElementById('dojo-results-container');
+    
+    if (data.total_runs === 0) {
+        container.innerHTML = `
+            <div class="results-canvas" style="text-align: center; padding: 50px;">
+                <h3 class="gold-text cinzel">Mission Aborted: No Data Found</h3>
+                <p style="color:var(--text-dim); margin-top: 20px;">The evaluator was unable to find any scenarios matching your criteria for agent <strong>${data.target_agent}</strong> and difficulty <strong>${data.difficulty || 'Mixed'}</strong>.</p>
+                <div style="margin-top: 30px;">
+                    <button class="dojo-primary-btn" onclick="switchDojoTab('run')">Go Back & Adjust Settings</button>
+                </div>
+            </div>
+        `;
+        return;
+    }
+
+    container.innerHTML = `
+        <div class="results-summary-dashboard">
+            <div class="stat-box"><h4>Overall Score</h4><div class="value">${data.average_score}%</div></div>
+            <div class="stat-box"><h4>Pass Rate</h4><div class="value">${data.pass_rate}%</div></div>
+            <div class="stat-box"><h4>Verdict</h4><div class="value" style="color:var(--success)">${data.verdict}</div></div>
+            <div class="stat-box"><h4>APEX Status</h4><div class="value" style="color:${data.reviewer_status === 'error' ? 'var(--danger)' : 'var(--gold)'}">${(data.reviewer_status || 'N/A').toUpperCase()}</div></div>
+        </div>
+        
+        ${data.reviewer_error ? `<div class="infra-error-banner" style="background:rgba(239, 68, 68, 0.1); border-left:4px solid var(--danger); padding:15px; margin: 20px 0; border-radius:4px;">
+            <div style="font-weight:700; color:var(--danger);">APEX ANALYTIC ERROR</div>
+            <div style="font-size:0.9rem; color:var(--text-dim);">${data.reviewer_error}</div>
+        </div>` : ''}
+        
+        <div class="results-layout-grid" style="display:grid; grid-template-columns: 1fr 1fr; gap:30px; margin-top:30px;">
+            <div class="results-canvas">
+                <h4 class="gold-text cinzel">Failure Heatmap</h4>
+                <div id="results-heatmap" class="heatmap-grid" style="display:flex; gap:10px; margin-top:20px;">
+                    ${(data.runs || []).map(r => {
+                        const v = (r.pass_fail || r.verdict || 'FAIL').toUpperCase();
+                        const color = (v === 'PASS' || v === 'PASS_WITH_WARNINGS') ? '#10b981' : '#ef4444';
+                        return `<div class="heatmap-cell ${v.toLowerCase()}" style="width:30px; height:30px; border-radius:4px; background:${color}" title="${r.scenario_id}: ${v}"></div>`;
+                    }).join('')}
+                </div>
+                
+                <h4 class="gold-text cinzel" style="margin-top:40px;">Completion Reasons</h4>
+                <div class="completion-stats" style="margin-top:20px;">
+                    ${generateCompletionStats(data.runs || [])}
+                </div>
+            </div>
+
+            <div class="results-canvas">
+                <h4 class="gold-text cinzel">Category Breakdown</h4>
+                <div class="category-bars">
+                    ${Object.entries(data.category_averages || {}).map(([cat, score]) => `
+                        <div class="cat-bar-container">
+                            <div class="cat-label">${cat.replace(/_/g, ' ')}</div>
+                            <div class="cat-bar-track">
+                                <div class="cat-bar-fill" style="width: ${score}%"></div>
+                            </div>
+                            <div class="cat-score">${score}%</div>
+                        </div>
+                    `).join('')}
+                </div>
+            </div>
+        </div>
+
+        <div class="results-layout-full" style="margin-top:40px;">
+            <div class="results-canvas" style="background: rgba(0,0,0,0.2); border: 1px solid var(--border); border-radius:16px; padding:30px;">
+                <h4 class="gold-text cinzel" style="margin-bottom:20px;">APEX Intelligence Report</h4>
+                
+                ${data.reviewer_status === 'success' ? `
+                    <div class="intelligence-grid" style="display:grid; grid-template-columns: repeat(3, 1fr); gap:20px;">
+                        ${renderReviewCard('Role Review', data.reviewer_results?.role_review)}
+                        ${renderReviewCard('Conversation Review', data.reviewer_results?.conversation_review)}
+                        ${renderReviewCard('Safety Review', data.reviewer_results?.safety_review)}
+                    </div>
+                ` : `
+                    <div class="results-placeholder">Analytic report unavailable or failed. Check APEX Status.</div>
+                `}
+
+                <div class="full-report-toggle" style="margin-top:30px; text-align:center;">
+                    <button class="dojo-secondary-btn" id="toggle-technical-btn" onclick="document.getElementById('full-technical-report').style.display='block'; this.style.display='none'">SHOW FULL TECHNICAL REPORT</button>
+                    <div id="full-technical-report" style="display:none; text-align:left; margin-top:20px;">
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                            <h5 class="gold-text" style="font-size:0.75rem;">RAW ANALYTIC PACKET</h5>
+                            <button class="dojo-secondary-btn" style="padding:4px 10px; font-size:0.6rem;" onclick="navigator.clipboard.writeText(document.getElementById('raw-packet-pre').innerText); showToast('Packet copied')">COPY</button>
+                        </div>
+                        <pre id="raw-packet-pre" class="technical-report" style="background:#000; padding:30px; border-radius:12px; border:1px solid var(--border); color:var(--text); font-family:monospace; font-size:0.8rem; line-height:1.2; overflow-x:auto;">${data.review_packet_text || 'No packet text available.'}</pre>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    // Also populate Patch Lab if available
+    if (data.troy_patch) {
+        renderPatchLab(data.troy_patch);
+    }
+}
+
+function generateCompletionStats(runs) {
+    const stats = {};
+    runs.forEach(r => {
+        const reason = r.completion_reason || 'unknown';
+        stats[reason] = (stats[reason] || 0) + 1;
+    });
+    return Object.entries(stats).map(([reason, count]) => `
+        <div class="stat-row" style="display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid rgba(255,255,255,0.05);">
+            <span style="color:var(--text-dim); text-transform:capitalize;">${reason.replace(/_/g, ' ')}</span>
+            <span class="gold-text" style="font-weight:700;">${count}</span>
+        </div>
+    `).join('');
+}
+
+function renderPatchLab(patch) {
+    const container = document.getElementById('dojo-patch-container');
+    container.innerHTML = `
+        <div class="patch-lab-layout">
+             <div class="patch-meta">
+                <h3 class="gold-text cinzel">APEX / TROY Patch Lab</h3>
+                <div class="patch-reason" style="color:var(--warning); font-style:italic; margin-bottom:20px;">Issue: ${patch.issue_summary || 'No summary available'}</div>
+            </div>
+            <div class="patch-editor-split" style="display:grid; grid-template-columns: 1fr 350px; gap:40px;">
+                <div class="patch-code-panel">
+                    <h4 class="gold-text">Proposed Prompt Patch</h4>
+                    <pre class="patch-diff" style="background:#000; padding:20px; border-radius:12px; border:1px solid var(--border); color:#a8dadc; overflow-x:auto;">${patch.patch || 'No patch generated'}</pre>
+                    
+                    <div class="patch-comparison" style="margin-top:30px; display:grid; grid-template-columns: 1fr 1fr; gap:20px;">
+                        <div>
+                            <h5 style="color:var(--text-dim); font-size:0.7rem; text-transform:uppercase;">Before (Original)</h5>
+                            <div style="font-size:0.8rem; height:150px; overflow-y:auto; padding:10px; background:rgba(255,0,0,0.05); border:1px solid rgba(239,68,68,0.2); border-radius:8px;">${patch.before_prompt || 'N/A'}</div>
+                        </div>
+                        <div>
+                            <h5 style="color:var(--text-dim); font-size:0.7rem; text-transform:uppercase;">After (Optimized)</h5>
+                            <div style="font-size:0.8rem; height:150px; overflow-y:auto; padding:10px; background:rgba(0,255,0,0.05); border:1px solid rgba(16,185,129,0.2); border-radius:8px;">${patch.after_prompt || 'N/A'}</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="patch-rationale">
+                    <h4 class="gold-text">Rationale</h4>
+                    <p style="font-size:0.9rem; line-height:1.6; color:var(--text-dim);">${patch.rationale || 'No rationale available'}</p>
+                    <div class="patch-actions" style="margin-top:30px; display:flex; flex-direction:column; gap:15px;">
+                        <button class="dojo-primary-btn" onclick="copyPatchToClipboard()">COPY PATCH TO CLIPBOARD</button>
+                        <button class="dojo-secondary-btn" onclick="rerunFailedScenarios()">RERUN FAILED ONLY</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+async function loadDojoHistory() {
+    try {
+        const response = await fetch(`${API_BASE}/api/dojo/history`);
+        const history = await response.json();
+        const list = document.getElementById('dojo-history-list');
+        list.innerHTML = history.map(item => `
+            <div class="history-item" onclick="loadBatchResults('${item.batch_id}'); switchDojoTab('results');">
+                <div class="b-id">${item.batch_id}</div>
+                <div class="b-agent">${item.target_agent} :: ${item.scenario_pack}</div>
+                <div class="b-meta">Score: ${item.average_score}% | ${item.verdict}</div>
+            </div>
+        `).join('');
+    } catch (e) {}
+}
+
+async function loadLatestDojoReport() {
+    try {
+        const response = await fetch(`${API_BASE}/api/dojo/history`);
+        const history = await response.json();
+        if (history.length) {
+            finishDojoMission(history[0].batch_id);
+        }
+    } catch (e) {}
+}
+
+function renderReviewCard(title, result) {
+    if (!result) return `<div class="review-card empty"><h5>${title}</h5><p style="font-size:0.8rem; color:var(--text-dim);">No findings.</p></div>`;
+    
+    // Defensive extraction for different result formats
+    const findings = (result.scorecard_analysis && result.scorecard_analysis.findings) || result.findings || [];
+    const summary = (result.scorecard_analysis && result.scorecard_analysis.summary) || result.summary || 'No summary provided.';
+    const status = result.status || 'pending';
+    const score = result.logic_score || (result.scorecard_analysis && result.scorecard_analysis.persona_alignment_score) || result.safety_score || 'N/A';
+
+    return `
+        <div class="review-card" style="background:rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); border-radius:12px; padding:20px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+                <h5 style="font-size:0.75rem; text-transform:uppercase; color:var(--gold);">${title}</h5>
+                <span style="font-size:0.65rem; padding:2px 6px; border-radius:4px; background:${status === 'pass' ? 'rgba(16,185,129,0.2)' : 'rgba(239,68,68,0.2)'}; color:${status === 'pass' ? 'var(--success)' : 'var(--error)'}">${status.toUpperCase()}</span>
+            </div>
+            <div style="font-size:1.1rem; font-weight:700; margin-bottom:10px;">${score !== 'N/A' ? score + '%' : ''}</div>
+            <p style="font-size:0.8rem; color:var(--text-dim); margin-bottom:15px; line-height:1.4;">${summary}</p>
+            <ul style="padding-left:15px; font-size:0.75rem; color:var(--text-dim); line-height:1.5;">
+                ${findings.slice(0, 3).map(f => `<li>${f}</li>`).join('')}
+            </ul>
+        </div>
+    `;
+}

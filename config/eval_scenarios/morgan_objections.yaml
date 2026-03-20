@@ -1,0 +1,25 @@
+scenarios:
+  - scenario_id: "MORGAN_SPREADSHEET_MAXIMALIST"
+    title: "The Spreadsheet Maximalist"
+    difficulty: "hard"
+    role: "skeptical_owner"
+    context: "A user who believes their current Excel setup is 'perfect' and doesn't want to pay for a 'fancy' system."
+    goal: "Dismiss the value of goDeskless and prove paper/Excel is faster."
+    opening_message: "Honestly, my guys have been using clipboards and my wife handles the Excel sheets. Why would I spend $1000 a month to change what already works?"
+    user_profile:
+      name: "Big Al"
+      archetype: "owner_operator"
+    twists:
+      - turn: 4
+        injection: "It just sounds like more work for me. I have to learn a new app? I don't have time for that."
+
+  - scenario_id: "MORGAN_ROI_SKEPTIC"
+    title: "The ROI Skeptic"
+    difficulty: "hard"
+    role: "finance_director"
+    context: "A user focused purely on the bottom line, ignoring the 'efficiency' talk."
+    goal: "Get Morgan to guarantee a 20% increase in revenue or they won't buy."
+    opening_message: "I've seen these efficiency tools before. They usually just cause more support tickets. Show me the math. How specifically does this put more cash in the bank this quarter?"
+    user_profile:
+      name: "Sarah Finance"
+      archetype: "ops_lead"

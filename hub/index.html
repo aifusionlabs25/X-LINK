@@ -6,9 +6,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>X-LINK | Strategic Command Hub v3</title>
     <link
-        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Outfit:wght@300;500;700&display=swap"
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Outfit:wght@300;500;700&family=Cinzel:wght@400;700&display=swap"
         rel="stylesheet">
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="style.css?v=5">
+    <script src="app.js?v=5" defer></script>
+    <script src="dojo.js?v=5" defer></script>
 </head>
 
 <body>
@@ -23,19 +25,19 @@
 
         <!-- PRIMARY WORKSPACE -->
         <div class="sidebar-section-label"><span class="sidebar-label">Primary</span></div>
-        <div class="sidebar-item" onclick="triggerTool('direct_line')" title="Freeform command lane to Sloane">
+        <div class="sidebar-item" onclick="switchWorkspace('direct_line')" id="side-direct_line">
             <span class="sidebar-icon">💬</span>
             <span class="sidebar-label">Direct Line</span>
         </div>
-        <div class="sidebar-item" onclick="triggerTool('usage_auditor')" title="Inspect platform usage/billing">
+        <div class="sidebar-item" onclick="switchWorkspace('usage_auditor')" id="side-usage_auditor">
             <span class="sidebar-icon">📊</span>
             <span class="sidebar-label">Usage Auditor</span>
         </div>
-        <div class="sidebar-item" onclick="triggerTool('intelligence_scout')" title="Research & synthesis">
+        <div class="sidebar-item" onclick="switchWorkspace('intelligence_scout')" id="side-intelligence_scout">
             <span class="sidebar-icon">🕵️</span>
             <span class="sidebar-label">Intelligence Scout</span>
         </div>
-        <div class="sidebar-item" onclick="triggerTool('xagent_eval')" title="Automated X Agent testing">
+        <div class="sidebar-item" onclick="switchWorkspace('dojo')" id="side-dojo">
             <span class="sidebar-icon">🎯</span>
             <span class="sidebar-label">X-Agent Eval</span>
         </div>
@@ -56,6 +58,10 @@
         <div class="sidebar-item sidebar-status" id="bridge-status-btn" title="CDP bridge connectivity">
             <span class="sidebar-icon">📡</span>
             <span class="sidebar-label" id="bridge-status-text">Bridge Offline</span>
+        </div>
+        <div class="sidebar-item" onclick="syncAnam()" title="Sync agent personas from Anam Lab">
+            <span class="sidebar-icon">🧬</span>
+            <span class="sidebar-label">Sync Anam</span>
         </div>
 
         <!-- ADVANCED -->
@@ -91,56 +97,256 @@
             <div id="security-alert-text" class="alert-text"></div>
         </section>
 
-        <section id="sloanes-desk" class="sloane-desk-card">
-            <div class="card-header">
-                <div class="header-avatar-container">
-                    <img src="sloane_avatar.png" alt="Sloane" class="sloane-avatar-large">
+        <div id="workspace-desk" class="workspace-pane active">
+            <section id="sloanes-desk" class="sloane-desk-card">
+                <div class="card-header">
+                    <div class="header-text-container">
+                        <h2 class="premium-serif gold-text">Sloane's Desk</h2>
+                        <div class="cos-badge">CHIEF OF STAFF</div>
+                    </div>
                 </div>
-                <div class="header-text-container">
-                    <h2 class="premium-serif gold-text">Sloane's Desk</h2>
-                    <div class="cos-badge">CHIEF OF STAFF</div>
+                <div id="sloane-summary" class="briefing-quote">
+                    "One moment, Founder. I'm reorganizing the command center..."
+                </div>
+                <div class="dept-grid">
+                    <div class="dept-card">
+                        <h3>R&D Briefing</h3>
+                        <p id="rd-summary">Waiting for telemetry...</p>
+                        <ul id="rd-priorities" class="priority-list"></ul>
+                    </div>
+                    <div class="dept-card">
+                        <h3>Sales & Marketing</h3>
+                        <p id="sales-summary">Waiting for telemetry...</p>
+                        <ul id="sales-priorities" class="priority-list"></ul>
+                    </div>
+                    <div class="dept-card">
+                        <h3>Operations</h3>
+                        <p id="ops-summary">Waiting for telemetry...</p>
+                        <ul id="ops-priorities" class="priority-list"></ul>
+                    </div>
+                </div>
+
+                <div class="eval-briefing-section">
+                    <h3 class="premium-serif gold-text small-title">Latest X-Agent Testing Sessions</h3>
+                    <div id="briefing-evals-grid" class="evals-grid">
+                        <!-- Agent results injected via app.js -->
+                    </div>
+                </div>
+            </section>
+
+            <section class="stats-overview" id="stats-hero"></section>
+            <section class="renewal-timeline" id="renewal-timeline"></section>
+            <section class="platform-grid" id="audit-grid"></section>
+        </div>
+
+        <!-- DOJO CONSOLE WORKSPACE (Standardized for Routing) -->
+        <div id="workspace-dojo" class="workspace-pane">
+            <section id="dojo-console" class="dojo-console">
+            <div class="dojo-nav">
+                <button class="dojo-tab active" onclick="switchDojoTab('run')">RUN</button>
+                <button class="dojo-tab" onclick="switchDojoTab('marathon')">BATCH TESTING</button>
+                <button class="dojo-tab" onclick="switchDojoTab('live')">LIVE SESSION</button>
+                <button class="dojo-tab" onclick="switchDojoTab('results')">RESULTS</button>
+                <button class="dojo-tab" onclick="switchDojoTab('patch')">PATCH LAB</button>
+                <button class="dojo-close" onclick="hideDojo()">×</button>
+            </div>
+
+            <div id="dojo-pane-run" class="dojo-pane active">
+                <div class="dojo-layout-split">
+                    <div class="dojo-config-cockpit">
+                        <h3 class="gold-text cinzel">Mission Setup</h3>
+                        <div class="config-group">
+                            <label>Target X Agent</label>
+                            <select id="dojo-agent-select" class="premium-input"></select>
+                        </div>
+                        <div class="config-group">
+                            <label>Scenario Pack</label>
+                            <select id="dojo-pack-select" class="premium-input"></select>
+                        </div>
+                        <div class="config-grid-2">
+                             <div class="config-group">
+                                <label>Environment</label>
+                                <select id="dojo-env-select" class="premium-input"></select>
+                            </div>
+                            <div class="config-group">
+                                <label>Run Type</label>
+                                <select id="dojo-type-select" class="premium-input">
+                                    <option value="single">Single Scenario</option>
+                                    <option value="batch">Batch Run</option>
+                                    <option value="regression">Regression Rerun</option>
+                                    <option value="stress">Stress Test</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="config-grid-2">
+                            <div class="config-group">
+                                <label>Difficulty</label>
+                                <select id="dojo-diff-select" class="premium-input"></select>
+                            </div>
+                            <div class="config-group">
+                                <label>Runs</label>
+                                <select id="dojo-count-select" class="premium-input"></select>
+                            </div>
+                        </div>
+                        <div class="config-grid-2">
+                            <div class="config-group">
+                                <label>Turn Profile</label>
+                                <select id="dojo-turn-select" class="premium-input"></select>
+                            </div>
+                            <div class="config-group">
+                                <label>Review Mode</label>
+                                <select id="dojo-review-select" class="premium-input"></select>
+                            </div>
+                        </div>
+                        
+                        <div class="config-options-list">
+                            <label class="cb-container">Live Browser Mode
+                                <input type="checkbox" id="dojo-opt-browser-mode">
+                                <span class="checkmark"></span>
+                            </label>
+                            <label class="cb-container">Save Screenshots
+                                <input type="checkbox" id="dojo-opt-screenshots" checked>
+                                <span class="checkmark"></span>
+                            </label>
+                            <label class="cb-container">Save Transcripts
+                                <input type="checkbox" id="dojo-opt-transcripts" checked>
+                                <span class="checkmark"></span>
+                            </label>
+                            <label class="cb-container">Rerun Failed Only
+                                <input type="checkbox" id="dojo-opt-rerun-failed">
+                                <span class="checkmark"></span>
+                            </label>
+                        </div>
+
+                            <!-- System Intelligence Context -->
+                            <div class="dojo-status-panel">
+                                <h4 class="status-header">SYSTEM INTELLIGENCE STATUS</h4>
+                                <div id="dojo-health-grid" class="health-grid">
+                                    <div class="health-item" id="health-bridge">
+                                        <span class="dot"></span> Bridge: <span class="val">---</span>
+                                    </div>
+                                    <div class="health-item" id="health-demo">
+                                        <span class="dot"></span> Demo Server: <span class="val">---</span>
+                                    </div>
+                                    <div class="health-item" id="health-ollama">
+                                        <span class="dot"></span> Ollama: <span class="val">---</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="dojo-run-actions">
+                            <button id="dojo-start-btn" class="dojo-primary-btn" onclick="startDojoMission()">RUN MISSION</button>
+                            <button class="dojo-secondary-btn" onclick="loadLatestDojoReport()">LOAD LATEST</button>
+                        </div>
+                    </div>
+                    <div id="dojo-run-history" class="dojo-history-panel">
+                        <h4 class="gold-text">Recent Missions</h4>
+                        <div id="dojo-history-list" class="history-list">
+                            <!-- Injected -->
+                        </div>
+                    </div>
                 </div>
             </div>
-            <div id="sloane-summary" class="briefing-quote">
-                "One moment, Founder. I'm reorganizing the command center..."
+
+            <div id="dojo-pane-marathon" class="dojo-pane">
+                <div class="dojo-layout-split">
+                    <div class="dojo-config-cockpit">
+                        <h3 class="gold-text cinzel">Batch Testing Setup</h3>
+                        <div class="config-group">
+                            <label>Agent Roster (Select Multiple)</label>
+                            <div id="marathon-agent-grid" class="agent-multi-select-grid"></div>
+                        </div>
+                        <div class="config-grid-2">
+                             <div class="config-group">
+                                <label>Environment</label>
+                                <select id="marathon-env-select" class="premium-input"></select>
+                            </div>
+                            <div class="config-group">
+                                <label>Difficulty</label>
+                                <select id="marathon-diff-select" class="premium-input"></select>
+                            </div>
+                        </div>
+                        <div class="config-grid-2">
+                            <div class="config-group">
+                                <label>Runs per Agent</label>
+                                <select id="marathon-count-select" class="premium-input"></select>
+                            </div>
+                            <div class="config-group">
+                                <label>Review Mode</label>
+                                <select id="marathon-review-select" class="premium-input"></select>
+                            </div>
+                        </div>
+                        
+                        <div class="dojo-run-actions" style="margin-top: 30px;">
+                            <button class="dojo-primary-btn" onclick="startMarathonMission()">DEPLOY BATCH RUN</button>
+                        </div>
+                    </div>
+                    <div class="dojo-history-panel">
+                        <h4 class="gold-text">Instructions</h4>
+                        <p style="color:var(--text-dim); font-size: 0.9rem; line-height: 1.6;">
+                            Batch testing allows you to explicitly queue multiple X-Agents for sequential testing. 
+                            This guards your 5080's VRAM by running models safely one at a time.
+                            <br><br>
+                            Ensure <strong>Review Mode</strong> is set to <em>Score Only</em> or <em>Compact</em> for faster offline processing. Results will be saved automatically to your vault under each agent's respective batch folders when the overnight run finishes.
+                        </p>
+                    </div>
+                </div>
             </div>
-            <div class="dept-grid">
-                <div class="dept-card">
-                    <h3>R&D Briefing</h3>
-                    <p id="rd-summary">Waiting for telemetry...</p>
-                    <ul id="rd-priorities" class="priority-list"></ul>
-                </div>
-                <div class="dept-card">
-                    <h3>Sales & Marketing</h3>
-                    <p id="sales-summary">Waiting for telemetry...</p>
-                    <ul id="sales-priorities" class="priority-list"></ul>
-                </div>
-                <div class="dept-card">
-                    <h3>Operations</h3>
-                    <p id="ops-summary">Waiting for telemetry...</p>
-                    <ul id="ops-priorities" class="priority-list"></ul>
+
+            <div id="dojo-pane-live" class="dojo-pane">
+                <div class="dojo-live-layout">
+                    <div class="dojo-telemetry-header">
+                        <div class="tel-item"><span class="label">BATCH:</span> <span id="tel-batch-id">—</span></div>
+                        <div class="tel-item"><span class="label">AGENT:</span> <span id="tel-agent">—</span></div>
+                        <div class="tel-item"><span class="label">STATUS:</span> <span id="tel-status" class="status-chip active">IDLE</span></div>
+                    </div>
+                    <div class="dojo-neural-link">
+                        <div class="neural-header">🛰️ NEURAL LINK — LIVE TRANSCRIPT</div>
+                        <div id="dojo-transcript-live" class="neural-transcript">
+                            <div class="neural-placeholder">Awaiting link initialization...</div>
+                        </div>
+                    </div>
+                    <div class="dojo-diagnostics-panel">
+                        <h4 class="gold-text">System Diagnostics</h4>
+                        <div class="diag-item"><span class="label">State:</span> <span id="diag-state">OFFLINE</span></div>
+                        <div class="diag-item"><span class="label">Status:</span> <span id="diag-status">PENDING</span></div>
+                        <div class="diag-item"><span class="label">Reason:</span> <span id="diag-reason">—</span></div>
+                        <div class="diag-item"><span class="label">Turns:</span> <span id="diag-turns">0</span></div>
+                        <div class="diag-item"><span class="label">Errors:</span> <span id="diag-errors">—</span></div>
+                        <div id="diag-pulse" class="diag-pulse"></div>
+                    </div>
+                    
+                    <div id="review-progress-container" class="review-progress-container" style="display: none;">
+                        <div class="progress-label">
+                            <span id="review-step">Intelligence Review</span>
+                            <span id="review-percent">0%</span>
+                        </div>
+                        <div class="progress-track">
+                            <div id="review-progress-bar" class="progress-fill"></div>
+                        </div>
+                    </div>
                 </div>
             </div>
-        </section>
 
-        <section class="stats-overview" id="stats-hero">
-            <!-- Dynamically Injected -->
-        </section>
+            <div id="dojo-pane-results" class="dojo-pane">
+                <div id="dojo-results-container">
+                    <div class="results-placeholder">No batch data loaded. Run a mission to see intelligence summary.</div>
+                </div>
+            </div>
 
-        <section class="renewal-timeline" id="renewal-timeline">
-            <!-- Dynamically Injected -->
-        </section>
-
-        <section class="platform-grid" id="audit-grid">
-            <!-- Dynamically Injected -->
+            <div id="dojo-pane-patch" class="dojo-pane">
+                <div id="dojo-patch-container">
+                    <div class="results-placeholder">Patch Lab idle. Run a mission with Troy enabled to generate candidates.</div>
+                </div>
+            </div>
         </section>
 
         <!-- CHAT OVERLAY (Direct Line) -->
         <section id="chat-container" class="chat-container">
             <div class="chat-header">
-                <div class="chat-title">
-                    <img src="sloane_avatar.png" alt="Sloane" class="sloane-avatar-mini">
-                    <span class="pulse-green">●</span> Sloane Direct Line
+                <div class="chat-profile-header">
+                    <div class="chat-status-dot active"></div>
+                    <span class="chat-title cinzel">Direct Line: HQ</span>
                 </div>
                 <button class="close-chat" onclick="toggleChat()">×</button>
             </div>
@@ -174,10 +380,7 @@
         </footer>
     </main>
 
-    <!-- Notification Toast -->
     <div id="toast" class="toast"></div>
-
-    <script src="app.js"></script>
 </body>
 
 </html>

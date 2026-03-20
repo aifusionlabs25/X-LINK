@@ -1,0 +1,30 @@
+{
+  "james": {
+    "verdict": "NO-SHIP",
+    "score": 68.0,
+    "runs": [
+      "objection_james_james_objections_01"
+    ]
+  },
+  "morgan": {
+    "verdict": "SHIP",
+    "score": 90.0,
+    "runs": [
+      "objection_morgan_morgan_objections_01"
+    ]
+  },
+  "sarah-netic": {
+    "verdict": "SHIP",
+    "score": 98.0,
+    "runs": [
+      "objection_sarah-netic_sarah_objections_01"
+    ]
+  },
+  "luke": {
+    "verdict": "NO_DATA",
+    "score": 0.0,
+    "runs": [
+      "objection_luke_luke_emergency_01"
+    ]
+  }
+}

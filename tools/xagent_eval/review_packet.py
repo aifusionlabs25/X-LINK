@@ -61,12 +61,28 @@ def generate_review_packet(
         lines.append(f"  {cat_key:<30} {avg:.1f}/5.0  {bar}{flag}")
     lines.append("")
 
-    # ── Failed Runs ──────────────────────────────────────────
+    # ── Failed Runs / Infrastructure Errors ──────────────────
+    all_meta = batch_summary.data.get("all_metadata", [])
     failed_runs = [s for s in scorecards if s.pass_fail in ("FAIL", "FAIL_BLOCK_RELEASE")]
-    if failed_runs:
+    
+    # Identify runs with errors but no scorecard
+    meta_errors = [m for m in all_meta if m.get("status") == "error" or m.get("classification") in ("transport_session_failure", "scenario_mismatch", "review_runtime_failure")]
+    
+    if failed_runs or meta_errors:
         lines.append("-" * 70)
-        lines.append("FAILED RUNS")
+        lines.append("FAILURE RECAP & ERROR LOG")
         lines.append("-" * 70)
+        
+        # List metadata errors first (Infrastructure/Gating)
+        for m in meta_errors:
+            lines.append(f"  Run {m.get('run_id')}:")
+            lines.append(f"    Scenario:   {m.get('scenario_title')}")
+            lines.append(f"    Classification: {m.get('classification', 'unknown')}")
+            lines.append(f"    Error:      {m.get('error_code', 'N/A')}")
+            lines.append(f"    Message:    {m.get('error_message', 'No details.')}")
+            lines.append("")
+
+        # List scored failures
         for sc in failed_runs:
             scenario = next((s for s in scenarios if s.get("scenario_id") == sc.scenario_id), {})
             lines.append(f"  Run {sc.run_id}:")
@@ -76,12 +92,14 @@ def generate_review_packet(
             if sc.critical_failures:
                 for cf in sc.critical_failures:
                     lines.append(f"    🚨 CRITICAL: {cf}")
-            if sc.warnings:
-                for w in sc.warnings:
-                    lines.append(f"    ⚠  WARNING: {w}")
             lines.append("")
+    elif not scorecards:
+        lines.append("-" * 70)
+        lines.append("FAILURE RECAP")
+        lines.append("-" * 70)
+        lines.append("  No scorecards generated. Entire batch failed or was blocked.\n")
     else:
-        lines.append("No failed runs.\n")
+        lines.append("No failed runs detected.\n")
 
     # ── Critical Moments ─────────────────────────────────────
     all_criticals = []
@@ -104,45 +122,112 @@ def generate_review_packet(
     if batch_summary.top_failure_categories:
         for cat in batch_summary.top_failure_categories:
             lines.append(f"  → {cat} (consistently low scores)")
+    elif meta_errors:
+        lines.append("  → Infrastructure / Transport Failure (check Ollama status)")
+        lines.append("  → Scenario Gating Conflict (check allowed_packs in agents.yaml)")
     else:
         lines.append("  No systematic failure patterns detected.")
     lines.append("")
 
-    # ── Suggested Persona Changes ────────────────────────────
-    lines.append("-" * 70)
-    lines.append("SUGGESTED PERSONA CHANGES")
-    lines.append("-" * 70)
-    low_cats = batch_summary.top_failure_categories
+    # ── Automated Review Team (APEX) ─────────────────────────
+    reviewer_results = batch_summary.data.get("reviewer_results")
+    reviewer_status = batch_summary.data.get("reviewer_status", "unknown")
+    reviewer_error = batch_summary.data.get("reviewer_error")
 
-    if "objection_handling" in low_cats:
-        lines.append("  1. Strengthen objection handling in system prompt")
-        lines.append("     → Add specific rebuttal patterns and evidence frameworks")
-    if "role_fidelity" in low_cats:
-        lines.append("  2. Reinforce character boundaries")
-        lines.append("     → Add explicit persona guardrails and identity anchors")
-    if "accuracy_groundedness" in low_cats:
-        lines.append("  3. Expand knowledge base and add fact-checking constraints")
-        lines.append("     → Reduce temperature or add RAG retrieval")
-    if "greeting_first_impression" in low_cats:
-        lines.append("  4. Refine opening sequence")
-        lines.append("     → Test variations of greeting and first interaction")
-    if not low_cats:
-        lines.append("  No immediate persona changes recommended.")
-        lines.append("  Agent performed within acceptable thresholds.")
-    lines.append("")
+    if reviewer_results and reviewer_status == "success":
+        lines.append("-" * 70)
+        lines.append("AUTOMATED REVIEW TEAM FINDINGS")
+        lines.append("-" * 70)
+        
+        for role, result in reviewer_results.items():
+            if role == "troy_patch": continue
+            status_icon = "✅" if result.get("status") == "pass" else "⚠️" if result.get("status") == "warn" else "🚨"
+            lines.append(f"  {status_icon} {role.replace('_', ' ').title()}: {result.get('summary', 'No summary provided.')}")
+            if result.get("status") == "error":
+                lines.append(f"     • 🚨 ERROR: {result.get('error', 'Unknown reviewer error')}")
+            for finding in result.get("findings", []):
+                lines.append(f"     • {finding}")
+            lines.append("")
+    elif reviewer_status == "error":
+        lines.append("-" * 70)
+        lines.append("AUTOMATED REVIEW TEAM FAILURE")
+        lines.append("-" * 70)
+        lines.append(f"  🚨 Error: {reviewer_error or 'Unknown analytic failure'}")
+        lines.append("  The reviewer team encountered a technical error during analysis.")
+        lines.append("")
+    elif reviewer_status == "success":
+        lines.append("-" * 70)
+        lines.append("AUTOMATED REVIEW TEAM STATUS")
+        lines.append("-" * 70)
+        lines.append("  🔍 PARTIAL REVIEW GENERATED FROM STALLED SESSION")
+        lines.append("  APEX analysis extracted insights despite the infrastructure stall.")
+        lines.append("")
+    elif meta_errors and not scorecards:
+        lines.append("-" * 70)
+        lines.append("AUTOMATED REVIEW TEAM STATUS")
+        lines.append("-" * 70)
+        lines.append("  ⚠️ REVIEW NOT EXECUTED")
+        lines.append("  Check tool configuration for review_mode.")
+        lines.append("")
+
+    # ── Eval Contract Recap ──────────────────────────────────
+    if all_meta:
+        contract = all_meta[0].get("eval_contract")
+        if contract:
+            lines.append("-" * 70)
+            lines.append("EFFECTIVE EVAL CONTRACT")
+            lines.append("-" * 70)
+            lines.append(f"  Must Collect:    {', '.join(contract.get('must_collect', []))}")
+            lines.append(f"  Success Event:   {contract.get('success_event', 'N/A')}")
+            lines.append(f"  Fail Conditions: {', '.join(contract.get('fail_conditions', []))}")
+            lines.append("")
+
+    # ── Troy Patch Candidate ─────────────────────────────────
+    troy_patch = batch_summary.data.get("troy_patch")
+    if troy_patch:
+        lines.append("-" * 70)
+        lines.append("TROY PROMPT PATCH CANDIDATE")
+        lines.append("-" * 70)
+        lines.append(f"  Rationale: {troy_patch.get('rationale', 'N/A')}")
+        lines.append(f"  Risk Note: {troy_patch.get('risk_note', 'N/A')}")
+        lines.append("")
+        lines.append("  PATCH SEED:")
+        lines.append("  " + "-" * 30)
+        lines.append(troy_patch.get("patch_candidate", "No patch generated."))
+        lines.append("  " + "-" * 30)
+        lines.append("")
+        lines.append("  Regression Scenarios:")
+        for rs in troy_patch.get("regression_scenarios", []):
+            lines.append(f"    • {rs}")
+        lines.append("")
+
+    # ── Suggested Persona Changes / KB Changes ───────────────
+    low_cats = batch_summary.top_failure_categories
+    
+    if not reviewer_results:
+        lines.append("-" * 70)
+        lines.append("SUGGESTED PERSONA CHANGES (LEGACY)")
+        lines.append("-" * 70)
+        if not low_cats:
+            lines.append("  No immediate persona changes recommended.")
+        else:
+            for cat in low_cats:
+                lines.append(f"  → Review {cat} logic in system prompt.")
+        lines.append("")
 
     # ── Suggested KB / Guardrail Changes ─────────────────────
     lines.append("-" * 70)
     lines.append("SUGGESTED KB / GUARDRAIL CHANGES")
     lines.append("-" * 70)
-    if "compliance_safety" in low_cats:
-        lines.append("  ⚠ PRIORITY: Review and strengthen safety guardrails")
-        lines.append("    → Audit system prompt for information leak vectors")
-    if "flow_naturalness" in low_cats:
-        lines.append("  → Adjust response length constraints")
-        lines.append("  → Review stop token configuration")
     if not low_cats:
         lines.append("  No KB/guardrail changes needed at this time.")
+    else:
+        if "compliance_safety" in low_cats:
+            lines.append("  ⚠ PRIORITY: Review and strengthen safety guardrails")
+            lines.append("    → Audit system prompt for information leak vectors")
+        if "flow_naturalness" in low_cats:
+            lines.append("  → Adjust response length constraints")
+            lines.append("  → Review stop token configuration")
     lines.append("")
 
     lines.append("=" * 70)
