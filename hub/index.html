@@ -9,8 +9,8 @@
         href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Outfit:wght@300;500;700&family=Cinzel:wght@400;700&display=swap"
         rel="stylesheet">
     <link rel="stylesheet" href="style.css?v=5">
-    <script src="app.js?v=5" defer></script>
-    <script src="dojo.js?v=5" defer></script>
+    <script src="app.js?v=6" defer></script>
+    <script src="dojo.js?v=6" defer></script>
 </head>
 
 <body>
@@ -59,11 +59,15 @@
             <span class="sidebar-icon">📡</span>
             <span class="sidebar-label" id="bridge-status-text">Bridge Offline</span>
         </div>
-        <div class="sidebar-item" onclick="syncAnam()" title="Sync agent personas from Anam Lab">
-            <span class="sidebar-icon">🧬</span>
-            <span class="sidebar-label">Sync Anam</span>
+        <div class="sidebar-section-label"><span class="sidebar-label">Anam Synchronization</span></div>
+        <div class="sync-container" style="padding: 0 15px 15px 15px; display: flex; flex-direction: column; gap: 8px;">
+            <select id="anam-sync-target" class="dojo-select" style="width: 100%; font-size: 0.8rem; padding: 6px;">
+                <option value="all">Sync All Agents</option>
+            </select>
+            <button class="dojo-primary-btn" onclick="syncAnam()" style="width: 100%; font-size: 0.8rem; padding: 6px;">
+                <span class="sidebar-icon">🧬</span> Start Sync
+            </button>
         </div>
-
         <!-- ADVANCED -->
         <div class="sidebar-section-label"><span class="sidebar-label">Advanced</span></div>
         <div class="sidebar-item sidebar-internal" onclick="triggerTool('scout_workers')" title="Internal scout workers">
@@ -201,7 +205,7 @@
                         
                         <div class="config-options-list">
                             <label class="cb-container">Live Browser Mode
-                                <input type="checkbox" id="dojo-opt-browser-mode">
+                                <input type="checkbox" id="dojo-opt-browser-mode" checked>
                                 <span class="checkmark"></span>
                             </label>
                             <label class="cb-container">Save Screenshots

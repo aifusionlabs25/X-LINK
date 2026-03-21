@@ -88,13 +88,8 @@ def get_latest_eval_summaries(root_dir):
         return []
     
     agent_results = {}
-    for batch_id in os.listdir(eval_dir):
-        batch_path = os.path.join(eval_dir, batch_id)
-        if not os.path.isdir(batch_path): continue
-            
-        summary_path = os.path.join(batch_path, 'batch_summary.json')
-        if not os.path.exists(summary_path): continue
-            
+    for summary_path in glob.glob(os.path.join(eval_dir, '**', 'batch_summary.json'), recursive=True):
+        batch_id = os.path.basename(os.path.dirname(summary_path))
         try:
             with open(summary_path, 'r', encoding='utf-8') as f:
                 data = json.load(f)
@@ -114,8 +109,8 @@ def get_latest_eval_summaries(root_dir):
         except: continue
             
     results = list(agent_results.values())
+    results.sort(key=lambda x: x['mtime'], reverse=True)
     for r in results: r.pop('mtime', None) # Clean up
-    results.sort(key=lambda x: x['score'], reverse=True)
     return results
 
 def synthesize_briefing(email_push=False):

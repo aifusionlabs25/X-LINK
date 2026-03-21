@@ -392,14 +392,16 @@ async def execute_simulated_run(
 
             # Generate agent response
             conv_text = "\n".join(conversation)
-            prompt = f"{current_agent_prompt}\n\n[CONVERSATION]\n{conv_text}\n{inputs.target_agent}:"
+            prompt = f"{current_agent_prompt}\n\n[CONVERSATION]\n{conv_text}\n{inputs.target_agent.capitalize()}:"
 
+            print(f"[DEBUG] Turn {turn_num} - Requesting agent reply...")
             response = requests.post(OLLAMA_URL, json={
                 "model": "qwen3-coder-next",
                 "prompt": prompt,
                 "stream": False,
                 "options": {"temperature": 0.5 if close_mode else 0.6, "stop": ["User:", "\n\n"]},
-            }, timeout=60)
+            }, timeout=300)
+            print(f"[DEBUG] Turn {turn_num} - Got agent reply!")
 
             agent_reply = response.json().get("response", "").strip()
             if not agent_reply:
@@ -419,7 +421,7 @@ async def execute_simulated_run(
                 "transcript_status": "pending",
                 "close_mode": close_mode
             })
-            conversation.append(f"{inputs.target_agent}: {agent_reply}")
+            conversation.append(f"{inputs.target_agent.capitalize()}: {agent_reply}")
 
             # Track repetition (heuristic: last 20 chars of reply)
             if len(agent_reply) > 20:
@@ -479,12 +481,14 @@ async def execute_simulated_run(
                 f"{user_profile.get('name', 'User')}: {intercept_text}"
             )
 
+            print(f"[DEBUG] Turn {turn_num} - Requesting user reply with stop tokens: {inputs.target_agent}:")
             user_response = requests.post(OLLAMA_URL, json={
                 "model": "qwen3-coder-next",
                 "prompt": user_gen_prompt,
                 "stream": False,
-                "options": {"temperature": 0.3 if (slot_intercepted or close_mode) else 0.7, "stop": [f"{inputs.target_agent}:", "\n\n"]},
-            }, timeout=60)
+                "options": {"temperature": 0.3 if (slot_intercepted or close_mode) else 0.7, "stop": [f"{inputs.target_agent}:", "\n\n", f"{inputs.target_agent.capitalize()}:"]},
+            }, timeout=300)
+            print(f"[DEBUG] Turn {turn_num} - Got user reply!")
             
             raw_user_reply = user_response.json().get("response", "").strip()
             user_msg = f"{intercept_text}{raw_user_reply}".strip()

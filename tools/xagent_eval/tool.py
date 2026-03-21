@@ -58,13 +58,13 @@ class XAgentEvalTool(BaseTool):
             with open(agents_path, "r", encoding="utf-8") as f:
                 agents_data = yaml.safe_load(f)
             
-            agent_conf = next((a for a in agents_data.get("agents", []) if a["slug"] == self.inputs.target_agent), None)
-            if not agent_conf:
+            self.agent_conf = next((a for a in agents_data.get("agents", []) if a["slug"] == self.inputs.target_agent), None)
+            if not self.agent_conf:
                 self._mark_error(f"Agent '{self.inputs.target_agent}' not found in agents.yaml.")
                 self.result.data = {"error_code": EvalError.AGENT_NOT_FOUND}
                 return False
 
-            eval_block = agent_conf.get("eval", {})
+            eval_block = self.agent_conf.get("eval", {})
             self.contract = EvalContract(
                 allowed_packs=eval_block.get("allowed_packs", []),
                 blocked_packs=eval_block.get("blocked_packs", []),
@@ -72,7 +72,7 @@ class XAgentEvalTool(BaseTool):
                 must_collect=eval_block.get("must_collect", []),
                 success_event=eval_block.get("success_event", "general_success"),
                 fail_conditions=eval_block.get("fail_conditions", []),
-                close_strategy=agent_conf.get("close_strategy", {})
+                close_strategy=self.agent_conf.get("close_strategy", {})
             )
         except Exception as e:
             self._mark_error(f"Failed to load eval contract: {e}")
@@ -178,6 +178,8 @@ class XAgentEvalTool(BaseTool):
             env_url = context.get("env_url", "https://x-agent.ai")  # Default to prod
             if self.inputs.environment == "local":
                 env_url = context.get("local_url", "http://127.0.0.1:3000")
+            elif getattr(self, "agent_conf", {}).get("demo_url"):
+                env_url = self.agent_conf.get("demo_url")
 
             capture = None
             if self.inputs.browser_mode:

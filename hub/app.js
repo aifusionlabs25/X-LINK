@@ -116,16 +116,28 @@ function updateUI(data) {
 function updateAgentSyncUI(agents) {
     // This could update the Dojo agent select or a separate status panel
     const select = document.getElementById('dojo-agent-select');
-    if (!select) return;
+    if (select) {
+        // We can add the last sync time to the options or a separate tooltip
+        agents.forEach(a => {
+            const option = Array.from(select.options).find(o => o.value === a.slug);
+            if (option && a.last_synced) {
+                const date = new Date(a.last_synced).toLocaleString([], {month: 'short', day: 'numeric', hour: '2-digit', minute:'2-digit'});
+                option.innerText = `${a.name} (Synced ${date})`;
+            }
+        });
+    }
 
-    // We can add the last sync time to the options or a separate tooltip
-    agents.forEach(a => {
-        const option = Array.from(select.options).find(o => o.value === a.slug);
-        if (option && a.last_synced) {
-            const date = new Date(a.last_synced).toLocaleString([], {month: 'short', day: 'numeric', hour: '2-digit', minute:'2-digit'});
-            option.innerText = `${a.name} (Synced ${date})`;
-        }
-    });
+    // Populate Sidebar Sync Dropdown
+    const syncTarget = document.getElementById('anam-sync-target');
+    if (syncTarget) {
+        syncTarget.innerHTML = '<option value="all">Sync All Agents</option>';
+        agents.forEach(a => {
+            const opt = document.createElement('option');
+            opt.value = a.slug;
+            opt.innerText = a.name;
+            syncTarget.appendChild(opt);
+        });
+    }
 }
 
 function renderEvalGrid(evals) {
@@ -269,12 +281,24 @@ function renderRenewalTimeline(subscriptions) {
 // ── Tool Triggering ───────────────────────────────────────────
 
 async function syncAnam() {
-    showToast("🧬 Initializing Anam Persona Sync...");
+    const targetSelect = document.getElementById('anam-sync-target');
+    const agentSlug = targetSelect ? targetSelect.value : 'all';
+    
+    if (agentSlug === 'all') {
+        showToast("🧬 Initializing Anam Persona Sync (All Agents)...");
+    } else {
+        showToast(`🧬 Initializing Anam Persona Sync (${agentSlug})...`);
+    }
+
     try {
-        const response = await fetch(`${API_BASE}/api/anam/sync`, { method: 'POST' });
+        const response = await fetch(`${API_BASE}/api/anam/sync`, { 
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ agent: agentSlug })
+        });
         const data = await response.json();
         if (response.ok) {
-            showToast("✅ Anam Personas Synced to config/agents.yaml", false);
+            showToast(`✅ Anam Personas Synced for ${agentSlug.toUpperCase()}`, false);
             refreshStatus();
         } else {
             showToast(`❌ Sync Failed: ${data.error || 'Unknown error'}`, true);

@@ -1,8 +1,4 @@
 <!DOCTYPE html>
-<!-- ⚠️ DEPRECATED: This file is the legacy HUB entry point (pre-v3).
-     The canonical HUB entry is now: hub/index.html
-     Served via Synapse Bridge at: http://localhost:5001/hub
-     This file is preserved for rollback only. Do NOT add features here. -->
 <html lang="en">
 
 <head>
@@ -543,13 +539,13 @@
   "Tavus Usage": {
     "url": "https://platform.tavus.io/dev/usage",
     "metric_type": "Conversation Minutes Used",
-    "timestamp": "2026-03-10T12:06:03.703679",
+    "timestamp": "2026-03-19T21:06:11.835762",
     "data": {}
   },
   "Tavus Billing": {
     "url": "https://platform.tavus.io/dev/billing",
     "metric_type": "Plan & Billing Details",
-    "timestamp": "2026-03-10T12:06:12.098172",
+    "timestamp": "2026-03-19T21:06:20.118208",
     "data": {
       "plan": "Starter",
       "conversation_minutes_used": "5.5",
@@ -560,41 +556,37 @@
   "Anam Lab Dashboard": {
     "url": "https://lab.anam.ai/dashboard",
     "metric_type": "Session Minutes Used",
-    "timestamp": "2026-03-10T12:06:26.683545",
+    "timestamp": "2026-03-19T21:06:34.838719",
     "data": {
-      "dashboard_minutes": "Feb 11\nFeb 18\nFeb 25\nMar 3\nMar 9\n0m\n20m\n40m\n64m\nView Details",
-      "minutes_used_total": "60"
+      "dashboard_minutes": "Feb 21\nFeb 28\nMar 6\nMar 12\nMar 19\n0m\n70m\n130m\nView Details",
+      "minutes_used_total": "65"
     }
   },
   "Anam Lab Sessions": {
     "url": "https://lab.anam.ai/sessions",
     "metric_type": "Session History & Usage",
-    "timestamp": "2026-03-10T12:06:35.252441",
+    "timestamp": "2026-03-19T21:06:43.505472",
     "data": {
-      "dashboard_minutes": "Total Usage\n2h 17m",
-      "minutes_used_total": "60"
+      "dashboard_minutes": "Total Usage\n9h 58m",
+      "minutes_used_total": "65"
     }
   },
   "Vercel Usage": {
     "url": "http://vercel.com/robs-projects-e72bad73/~/usage",
-    "metric_type": "Bandwidth/Execution",
-    "timestamp": "2026-03-10T12:06:46.055150",
-    "data": {
-      "bandwidth": "10 GB\n100 GB"
-    }
+    "status": "blocked",
+    "issue": "Login Required",
+    "timestamp": "2026-03-19T21:07:06.240215"
   },
   "Resend Billing": {
     "url": "https://resend.com/settings/billing",
-    "metric_type": "Email Quota & Usage",
-    "timestamp": "2026-03-10T12:06:54.933564",
-    "data": {
-      "cost_found": "$0"
-    }
+    "status": "blocked",
+    "issue": "Login Required",
+    "timestamp": "2026-03-19T21:07:27.970378"
   },
   "Cartesia Console": {
     "url": "https://play.cartesia.ai/console",
     "metric_type": "Total Usage Credits",
-    "timestamp": "2026-03-10T12:07:03.484290",
+    "timestamp": "2026-03-19T21:07:35.299406",
     "data": {
       "capabilities": []
     }
@@ -602,17 +594,80 @@
   "Elevenlabs Usage": {
     "url": "https://elevenlabs.io/app/usage",
     "metric_type": "Characters Remaining",
-    "timestamp": "2026-03-10T12:07:41.859004",
-    "data": {
-      "error": "Locator.click: Timeout 30000ms exceeded.\nCall log:\n  - waiting for locator(\"button:has-text(\\\"%\\\"), .rounded-full, [aria-label*=\\\"Account\\\"]\").last\n  -     - locator resolved to <img width=\"40\" height=\"40\" data-nimg=\"1\" loading=\"lazy\" decoding=\"async\" alt=\"AI Fusion Labs\" class=\"rounded-full shrink-0 bg-gray-50 object-cover h-full w-full\" src=\"/app_assets/image_assets/_next/image?url=https%3A%2F%2Flh3.googleusercontent.com%2Fa%2FACg8ocL05AkJeJ3ol7dCYVXJkl_TtjQV5W8uIopPcWw51o6NDZLxneU%3Ds96-c&w=96&q=75\" srcset=\"/app_assets/image_assets/_next/image?url=https%3A%2F%2Flh3.googleusercontent.com%2Fa%2FACg8ocL05AkJeJ3ol7dCYVXJkl_TtjQV5W8uIopPcWw51o6NDZLxneU%3Ds96-c&w=48&q=75 1x, \u2026/>\n  -   - attempting click action\n  -     2 \u00d7 waiting for element to be visible, enabled and stable\n  -       - element is not visible\n  -     - retrying click action\n  -     - waiting 20ms\n  -     2 \u00d7 waiting for element to be visible, enabled and stable\n  -       - element is not visible\n  -     - retrying click action\n  -       - waiting 100ms\n  -     56 \u00d7 waiting for element to be visible, enabled and stable\n  -        - element is not visible\n  -      - retrying click action\n  -        - waiting 500ms\n"
-    }
+    "timestamp": "2026-03-19T21:07:46.915518",
+    "data": {}
   }
 };
         const briefingData = {
-  "timestamp": "2026-03-10T12:05:37.938457",
+  "timestamp": "2026-03-18T18:26:28.453253",
   "sloane": {
     "name": "Moneypenny",
-    "summary": "\"Good morning, Rob. Current mission status: we're running smoothly, with all active agents in position. However, I do need to bring to your attention that Morgan's task is currently blocked, and I'm working on resolving the issue with James. All other tasks are proceeding as scheduled, with Dani, Amy, and Sarah on track to meet their objectives.\"",
+    "summary": "Rob's current fleet status is nominal, with all active agents online and no outstanding tasks to prioritize. The overall system status remains stable, indicating a low-risk environment for operations.",
+    "agent_evals": [
+      {
+        "agent": "test_agent",
+        "score": 96.3,
+        "tests": 3,
+        "verdict": "SHIP",
+        "batch_id": "298180e9"
+      },
+      {
+        "agent": "Sarah",
+        "score": 91.0,
+        "tests": 10,
+        "verdict": "SHIP",
+        "batch_id": "945c7855"
+      },
+      {
+        "agent": "morgan",
+        "score": 89.0,
+        "tests": 1,
+        "verdict": "SHIP",
+        "batch_id": "full_objection_morgan"
+      },
+      {
+        "agent": "claire",
+        "score": 89.0,
+        "tests": 3,
+        "verdict": "SHIP",
+        "batch_id": "a8af3bc6"
+      },
+      {
+        "agent": "dani",
+        "score": 87.5,
+        "tests": 3,
+        "verdict": "SHIP",
+        "batch_id": "e3191416"
+      },
+      {
+        "agent": "amy",
+        "score": 82.1,
+        "tests": 3,
+        "verdict": "CONDITIONAL",
+        "batch_id": "73317106"
+      },
+      {
+        "agent": "sarah-netic",
+        "score": 82.0,
+        "tests": 1,
+        "verdict": "SHIP",
+        "batch_id": "fad4e35c"
+      },
+      {
+        "agent": "luke",
+        "score": 78.0,
+        "tests": 1,
+        "verdict": "SHIP",
+        "batch_id": "full_objection_luke"
+      },
+      {
+        "agent": "james",
+        "score": 58.6,
+        "tests": 3,
+        "verdict": "NO-SHIP",
+        "batch_id": "4be0a515"
+      }
+    ],
     "calendar_events": []
   },
   "departments": {
@@ -627,7 +682,7 @@
       "summary": "8 agents live.",
       "priorities": [
         "Legal Pro.",
-        "Sarah Fix."
+        "Sarah-Netic Fix."
       ]
     },
     "ops": {

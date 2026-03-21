@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse, RedirectResponse
@@ -149,12 +149,21 @@ def audit_log(entry: dict):
 
 
 @app.post("/api/anam/sync")
-async def sync_anam_metadata():
+async def sync_anam_metadata(request: Request):
     """Runs the anam_sync tool and waits for result."""
+    try:
+        payload = await request.json()
+    except:
+        payload = {}
+        
     script_path = os.path.join(ROOT_DIR, "tools", "anam_sync.py")
     try:
+        args = [PYTHON_EXE, script_path]
+        if payload and payload.get("agent") and payload.get("agent") != "all":
+            args.extend(["--agent", payload.get("agent")])
+            
         # We use run() here to wait for completion since the UI expects a definitive result
-        result = subprocess.run([PYTHON_EXE, script_path], capture_output=True, text=True)
+        result = subprocess.run(args, capture_output=True, text=True)
         if result.returncode == 0:
             return {"status": "success", "message": "Anam Lab synchronization complete."}
         else:

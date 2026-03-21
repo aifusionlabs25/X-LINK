@@ -83,6 +83,13 @@ class AnamSyncTool:
                 yaml.dump(config, f, sort_keys=False, indent=2, allow_unicode=True)
             
             logger.info("💾 Local config/agents.yaml updated.")
+            
+            # Explicitly close the automation tab
+            try:
+                await page.close()
+            except:
+                pass
+                
             return True
 
         except Exception as e:
@@ -127,6 +134,13 @@ class AnamSyncTool:
             if await prompt_el.count() == 0:
                 # If the specific selector fails, try a more generic one
                 prompt_el = page.locator("textarea").first
+                
+            # VISUAL FEEDBACK: Highlight the element so the user sees the extraction
+            try:
+                await prompt_el.evaluate("el => { el.style.border = '4px solid #00ff00'; el.style.boxShadow = '0 0 15px #00ff00'; }")
+                await asyncio.sleep(1.5) # Let the user see it
+            except:
+                pass
                 
             system_prompt = await prompt_el.input_value()
 
