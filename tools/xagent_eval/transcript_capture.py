@@ -3,17 +3,19 @@ X-Agent Eval v1 — Transcript Capture (QA Text Lane)
 Captures session transcripts from X-Agent website DOM using deterministic QA mode.
 """
 
+import asyncio
+import uuid
+import json
+import logging
 import os
 import sys
-import json
-import asyncio
-import logging
 import re
 from datetime import datetime
 from typing import List, Optional
 
 ROOT_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 sys.path.insert(0, ROOT_DIR)
+from tools.xagent_eval.batch_runner import recursively_redact
 
 logger = logging.getLogger("xagent_eval.transcript_capture")
 
@@ -488,7 +490,7 @@ class LiveBrowserCapture:
                 "reason": reason,
                 "error": error,
                 "actual_turns": len(transcript),
-                "transcript": transcript[-10:], # Last 10 turns for the live view
+                "transcript": recursively_redact(transcript[-10:]), # Last 10 turns for the live view
                 "timestamp": datetime.now().isoformat()
             }
             with open(tel_path, "w", encoding="utf-8") as f:

@@ -1,0 +1,30 @@
+{
+  "chatgpt": {
+    "list_of_titles": "nav[aria-label='Chat history'] a",
+    "title_text": "nav[aria-label='Chat history'] a div.relative, nav[aria-label='Chat history'] a span",
+    "message_containers": "[data-testid^='conversation-turn-']",
+    "user_message_text": "[data-message-author-role='user']",
+    "ai_message_text": "[data-message-author-role='assistant']"
+  },
+  "perplexity": {
+    "list_of_titles": "a[href^='/search/']",
+    "title_text": "a[href^='/search/'] span",
+    "message_containers": ".scrollable-container .group",
+    "user_message_text": "h1, .scrollable-container .group:nth-child(odd) .prose",
+    "ai_message_text": ".prose"
+  },
+  "gemini": {
+    "list_of_titles": "a.conversation",
+    "title_text": "a.conversation div.conversation-title, a.conversation div:first-child",
+    "message_containers": "chat-turn",
+    "user_message_text": "user-query",
+    "ai_message_text": "model-response"
+  },
+  "grok": {
+    "list_of_titles": "a[href^='/c/']",
+    "title_text": "a[href^='/c/'] span",
+    "message_containers": "div.w-full.flex.flex-col.items-center > div",
+    "user_message_text": "div.bg-surface-l3, div.bg-surface-l2",
+    "ai_message_text": "div.prose, .message-row div"
+  }
+}

@@ -38,6 +38,9 @@ def run_marathon():
     # Create lookup map
     agent_map = {a["slug"]: a for a in agents_data}
 
+    # Ensure DIFFICULTY is a list to handle multi-selects from UI
+    diff_list = DIFFICULTY if isinstance(DIFFICULTY, list) else [DIFFICULTY]
+
     for agent_slug in MARATHON_AGENTS:
         if agent_slug not in agent_map:
             print(f"⚠️ Skipping unknown agent: {agent_slug}")
@@ -46,29 +49,29 @@ def run_marathon():
         agent = agent_map[agent_slug]
         default_pack = agent.get("default_pack", f"{agent_slug}_pack")
         
-        params = {
-            "agent": agent_slug,
-            "pack": default_pack,
-            "environment": ENV,
-            "type": "batch",
-            "difficulty": DIFFICULTY,
-            "runs": RUNS_PER_AGENT,
-            "turn_profile": "standard",
-            "review_mode": REVIEW_MODE, # Fast offline review
-            "browser_mode": False        # Crucial for offline simulation
-        }
-        
-        print(f"\n==========================================================")
-        print(f"🚀 STARTING MARATHON RUN: {agent_slug.upper()} ({RUNS_PER_AGENT} runs)")
-        print(f"==========================================================\n")
-        
-        # Use subprocess.run to wait for it to finish before moving to the next
-        result = subprocess.run([PYTHON_EXE, script_path, json.dumps(params)])
-        
-        if result.returncode != 0:
-            print(f"❌ Error during {agent_slug} marathon.")
-        else:
-            print(f"✅ Successfully completed marathon batch for {agent_slug}.")
+        for current_diff in diff_list:
+            params = {
+                "agent": agent_slug,
+                "pack": default_pack,
+                "environment": ENV,
+                "type": "batch",
+                "difficulty": current_diff,
+                "runs": RUNS_PER_AGENT,
+                "turn_profile": "standard",
+                "review_mode": REVIEW_MODE,
+                "browser_mode": False
+            }
+            
+            print(f"\n==========================================================")
+            print(f"🚀 STARTING MARATHON RUN: {agent_slug.upper()} | DIFF: {current_diff.upper()} ({RUNS_PER_AGENT} runs)")
+            print(f"==========================================================\n")
+            
+            result = subprocess.run([PYTHON_EXE, script_path, json.dumps(params)])
+            
+            if result.returncode != 0:
+                print(f"❌ Error during {agent_slug} marathon ({current_diff}).")
+            else:
+                print(f"✅ Successfully completed marathon batch for {agent_slug} ({current_diff}).")
 
 if __name__ == "__main__":
     print("Initializing X-LINK Marathon Runner...")

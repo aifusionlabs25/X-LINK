@@ -1,0 +1,28 @@
+# Archival Project Scopes
+# Conversations matching these keywords will be routed to project folders.
+# All others go to 'private'.
+
+projects:
+  - name: "X-LINK Hub"
+    keywords:
+      - "X-LINK"
+      - "Dojo"
+      - "Sloane"
+      - "Archivist"
+      - "Synapse"
+      - "Brave"
+      - "CDP"
+      - "X Agents"
+  
+  - name: "AI Agents"
+    keywords:
+      - "Anam"
+      - "Tavus"
+      - "Persona"
+      - "SDR"
+      - "Prompt Engineering"
+
+# Global ignore list (exact matches for titles to skip entirely)
+ignore_titles:
+  - "New chat"
+  - "Untitled"

@@ -10,7 +10,8 @@ import json
 import asyncio
 import logging
 from datetime import datetime
-from typing import List, Optional
+import re
+from typing import List, Optional, Dict
 
 ROOT_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 sys.path.insert(0, ROOT_DIR)
@@ -27,6 +28,18 @@ logger = logging.getLogger("xagent_eval.batch_runner")
 
 VAULT_DIR = os.path.join(ROOT_DIR, "vault")
 
+def redact_sensitive(text: str) -> str:
+    if not isinstance(text, str): return text
+    text = re.sub(r'[\w\.-]+@[\w\.-]+\.\w+', '[REDACTED_EMAIL]', text)
+    text = re.sub(r'\b(?:\+?1[-.\s]?)?\(?[0-9]{3}\)?[-.\s]?[0-9]{3}[-.\s]?[0-9]{4}\b', '[REDACTED_PHONE]', text)
+    return text
+
+def recursively_redact(data):
+    if isinstance(data, dict): return {k: recursively_redact(v) for k, v in data.items()}
+    elif isinstance(data, list): return [recursively_redact(i) for i in data]
+    elif isinstance(data, str): return redact_sensitive(data)
+    return data
+
 
 def save_run_artifacts(
     run_id: str,
@@ -39,6 +52,9 @@ def save_run_artifacts(
     run_dir = os.path.join(VAULT_DIR, "evals", "runs", run_id)
     os.makedirs(run_dir, exist_ok=True)
     saved = []
+    
+    # Redact transcript for OPSEC
+    clean_transcript = recursively_redact(transcript)
 
     # metadata.json
     meta_path = os.path.join(run_dir, "metadata.json")
@@ -49,13 +65,13 @@ def save_run_artifacts(
     # transcript.json
     tx_json_path = os.path.join(run_dir, "transcript.json")
     with open(tx_json_path, "w", encoding="utf-8") as f:
-        json.dump(transcript, f, indent=2)
+        json.dump(clean_transcript, f, indent=2)
     saved.append(tx_json_path)
 
     # transcript.txt
     tx_text_path = os.path.join(run_dir, "transcript.txt")
     with open(tx_text_path, "w", encoding="utf-8") as f:
-        f.write(transcript_to_text(transcript))
+        f.write(transcript_to_text(clean_transcript))
     saved.append(tx_text_path)
 
     # scorecard.json
@@ -109,9 +125,9 @@ def aggregate_batch(
         # Include full run data for the Hub
         summary.runs = [s.to_dict() for s in scorecards]
 
-        # Top failure categories (score < 3)
+        # Top failure categories (normalized score < 60)
         low_cats = sorted(summary.category_averages.items(), key=lambda x: x[1])
-        summary.top_failure_categories = [k for k, v in low_cats if v < 3.0][:3]
+        summary.top_failure_categories = [k for k, v in low_cats if v < 60.0][:3]
     else:
         summary.verdict = "NO_DATA"
 

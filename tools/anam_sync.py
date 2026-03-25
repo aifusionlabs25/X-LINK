@@ -105,14 +105,24 @@ class AnamSyncTool:
             match_name = agent_conf.get("anam_name") or agent_conf["name"]
             logger.info(f"   Searching for persona matching: {match_name}")
             
-            # 1. Wait for name to appear
+            # 1. Wait for name to appear (Try exact first, then partial)
+            agent_link = None
             try:
-                await page.wait_for_selector(f"text='{match_name}'", timeout=12000)
+                locator = page.get_by_text(match_name, exact=True).first
+                await locator.wait_for(timeout=6000)
+                agent_link = locator
             except:
-                logger.warning(f"   Timeout waiting for '{match_name}'.")
+                logger.info(f"   Exact match failed. Attempting intelligent partial match for '{match_name}'...")
+                try:
+                    locator = page.get_by_text(match_name, exact=False).first
+                    await locator.wait_for(timeout=6000)
+                    agent_link = locator
+                except Exception as inner_e:
+                    logger.error(f"   Timeout waiting for any variant of '{match_name}'. Exception: {inner_e}")
+                    await page.screenshot(path=os.path.join(ROOT_DIR, "vault", f"sync_exception_{agent_conf['name']}.png"))
+                    return False
             
             # 2. Click the agent name
-            agent_link = page.locator(f"text='{match_name}'").first
             await agent_link.click()
             await asyncio.sleep(6)
 
@@ -120,7 +130,7 @@ class AnamSyncTool:
             # Sometimes it loads directly, sometimes we need to click
             prompt_tab = page.locator("button:has-text('Prompt')")
             if await prompt_tab.count() > 0:
-                await prompt_tab.click()
+                await prompt_tab.first.click()
                 await asyncio.sleep(2)
 
             # 4. Extract Persona Description (short)
@@ -145,8 +155,8 @@ class AnamSyncTool:
             system_prompt = await prompt_el.input_value()
 
             if not system_prompt or len(system_prompt) < 100:
-                logger.error(f"   Extracted prompt is suspicious (too short or empty) for {name}")
-                await page.screenshot(path=os.path.join(ROOT_DIR, "vault", f"sync_error_{name}.png"))
+                logger.error(f"   Extracted prompt is suspicious (too short or empty) for {agent_conf['name']}")
+                await page.screenshot(path=os.path.join(ROOT_DIR, "vault", f"sync_error_{agent_conf['name']}.png"))
                 return False
 
             # Update local config
@@ -157,7 +167,15 @@ class AnamSyncTool:
             return True
 
         except Exception as e:
-            logger.error(f"   Error syncing {agent_conf['name']}: {e}")
+            err_msg = str(e)
+            logger.error(f"   Error syncing {agent_conf['name']}: {err_msg}")
+            
+            # Dump the exact stack trace to the vault for debugging
+            import traceback
+            tb_str = traceback.format_exc()
+            with open(os.path.join(ROOT_DIR, "vault", f"sync_trace_{agent_conf['name']}.txt"), "w", encoding="utf-8") as f:
+                f.write(tb_str)
+                
             await page.screenshot(path=os.path.join(ROOT_DIR, "vault", f"sync_exception_{agent_conf['name']}.png"))
             return False
 

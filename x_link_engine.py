@@ -5,6 +5,7 @@ import re
 from datetime import datetime
 from typing import Optional
 from playwright.async_api import async_playwright, Page
+from playwright_stealth import stealth
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
@@ -137,6 +138,12 @@ class XLinkEngine:
                     url = url.replace("mail.google.com/mail/", f"mail.google.com/mail/u/{account_email}/")
                 elif "calendar.google.com" in url:
                     url = url.replace("calendar.google.com/calendar/", f"calendar.google.com/calendar/u/{account_email}/")
+                elif "gemini.google.com" in url:
+                    # Gemini uses ?authuser=[email] or /u/[index]/
+                    if "?" in url:
+                        url += f"&authuser={account_email}"
+                    else:
+                        url += f"?authuser={account_email}"
 
         domain = urlparse(url).netloc
         
@@ -175,12 +182,20 @@ class XLinkEngine:
             if account_email and ("google.com" in page.url or "gmail.com" in page.url):
                 is_valid = await self.verify_gsuite_session(page, account_email)
                 if not is_valid:
-                    self.ops_log.info(f"[ACCOUNT-GUARD] HARD FAIL: Wrong session detected. Killing tab.")
-                    logging.warning(f"[ACCOUNT-GUARD] Session identity mismatch. Terminating tab for safety.")
-                    await page.close()
-                    # Recursively try one more time with a fresh tab and forced email URL
-                    return await self.ensure_page(url, wait_sec, bring_to_front, account_email)
+                    self.ops_log.info(f"[ACCOUNT-GUARD] Identity mismatch. Attempting visual account switch for {account_email}...")
+                    switched = await self.switch_google_account(page, account_email)
+                    if not switched:
+                        self.ops_log.info(f"[ACCOUNT-GUARD] Visual switch failed. Killing tab for safety.")
+                        logging.warning(f"[ACCOUNT-GUARD] Session identity mismatch. Terminating tab.")
+                        await page.close()
+                        # Final attempt with forced email URL
+                        return await self.ensure_page(url, wait_sec, bring_to_front, account_email)
 
+            try:
+                await stealth(page)
+            except Exception as e:
+                logging.warning(f"[STEALTH] Failed to inject evasions: {e}")
+                
             await self.detect_security_wall(page)
             return page
             
@@ -190,9 +205,14 @@ class XLinkEngine:
         await page.goto(url, wait_until="domcontentloaded", timeout=30000)
         await asyncio.sleep(wait_sec)
         
+        try:
+            await stealth(page)
+        except Exception as e:
+            logging.warning(f"[STEALTH] Failed to inject evasions: {e}")
+            
         # Security Handshake
         await self.detect_security_wall(page)
-        
+
         self.ops_log.info(f"[NAVIGATE] Target: {url} | Account: {account_email or 'Default'}")
         logging.info(f"[TAB-RECOVERY] Opened and loaded: {url}")
         return page
@@ -319,17 +339,36 @@ class XLinkEngine:
                 await box.fill(prompt)
                 await page.keyboard.press("Enter")
             elif "grok.com" in domain:
-                box = page.locator('[contenteditable="true"]').last
-                await box.fill(prompt)
-                await page.keyboard.press("Enter")
+                # Optimized for 2025/2026 selectors
+                selectors = ['[contenteditable="true"]', 'textarea', '.prose-editor']
+                box = None
+                for selector in selectors:
+                    if await page.locator(selector).count() > 0:
+                        box = page.locator(selector).last
+                        break
+                if box:
+                    await box.fill(prompt)
+                    await page.keyboard.press("Enter")
             elif "perplexity.ai" in domain:
-                box = page.locator('[contenteditable="true"], textarea').last
-                await box.fill(prompt)
-                await page.keyboard.press("Enter")
+                selectors = ['textarea[placeholder*="Ask"]', 'textarea', '[contenteditable="true"]']
+                box = None
+                for selector in selectors:
+                    if await page.locator(selector).count() > 0:
+                        box = page.locator(selector).last
+                        break
+                if box:
+                    await box.fill(prompt)
+                    await page.keyboard.press("Enter")
             elif "gemini.google.com" in domain:
-                box = page.locator('rich-textarea p, .ql-editor, textarea').last
-                await box.fill(prompt)
-                await page.keyboard.press("Enter")
+                selectors = ['.ql-editor', 'rich-textarea p', '[contenteditable="true"]', 'textarea']
+                box = None
+                for selector in selectors:
+                    if await page.locator(selector).count() > 0:
+                        box = page.locator(selector).last
+                        break
+                if box:
+                    await box.fill(prompt)
+                    await page.keyboard.press("Enter")
             else:
                 box = page.locator('textarea').last
                 await box.fill(prompt)
@@ -377,7 +416,10 @@ class XLinkEngine:
                 ("Enter code", "MFA Required"),
                 ("MFA", "MFA Required"),
                 ("<title>404", "404 Error"),
-                ("<h1>404", "404 Error")
+                ("<h1>404", "404 Error"),
+                ("Just a moment...", "Cloudflare Challenge"),
+                ("Verifying you are human", "Cloudflare Challenge"),
+                ("security service to protect", "Cloudflare Challenge")
             ]
             
             for marker, issue in indicators:
@@ -427,14 +469,37 @@ class XLinkEngine:
             texts = await page.locator('div[data-message-author-role="assistant"]').all_inner_texts()
             return texts[-1] if texts else "No response found."
         elif "grok.com" in domain:
-            texts = await page.locator('.prose, [data-testid="message-row"], p').all_inner_texts()
-            valid_texts = [t for t in texts if len(t) > 50]
+            # Multi-selector approach for high-frequency UI changes
+            selectors = ['.prose', '[data-testid="message-row"]', 'div[class*="message"]', 'p']
+            texts = []
+            for s in selectors:
+                try:
+                    found = await page.locator(s).all_inner_texts()
+                    if found:
+                        texts.extend(found)
+                except: continue
+            
+            valid_texts = [t.strip() for t in texts if len(t.strip()) > 50]
             return valid_texts[-1] if valid_texts else "No response found."
         elif "perplexity.ai" in domain:
-            texts = await page.locator('.prose').all_inner_texts()
+            selectors = ['.prose', 'div[class*="message"]', 'div[class*="answer"]']
+            texts = []
+            for s in selectors:
+                try:
+                    found = await page.locator(s).all_inner_texts()
+                    if found:
+                        texts.extend(found)
+                except: continue
             return texts[-1] if texts else "No response found."
         elif "gemini.google.com" in domain:
-            texts = await page.locator('message-content').all_inner_texts()
+            selectors = ['message-content', '[data-message-author-role="assistant"]', '.markdown']
+            texts = []
+            for s in selectors:
+                try:
+                    found = await page.locator(s).all_inner_texts()
+                    if found:
+                        texts.extend(found)
+                except: continue
             return texts[-1] if texts else "No response found."
         else:
             return await page.evaluate("document.body.innerText")

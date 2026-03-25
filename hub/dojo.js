@@ -6,6 +6,7 @@
 let activeSessionInterval = null;
 let currentBatchId = null;
 let currentDojoConfig = null;
+let healthInterval = null;
 
 async function initDojo() {
     try {
@@ -23,8 +24,22 @@ async function initDojo() {
 
         // Populate Marathon Fields
         populateSelect('marathon-env-select', config.profiles.environments);
-        populateSelect('marathon-diff-select', config.profiles.difficulties);
-        populateSelect('marathon-count-select', config.profiles.run_counts.map(c => ({ id: c, label: `${c} ${c === 1 ? 'Run' : 'Runs'}` })));
+        
+        const marathonDiffGrid = document.getElementById('marathon-diff-grid');
+        if (marathonDiffGrid && config.profiles.difficulties) {
+            marathonDiffGrid.innerHTML = config.profiles.difficulties.map(item => {
+                const val = typeof item === 'object' ? item.id : item;
+                const lab = typeof item === 'object' ? (item.label || item.id) : item;
+                return `
+                <label class="cb-container agent-select-cb">
+                    ${lab}
+                    <input type="checkbox" value="${val}" class="marathon-diff-checkbox" ${val === 'mixed' ? 'checked' : ''}>
+                    <span class="checkmark"></span>
+                </label>
+            `;
+            }).join('');
+        }
+        
         populateSelect('marathon-review-select', config.profiles.review_modes);
         
         const marathonGrid = document.getElementById('marathon-agent-grid');
@@ -38,13 +53,20 @@ async function initDojo() {
             `).join('');
         }
 
-        // Add auto-alignment listener
-        document.getElementById('dojo-agent-select').addEventListener('change', autoAlignPack);
+        // Add change listeners
+        const agentSelect = document.getElementById('dojo-agent-select');
+        agentSelect.addEventListener('change', autoAlignPack);
+        agentSelect.addEventListener('change', updateSyncStatus);
 
         loadDojoHistory();
         refreshDojoHealth();
-        // Refresh health every 10s while in Dojo
-        setInterval(refreshDojoHealth, 10000);
+        updateSyncStatus(); // Initial populate
+
+        // Singleton guard: clear previous before setting new
+        if (healthInterval) {
+            clearInterval(healthInterval);
+        }
+        healthInterval = setInterval(refreshDojoHealth, 10000);
     } catch (e) {
         showToast("Dojo Config Sync Failed", true);
     }
@@ -91,6 +113,22 @@ function autoAlignPack() {
             packSelect.value = agent.default_pack;
             showToast(`Auto-aligned pack: ${agent.default_pack}`, false);
         }
+    }
+}
+
+function updateSyncStatus() {
+    const slug = document.getElementById('dojo-agent-select').value;
+    const div = document.getElementById('agent-sync-status');
+    if (!div || !currentDojoConfig || !currentDojoConfig.agents) return;
+    
+    const agent = currentDojoConfig.agents.find(a => a.slug === slug);
+    if (agent && agent.last_synced) {
+        const d = new Date(agent.last_synced);
+        div.innerHTML = `✅ Synced: ${d.toLocaleString(undefined, {month:'short', day:'numeric', hour:'numeric', minute:'2-digit'})}`;
+        div.style.color = "var(--success-color, #4CAF50)";
+    } else {
+        div.innerHTML = `⚠️ Unsynced (Local default)`;
+        div.style.color = "var(--warning-color, #FF9800)";
     }
 }
 
@@ -151,11 +189,22 @@ async function startMarathonMission() {
         return;
     }
 
+    const diffCheckboxes = document.querySelectorAll('.marathon-diff-checkbox:checked');
+    const selectedDiffs = Array.from(diffCheckboxes).map(cb => cb.value);
+    
+    if (selectedDiffs.length === 0) {
+        showToast("Please select at least one difficulty.", true);
+        return;
+    }
+
+    const countInput = document.getElementById('marathon-count-input');
+    const runsCount = countInput ? parseInt(countInput.value, 10) : 10;
+
     const params = {
         agents: selectedAgents,
         environment: document.getElementById('marathon-env-select').value,
-        difficulty: document.getElementById('marathon-diff-select').value,
-        runs: document.getElementById('marathon-count-select').value,
+        difficulty: selectedDiffs,
+        runs: runsCount,
         review_mode: document.getElementById('marathon-review-select').value,
     };
 
@@ -329,12 +378,19 @@ function renderResults(data) {
         return;
     }
 
+    const avgScore = data.average_score ?? data.score ?? 'N/A';
+    const passRate = data.pass_rate ?? data.pass_fail_rate ?? 'N/A';
+    
+    // Resolve APEX logic from newer or older schemas
+    const revResults = data.reviewer_results || (data.data && data.data.reviewer_results) || null;
+    const isSuccess = data.reviewer_status === 'success' || (revResults && Object.keys(revResults).length > 0);
+
     container.innerHTML = `
         <div class="results-summary-dashboard">
-            <div class="stat-box"><h4>Overall Score</h4><div class="value">${data.average_score}%</div></div>
-            <div class="stat-box"><h4>Pass Rate</h4><div class="value">${data.pass_rate}%</div></div>
+            <div class="stat-box"><h4>Overall Score</h4><div class="value">${avgScore}${avgScore !== 'N/A' ? '%' : ''}</div></div>
+            <div class="stat-box"><h4>Pass Rate</h4><div class="value">${passRate}${passRate !== 'N/A' ? '%' : ''}</div></div>
             <div class="stat-box"><h4>Verdict</h4><div class="value" style="color:var(--success)">${data.verdict}</div></div>
-            <div class="stat-box"><h4>APEX Status</h4><div class="value" style="color:${data.reviewer_status === 'error' ? 'var(--danger)' : 'var(--gold)'}">${(data.reviewer_status || 'N/A').toUpperCase()}</div></div>
+            <div class="stat-box"><h4>APEX Status</h4><div class="value" style="color:${isSuccess ? 'var(--gold)' : 'var(--danger)'}">${isSuccess ? 'SUCCESS' : (data.reviewer_status || 'N/A').toUpperCase()}</div></div>
         </div>
         
         ${data.reviewer_error ? `<div class="infra-error-banner" style="background:rgba(239, 68, 68, 0.1); border-left:4px solid var(--danger); padding:15px; margin: 20px 0; border-radius:4px;">
@@ -379,11 +435,11 @@ function renderResults(data) {
             <div class="results-canvas" style="background: rgba(0,0,0,0.2); border: 1px solid var(--border); border-radius:16px; padding:30px;">
                 <h4 class="gold-text cinzel" style="margin-bottom:20px;">APEX Intelligence Report</h4>
                 
-                ${data.reviewer_status === 'success' ? `
+                ${isSuccess ? `
                     <div class="intelligence-grid" style="display:grid; grid-template-columns: repeat(3, 1fr); gap:20px;">
-                        ${renderReviewCard('Role Review', data.reviewer_results?.role_review)}
-                        ${renderReviewCard('Conversation Review', data.reviewer_results?.conversation_review)}
-                        ${renderReviewCard('Safety Review', data.reviewer_results?.safety_review)}
+                        ${renderReviewCard('Role Review', revResults?.role_review)}
+                        ${renderReviewCard('Conversation Review', revResults?.conversation_review)}
+                        ${renderReviewCard('Safety Review', revResults?.safety_review)}
                     </div>
                 ` : `
                     <div class="results-placeholder">Analytic report unavailable or failed. Check APEX Status.</div>

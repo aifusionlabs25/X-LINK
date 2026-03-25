@@ -8,9 +8,9 @@
     <link
         href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Outfit:wght@300;500;700&family=Cinzel:wght@400;700&display=swap"
         rel="stylesheet">
-    <link rel="stylesheet" href="style.css?v=5">
-    <script src="app.js?v=6" defer></script>
-    <script src="dojo.js?v=6" defer></script>
+    <link rel="stylesheet" href="style.css?v=6">
+    <script src="app.js?v=7" defer></script>
+    <script src="dojo.js?v=7" defer></script>
 </head>
 
 <body>
@@ -47,6 +47,10 @@
         <div class="sidebar-item" onclick="triggerTool('briefing')" title="Executive briefing output">
             <span class="sidebar-icon">📧</span>
             <span class="sidebar-label">Direct Briefing</span>
+        </div>
+        <div class="sidebar-item" onclick="runArchivist()" title="Execute Great Archivist LLM scraping">
+            <span class="sidebar-icon">📚</span>
+            <span class="sidebar-label">Archive Intelligence</span>
         </div>
 
         <!-- SYSTEM STATUS -->
@@ -92,6 +96,10 @@
                 <div class="meta-item">
                     <span class="meta-label">System:</span>
                     <span id="system-pulse" class="meta-value pulse-green">INITIALIZING</span>
+                </div>
+                <div class="meta-item">
+                    <span class="meta-label">Ollama:</span>
+                    <span id="ollama-pulse" class="meta-value">CHECKING</span>
                 </div>
             </div>
         </header>
@@ -162,6 +170,7 @@
                         <div class="config-group">
                             <label>Target X Agent</label>
                             <select id="dojo-agent-select" class="premium-input"></select>
+                            <div id="agent-sync-status" style="font-size: 0.75rem; margin-top: 5px; font-weight: 500;"></div>
                         </div>
                         <div class="config-group">
                             <label>Scenario Pack</label>
@@ -266,14 +275,14 @@
                                 <select id="marathon-env-select" class="premium-input"></select>
                             </div>
                             <div class="config-group">
-                                <label>Difficulty</label>
-                                <select id="marathon-diff-select" class="premium-input"></select>
+                                <label>Difficulty (Select Multiple)</label>
+                                <div id="marathon-diff-grid" class="agent-multi-select-grid" style="grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));"></div>
                             </div>
                         </div>
                         <div class="config-grid-2">
                             <div class="config-group">
                                 <label>Runs per Agent</label>
-                                <select id="marathon-count-select" class="premium-input"></select>
+                                <input type="number" id="marathon-count-input" class="premium-input" min="1" max="100" value="10">
                             </div>
                             <div class="config-group">
                                 <label>Review Mode</label>
@@ -364,25 +373,25 @@
             </div>
         </section>
 
-        <!-- FOUNDER INTERVENTION OVERLAY -->
-        <div id="intervention-overlay" class="intervention-overlay" style="display: none;">
-            <div class="intervention-card">
-                <div class="intervention-icon">🚨</div>
-                <h2 class="intervention-title">Sloane Needs Your Help</h2>
-                <div class="intervention-service" id="intervention-service">Unknown Service</div>
-                <div class="intervention-issue" id="intervention-issue">Unknown Issue</div>
-                <p class="intervention-message" id="intervention-message">Details loading...</p>
-                <div class="intervention-url" id="intervention-url"></div>
-                <button class="intervention-resume-btn" onclick="clearIntervention()">
-                    ✅ Done — Resume Mission
-                </button>
-            </div>
-        </div>
-
         <footer class="hub-footer">
             &copy; 2026 X-LINK | Command Center v3.0
         </footer>
     </main>
+
+    <!-- FOUNDER INTERVENTION OVERLAY (Moved to Root for Z-Index Safety) -->
+    <div id="intervention-overlay" class="intervention-overlay" style="display: none; z-index: 9999;">
+        <div class="intervention-card">
+            <div class="intervention-icon">🚨</div>
+            <h2 class="intervention-title">Sloane Needs Your Help</h2>
+            <div class="intervention-service" id="intervention-service">Unknown Service</div>
+            <div class="intervention-issue" id="intervention-issue">Unknown Issue</div>
+            <p class="intervention-message" id="intervention-message">Details loading...</p>
+            <div class="intervention-url" id="intervention-url" style="word-wrap: break-word; color: var(--gold); font-size: 0.8rem; margin-bottom: 25px;"></div>
+            <button class="intervention-resume-btn" onclick="clearIntervention()">
+                ✅ Done — Resume Mission
+            </button>
+        </div>
+    </div>
 
     <div id="toast" class="toast"></div>
 </body>

@@ -108,6 +108,10 @@ BROWSER_SCOUT: Visits a URL and archives the content.
 SCOUT_INTEL: Processes internal Keep.md intelligence feed.
   Args: {} (no args needed)
 
+TRINITY_SEARCH: Multi-engine deep search (Perplexity, Gemini, Grok).
+  Args: {"query": "Topic to research"}
+  Example: X_LINK_CALL {"action": "TRINITY_SEARCH", "args": {"query": "Next.js 15 best practices"}}
+
 === 7. FORBIDDEN ACTIONS ===
 - Do NOT send emails to "fix" login walls or security barriers. Never.
 - Do NOT output multiple X_LINK_CALLs in one response. Exactly one or zero.
@@ -130,16 +134,41 @@ X_LINK_CALL, X_LINK_RESULT, SYSTEM, USER, ASSISTANT
 # Enable CORS so the Hub (file:// or localhost) can hit this API
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
-    allow_methods=["*"],
+    allow_origins=["http://localhost:5001", "http://127.0.0.1:5001", "http://localhost", "http://127.0.0.1"],
+    allow_methods=["GET", "POST", "OPTIONS"],
     allow_headers=["*"],
 )
 
 app.include_router(dojo_router, prefix="/api/dojo")
 
-def audit_log(entry: dict):
+# Global Process Registry for launched tools
+active_procs = {}
+
+def redact_sensitive(text: str) -> str:
+    if not isinstance(text, str):
+        return text
+    # Mask emails
+    text = re.sub(r'[\w\.-]+@[\w\.-]+\.\w+', '[REDACTED_EMAIL]', text)
+    # Mask common 10-digit phone patterns (simplified)
+    text = re.sub(r'\b(?:\+?1[-.\s]?)?\(?[0-9]{3}\)?[-.\s]?[0-9]{3}[-.\s]?[0-9]{4}\b', '[REDACTED_PHONE]', text)
+    return text
+
+def recursively_redact(data):
+    if isinstance(data, dict):
+        return {k: recursively_redact(v) for k, v in data.items()}
+    elif isinstance(data, list):
+        return [recursively_redact(i) for i in data]
+    elif isinstance(data, str):
+        return redact_sensitive(data)
+    return data
+
+def audit_log(entry: dict, redact: bool = True):
     """Appends a JSON entry to the sovereign audit trail."""
     log_path = os.path.join(AUDIT_DIR, "sovereign_audit.jsonl")
+    
+    if redact:
+        entry = recursively_redact(entry)
+        
     entry["timestamp"] = datetime.now().isoformat()
     try:
         with open(log_path, "a", encoding="utf-8") as f:
@@ -172,20 +201,49 @@ async def sync_anam_metadata(request: Request):
         logging.error(f"❌ Anam Sync execution failed: {e}")
         return {"status": "error", "error": str(e)}
 
+@app.post("/api/archive/start")
+async def start_great_archivist(request: Request = None):
+    try:
+        limit = "15"
+        if request:
+            try:
+                payload = await request.json()
+                limit = str(payload.get("limit", "15"))
+            except: pass
+
+        env = os.environ.copy()
+        env["PYTHONPATH"] = ROOT_DIR
+        args = [PYTHON_EXE, os.path.join(ROOT_DIR, "tools", "great_archivist.py"), "--limit", limit]
+        process = subprocess.Popen(args, env=env)
+        logging.info(f"📚 Triggered Great Archivist with limit {limit} (PID: {process.pid})")
+        return {"status": "success", "message": f"Archival process initiated (Limit: {limit})."}
+    except Exception as e:
+        logging.error(f"❌ Great Archivist execution failed: {e}")
+        return {"status": "error", "error": str(e)}
+
 @app.post("/trigger/{tool_name}")
-async def trigger_tool(tool_name: str):
-    logging.info(f"🚀 Triggering tool: {tool_name}")
+async def trigger_tool(tool_name: str, request: Request = None):
+    # Try to get payload if provided
+    payload = {}
+    if request:
+        try:
+            payload = await request.json()
+        except: pass
+
+    logging.info(f"🚀 Triggering tool: {tool_name} with payload: {payload}")
     
     # HUB v3 tool routing — new keys + legacy aliases
     tools = {
         # V3 canonical keys
         "usage_auditor": ("tools/usage_auditor.py", []),
         "intelligence_scout": ("tools/intelligence_sweeper.py", []),
+        "trinity_search": ("tools/intelligence_sweeper.py", ["--query", payload.get("query", "current trends")]),
         "briefing": ("tools/executive_briefing.py", ["--email"]),
         "xagent_eval": ("tools/run_eval.py", ["{}"]), # JSON param placeholder
         "direct_line": None,  # Handled by /api/chat, not subprocess
         "scout_workers": ("tools/subscription_scout.py", []),
-        "browser_scout": ("tools/browser_scout.py", []),
+        "browser_scout": ("tools/browser_scout.py", ["--url", payload.get("url", "")]),
+        "great_archivist": ("tools/great_archivist.py", []),
         # Legacy aliases (backwards compat)
         "audit": ("tools/usage_auditor.py", []),
         "scout": ("tools/intelligence_sweeper.py", []),
@@ -204,8 +262,9 @@ async def trigger_tool(tool_name: str):
     script_path = os.path.join(ROOT_DIR, script)
     
     try:
-        subprocess.Popen([PYTHON_EXE, script_path] + extra_args)
-        return {"status": "initiated", "tool": tool_name}
+        proc = subprocess.Popen([PYTHON_EXE, script_path] + extra_args)
+        active_procs[tool_name] = {"pid": proc.pid, "started_at": datetime.now().isoformat()}
+        return {"status": "initiated", "tool": tool_name, "pid": proc.pid}
     except Exception as e:
         logging.error(f"❌ Failed to launch {tool_name}: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -243,12 +302,25 @@ async def get_sync_data():
         with open(agents_path, 'r', encoding='utf-8') as f:
             agents_conf = yaml.safe_load(f)
 
+    # 5. Check Ollama Status
+    ollama_info = {"status": "offline", "version": "Unknown"}
+    try:
+        import httpx
+        async with httpx.AsyncClient() as client:
+            resp = await client.get("http://localhost:11434/api/version", timeout=0.5)
+            if resp.status_code == 200:
+                ollama_info["status"] = "online"
+                ollama_info["version"] = resp.json().get("version", "Unknown")
+    except:
+        pass
+
     return {
         "audit": audit_data,
         "briefing": briefing_data,
         "subscriptions": sub_registry,
         "agents": agents_conf.get("agents", []),
-        "server_time": datetime.now().isoformat()
+        "server_time": datetime.now().isoformat(),
+        "ollama": ollama_info
     }
 
 # In-memory intervention state
@@ -367,8 +439,10 @@ async def chat_with_sloane(request: dict):
                         "BROWSER_SCOUT": "browser_scout",
                         "GEN_BRIEFING": "briefing",
                         "GSUITE_INTENT": "gsuite",
-                        "DISCORD_INTENT": "discord"
+                        "DISCORD_INTENT": "discord",
+                        "EXEC_ARCHIVE": "great_archivist"
                     }
+
                     
                     if action in action_to_tool:
                         tool_key = action_to_tool[action]

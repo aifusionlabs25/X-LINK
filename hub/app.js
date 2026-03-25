@@ -86,6 +86,21 @@ function updateUI(data) {
         document.getElementById('sync-status-text').innerText = `Synced ${time.toLocaleTimeString()}`;
     }
 
+    if (data.ollama) {
+        const oPulse = document.getElementById('ollama-pulse');
+        if (oPulse) {
+            if (data.ollama.status === 'online') {
+                oPulse.innerText = `v${data.ollama.version}`;
+                oPulse.className = "meta-value pulse-green";
+                oPulse.style.color = "";
+            } else {
+                oPulse.innerText = "OFFLINE";
+                oPulse.className = "meta-value";
+                oPulse.style.color = "var(--danger)";
+            }
+        }
+    }
+
     // Sloane's Summary
     if (briefing && briefing.sloane) {
         document.getElementById('sloane-summary').innerText = `"${briefing.sloane.summary}"`;
@@ -96,7 +111,7 @@ function updateUI(data) {
             updateDept("ops", depts.ops);
         }
         if (briefing.sloane.agent_evals) {
-            renderEvalGrid(briefing.sloane.agent_evals);
+            renderEvalGrid(briefing.sloane.agent_evals, data.agents || []);
         }
     }
 
@@ -140,7 +155,7 @@ function updateAgentSyncUI(agents) {
     }
 }
 
-function renderEvalGrid(evals) {
+function renderEvalGrid(evals, agents = []) {
     const grid = document.getElementById('briefing-evals-grid');
     if (!grid) return;
     
@@ -148,6 +163,16 @@ function renderEvalGrid(evals) {
         const v = e.verdict || 'N/A';
         const verdictClass = v === 'SHIP' ? 'verdict-ship' : (v === 'NO-SHIP' ? 'verdict-no-ship' : 'verdict-na');
         const score = Math.round(e.score);
+        
+        // Find matching agent
+        const searchName = String(e.target_agent || e.agent || '').toLowerCase();
+        const agentMetadata = agents.find(a => String(a.slug || '').toLowerCase() === searchName);
+        let syncHtml = '';
+        if (agentMetadata && agentMetadata.last_synced) {
+            const dateStr = new Date(agentMetadata.last_synced).toLocaleString(undefined, {month:'short', day:'numeric', hour:'numeric', minute:'2-digit'});
+            syncHtml = `<div class="eval-sync-status" style="font-size:0.65rem; color:var(--success-color); margin-top:4px;">🧬 Synced: ${dateStr}</div>`;
+        }
+
         return `
             <div class="eval-mini-card" onclick="switchToEval('${e.batch_id}')" style="cursor: pointer;">
                 <div class="eval-agent-name">${e.agent}</div>
@@ -156,6 +181,7 @@ function renderEvalGrid(evals) {
                     <div class="eval-verdict ${verdictClass}">${v}</div>
                 </div>
                 <div class="eval-count">${e.tests} tests combined</div>
+                ${syncHtml}
             </div>
         `;
     }).join('');
@@ -297,9 +323,17 @@ async function syncAnam() {
             body: JSON.stringify({ agent: agentSlug })
         });
         const data = await response.json();
-        if (response.ok) {
+        if (response.ok && data.status !== 'error') {
             showToast(`✅ Anam Personas Synced for ${agentSlug.toUpperCase()}`, false);
             refreshStatus();
+            if (typeof initDojo === 'function') {
+                const prevAgent = document.getElementById('dojo-agent-select')?.value;
+                await initDojo();
+                if (prevAgent) {
+                    document.getElementById('dojo-agent-select').value = prevAgent;
+                    if (typeof updateSyncStatus === 'function') updateSyncStatus();
+                }
+            }
         } else {
             showToast(`❌ Sync Failed: ${data.error || 'Unknown error'}`, true);
         }
@@ -308,6 +342,23 @@ async function syncAnam() {
     }
 }
 window.syncAnam = syncAnam;
+
+async function runArchivist() {
+    showToast("📚 Launching The Great Archivist engine...");
+    try {
+        const response = await fetch(`${API_BASE}/api/archive/start`, { method: 'POST' });
+        const data = await response.json();
+        if (response.ok && data.status !== 'error') {
+            showToast("✅ Archival sequence initiated. Keep an eye on the Hub for MFA alerts.", false);
+        } else {
+            showToast(`❌ Archivist Start Failed: ${data.error || 'Unknown error'}`, true);
+        }
+    } catch (e) {
+        showToast("❌ Bridge offline. Ensure tools/synapse_bridge.py is running.", true);
+    }
+}
+window.runArchivist = runArchivist;
+
 
 async function triggerTool(name) {
     // Direct Line opens chat overlay
@@ -394,17 +445,36 @@ async function checkIntervention() {
         const response = await fetch(`${API_BASE}/api/intervention`);
         const data = await response.json();
         const overlay = document.getElementById('intervention-overlay');
+        
+        if (!overlay) {
+            console.error("[Hub] Intervention overlay missing from DOM!");
+            return;
+        }
 
         if (data.active) {
-            document.getElementById('intervention-service').innerText = data.service || 'Unknown';
-            document.getElementById('intervention-issue').innerText = data.issue || 'Unknown';
-            document.getElementById('intervention-message').innerText = data.message || 'Sloane needs help.';
-            document.getElementById('intervention-url').innerText = data.url || '';
+            const srv = document.getElementById('intervention-service');
+            const iss = document.getElementById('intervention-issue');
+            const msg = document.getElementById('intervention-message');
+            const url = document.getElementById('intervention-url');
+            
+            if (srv) srv.innerText = data.service || 'Unknown';
+            if (iss) iss.innerText = data.issue || 'Unknown';
+            if (msg) msg.innerText = data.message || 'Sloane needs help.';
+            if (url) url.innerText = data.url || '';
+            
             overlay.style.display = 'flex';
+            
+            if (!document.interventionNotified) {
+                showToast(`🚨 Sloane Blocked on ${data.service}: ${data.issue}`, true);
+                document.interventionNotified = true;
+            }
         } else {
             overlay.style.display = 'none';
+            document.interventionNotified = false;
         }
-    } catch (e) { /* Silent — bridge may be offline */ }
+    } catch (e) {
+        console.warn("[Hub] checkIntervention error: ", e.message);
+    }
 }
 
 async function clearIntervention() {

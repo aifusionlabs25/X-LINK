@@ -13,6 +13,9 @@ sys.path.insert(0, ROOT_DIR)
 load_dotenv()
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
+from tools.base_tool import ToolResult
+from x_link_engine import XLinkEngine
+
 KEEP_API_KEY = os.getenv("KEEP_MD_API_KEY")
 if not KEEP_API_KEY:
     logging.warning("⚠️ KEEP_MD_API_KEY not found in environment. Please ensure it's set if authorization is required.")
@@ -20,6 +23,44 @@ if not KEEP_API_KEY:
 KEEP_API_BASE = "https://keep.md"
 OLLAMA_URL = "http://127.0.0.1:11434/api/generate"
 MODEL = "qwen3-coder-next"
+
+async def run_trinity_search(query: str):
+    """
+    Orchestrates a parallel search across Perplexity, Gemini, and Grok.
+    """
+    engine = XLinkEngine()
+    logging.info(f"🔱 Initializing The Trinity for query: {query}")
+    
+    if not await engine.connect():
+        logging.error("❌ Failed to connect to Brave browser via CDP.")
+        return "Browser connection failed."
+
+    targets = {
+        "perplexity.ai": query,
+        "gemini.google.com": query,
+        "grok.com": query
+    }
+    
+    synthesis_prompt = (
+        "You are the Synthesizer. Review the insights from Perplexity (Architect), "
+        "Gemini (Policy/Security), and Grok (Unfiltered Ops). Provide a single, "
+        "cohesive Strategic Architecture Recommendation for Rob at AI Fusion Labs."
+    )
+    
+    try:
+        # Use Perplexity for final synthesis as it's usually the most cohesive
+        result = await engine.run_scatter_gather(
+            targets=targets,
+            synthesis_target="perplexity.ai",
+            synthesis_prompt=synthesis_prompt,
+            timeout_sec=180
+        )
+        return result
+    except Exception as e:
+        logging.error(f"Trinity search failed: {e}")
+        return f"Trinity integration error: {str(e)}"
+    finally:
+        await engine.close()
 
 def fetch_keep_item():
     url = f"{KEEP_API_BASE}/api/feed?limit=1&content=1"
@@ -146,5 +187,28 @@ def run_sweeper():
     else:
         logging.warning("⚠️ Could not extract 'id' from Keep.md item to mark it processed.")
 
+async def main():
+    import argparse
+    parser = argparse.ArgumentParser(description="Intelligence Sweeper/Scout")
+    parser.add_argument("--query", help="Run a Trinity search (Perplexity, Gemini, Grok) with this query")
+    args = parser.parse_args()
+
+    if args.query:
+        logging.info(f"🔎 Trinity Search Mode: {args.query}")
+        result = await run_trinity_search(args.query)
+        print(f"\n--- TRINITY SYNTHESIS ---\n{result}\n")
+        
+        # Archive to vault
+        report_dir = os.path.join(ROOT_DIR, 'vault', 'intel')
+        os.makedirs(report_dir, exist_ok=True)
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        report_path = os.path.join(report_dir, f"TRINITY_{timestamp}.md")
+        with open(report_path, "w", encoding="utf-8") as f:
+            f.write(f"# 🔱 Trinity Synthesis: {args.query}\n\n{result}\n")
+        logging.info(f"💾 Trinity report archived: {report_path}")
+    else:
+        logging.info("🧹 Default Sweeper Mode (Keep.md)")
+        run_sweeper()
+
 if __name__ == "__main__":
-    run_sweeper()
+    asyncio.run(main())

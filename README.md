@@ -13,6 +13,8 @@ The code in this repository was synthesized from three parallel AI streams:
 
 ### 🚀 Getting Started
 1. Run `pip install -r requirements.txt`. (Optional: run `npm install` for Playwright TS typings/tests).
-2. Launch Brave Browser from your Windows terminal explicitly opening the CDP port:
-   `"C:\Program Files\BraveSoftware\Brave-Browser\Application\brave.exe" --remote-debugging-port=9222`
+2. Launch Brave Browser using the **Stealth Launcher** on your Desktop:
+   `C:\Users\AI Fusion Labs\Desktop\Sloane_Stealth_Launcher.bat`
+   *This ensures CDP port 9222 is active with bot-detection suppression flags.*
 3. Run `python synapse_bridge.py` to confirm the secure link is active.
+4. Run `python test_trinity_heartbeat.py` to verify Perplexity, Gemini, and Grok selectors.
