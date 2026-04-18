@@ -2595,12 +2595,10 @@ function shouldDisplayMelTimeline(data, isInit = false) {
 
     const summary = data.summary || {};
     const state = summary.state || 'idle';
-    const age = summary.last_event_age_seconds;
-    const isRecent = age === null || age === undefined ? false : age <= 600;
 
     if (state === 'error') return true;
     if (state === 'completed') {
-        return isInit ? isRecent : true;
+        return true;
     }
     return false;
 }

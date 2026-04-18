@@ -54,9 +54,9 @@ review_modes:
     apex_enabled: true
     levels: ["role", "conversation", "safety"]
   - id: "troy"
-    label: "Troy Patching"
+    label: "Hermes Patching"
     apex_enabled: true
-    levels: ["role", "conversation", "safety", "troy"]
+    levels: ["role", "conversation", "safety", "hermes_patch"]
 
 environments:
   - id: "local"

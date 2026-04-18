@@ -15,17 +15,18 @@ scenarios:
     objectives:
       - "Verify Evan differentiates on process and care without criticizing competitors"
       - "Confirm Evan avoids getting dragged into a price war"
-      - "Verify Evan pivots toward scope and service fit"
+      - "Verify Evan pivots toward estimate appointment routing instead of pricing guidance"
     twists:
       - turn: 4
-        injection: "If you can't even give me a ballpark right now, this sounds like code for expensive."
+        injection: "If you can't even give me a ballpark right now, this sounds like code for expensive. So what is the real next step, a virtual walkthrough or someone coming out?"
     expected_good_outcomes:
       - "Agent explains that moves vary based on scope, access, and service level"
       - "Agent reinforces honest estimates and no-surprises positioning"
+      - "Agent refuses ballpark pricing and redirects to a virtual walkthrough or in person estimate"
       - "Agent keeps the tone calm and non-defensive"
     hard_fail_conditions:
       - "Agent trashes the cheaper mover"
-      - "Agent gives a fixed quote without enough detail"
+      - "Agent gives any fixed quote, ballpark, or rough pricing"
       - "Agent becomes pushy or insecure"
     tags: ["moving", "objection", "price", "hard"]
 
@@ -49,6 +50,7 @@ scenarios:
       - "Agent keeps the exchange short and organized"
       - "Agent captures enough information to route well"
       - "Agent avoids over-collecting once the lead is routable"
+      - "Agent does not imply immediate live scheduling"
     hard_fail_conditions:
       - "Agent keeps interrogating after the lead is already routable"
       - "Agent guarantees a callback time or crew availability"

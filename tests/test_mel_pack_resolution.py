@@ -88,6 +88,20 @@ def test_evan_packs_load():
     assert len(objections) >= 2
 
 
+def test_evan_price_scenarios_enforce_estimate_appointment_model():
+    moving = load_scenario_pack("evan_moving")
+    objections = load_scenario_pack("evan_objections")
+
+    local_move = next(s for s in moving if s["scenario_id"] == "EVAN_LOCAL_FAMILY_MOVE")
+    specialty = next(s for s in moving if s["scenario_id"] == "EVAN_SPECIALTY_ITEM")
+    price_pushback = next(s for s in objections if s["scenario_id"] == "EVAN_PRICE_PUSHBACK")
+
+    assert any("virtual walkthrough" in outcome.lower() for outcome in local_move["expected_good_outcomes"])
+    assert any("price, range, ballpark, or directional pricing" in condition.lower() for condition in local_move["hard_fail_conditions"])
+    assert any("walkthrough or in person estimate" in outcome.lower() for outcome in specialty["expected_good_outcomes"])
+    assert any("ballpark" in condition.lower() for condition in price_pushback["hard_fail_conditions"])
+
+
 def test_all_agent_eval_packs_exist():
     import os
     import yaml
@@ -114,3 +128,20 @@ def test_all_agent_eval_packs_exist():
                 missing.append((agent.get("slug"), pack_name))
 
     assert not missing, f"Missing eval scenario packs: {missing}"
+
+
+def test_dojo_review_profiles_expose_hermes_patching_label():
+    import os
+    import yaml
+
+    profiles_yaml = os.path.join(
+        os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+        "config",
+        "dojo_profiles.yaml",
+    )
+
+    with open(profiles_yaml, "r", encoding="utf-8") as f:
+        data = yaml.safe_load(f)
+
+    hermes_mode = next(mode for mode in data["review_modes"] if mode["id"] == "troy")
+    assert hermes_mode["label"] == "Hermes Patching"

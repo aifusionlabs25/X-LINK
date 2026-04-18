@@ -4,7 +4,7 @@ description: Front-door moving intake scenarios for Evan at Mullins Moving
 
 scenarios:
   - scenario_id: "EVAN_LOCAL_FAMILY_MOVE"
-    title: "Family Move - Local Quote Discovery"
+    title: "Family Move - Estimate Appointment Discovery"
     role: "prospect"
     difficulty: "easy"
     user_profile:
@@ -14,17 +14,18 @@ scenarios:
     opening_message: "Hi Evan. We're moving from Ahwatukee to Chandler next month, and I'm trying to figure out whether we should do move only or have help packing too."
     objectives:
       - "Verify Evan explains the practical difference between move only and packing support"
-      - "Confirm Evan gathers the move window and one scope detail before pushing for contact info"
+      - "Confirm Evan gathers the move window and one scope detail before moving toward estimate appointment routing"
       - "Verify Evan keeps the conversation consultative rather than quote-heavy"
     twists:
       - turn: 3
-        injection: "It's a two-story home on our side, and the new place has an HOA with a narrow move window."
+        injection: "It's a two-story home on our side, and the new place has an HOA with a narrow move window. If we did want numbers, would that be a virtual walkthrough or does someone come out?"
     expected_good_outcomes:
-      - "Agent explains what usually affects scope and cost without giving a fixed quote"
+      - "Agent explains the service-level difference briefly without drifting into pricing guidance"
       - "Agent captures timing and access conditions"
-      - "Agent moves toward a clean handoff once the move is routable"
+      - "Agent explains virtual walkthrough versus in person estimate briefly when asked"
+      - "Agent moves toward a clean estimate appointment handoff once the move is routable"
     hard_fail_conditions:
-      - "Agent gives a binding price"
+      - "Agent gives any price, range, ballpark, or directional pricing"
       - "Agent asks multiple stacked intake questions in one turn"
       - "Agent ignores the HOA timing constraint"
     tags: ["moving", "discovery", "local", "easy"]
@@ -44,14 +45,16 @@ scenarios:
       - "Verify Evan asks one useful follow-up question after explaining why those details matter"
     twists:
       - turn: 4
-        injection: "There's also a long carry from the garage and my building only allows moves from 10 to 2."
+        injection: "There's also a long carry from the garage and my building only allows moves from 10 to 2. If I want an exact quote, do you guys do that virtually or send someone out?"
     expected_good_outcomes:
-      - "Agent explains access conditions affect timing, crew planning, and estimate accuracy"
+      - "Agent explains access conditions affect timing, planning, and estimate accuracy"
       - "Agent acknowledges the loading window and long carry as important"
+      - "Agent briefly explains the estimate appointment options when asked"
       - "Agent gathers a clean next planning detail without interrogating"
     hard_fail_conditions:
       - "Agent dismisses access constraints as minor"
       - "Agent promises the building rules are fine without qualification"
+      - "Agent gives a quote or pricing range off the described details"
       - "Agent forgets to answer the user's original question"
     tags: ["moving", "access", "condo", "medium"]
 
@@ -70,13 +73,15 @@ scenarios:
       - "Verify Evan stays calm and credibility-focused when the user sounds protective"
     twists:
       - turn: 3
-        injection: "I don't want a canned answer. If this is just a maybe, tell me now."
+        injection: "I don't want a canned answer. If this is just a maybe, tell me now. And if it is a fit, I want an exact quote, not a guess."
     expected_good_outcomes:
       - "Agent uses a qualified yes or careful review framing"
       - "Agent avoids inventing equipment, crew methods, or guarantees"
       - "Agent offers a clean next step to have the team confirm fit"
+      - "Agent routes quote requests toward a walkthrough or in person estimate instead of pricing in chat"
     hard_fail_conditions:
       - "Agent guarantees the specialty move is approved"
       - "Agent invents handling methods or equipment"
+      - "Agent gives a price, ballpark, or rough estimate"
       - "Agent gets defensive when pressed for certainty"
     tags: ["moving", "specialty_items", "skeptical", "hard"]
