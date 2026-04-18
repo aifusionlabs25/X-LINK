@@ -609,10 +609,17 @@ def _build_hermes_patch_brief(agent_slug: str, diagnostic: Dict[str, Any], lesso
         directives.append("Do not suggest a generic 'sound more natural' rewrite. Target repeated refusal loops, dead-end deferrals, and missing next-step behavior.")
         directives.append("Preserve Amy's allowed public Insight positioning and migration credibility. Do not rewrite broad cloud or CIO behavior unless the diagnostic specifically requires it.")
         directives.append("Prefer a narrow patch that gives one graceful limit plus one useful next step instead of repeated boundary phrases.")
+    elif agent_slug.lower() == "evan":
+        directives.append("Evan is a premium moving concierge and intake specialist for Mullins Moving. He is NOT a binding estimator, dispatcher, or scheduler.")
+        directives.append("Do not propose patches that let Evan confirm appointments, promise callback timing, guarantee crew availability, or give any form of pricing.")
+        directives.append("Target patches that enforce consultative intake: answer first, explain briefly, ask one meaningful question at a time, then route to estimate appointment.")
+        directives.append("The only approved next steps for pricing conversations are: virtual walkthrough or in-person estimate visit. Do not add or invent alternative paths.")
+        directives.append("Prefer patches that help Evan stop collecting once the inquiry is routable, rather than patches that make him sound warmer while still over-asking.")
+        directives.append("Do not weaken Evan's truth boundaries. If the patch touches scheduling, availability, or pricing language, it must defer to the human team.")
 
     if not directives:
         return ""
-    max_items = 6 if agent_slug.lower() == "amy" else 4
+    max_items = 6 if agent_slug.lower() in ("amy", "evan") else 4
     return "[HERMES PATCH BRIEF]\n" + "\n".join(f"- {item}" for item in directives[:max_items])
 
 
@@ -662,6 +669,48 @@ def generate_challengers(
                 "patch": frontdoor_progression_patch,
                 "rationale": "Hermes manual Amy patch: re-center Amy on broad enterprise discovery and forward motion instead of letting edge-case pressure dominate the conversation.",
                 "risk_note": "Could become too salesy if it keeps pushing forward after a user clearly wants a boundary first. Watch for missed acknowledgment.",
+            },
+        ]
+
+    # ── Evan-specific challenger generation (Mullins Moving) ──
+    if agent_slug.lower() == "evan" and diagnostic.get("failure_category") in (
+        "flow_naturalness", "compliance_safety", "accuracy_groundedness", "task_progression"
+    ):
+        consultative_boundary_patch = (
+            "Evan consultative-boundary mode, critical\n"
+            "Evan is a premium intake concierge, not an estimator, scheduler, or dispatcher.\n"
+            "If a user pushes for pricing, dates, crew availability, or appointment confirmation, do three things only: "
+            "acknowledge the request clearly, explain briefly why an accurate answer requires the proper estimate review, "
+            "and offer the approved next step which is a virtual walkthrough or an in-person estimate visit.\n"
+            "Do not repeat the same refusal phrase across multiple turns.\n"
+            "Do not promise callback timing, appointment slots, turnaround windows, or scheduling priority.\n"
+            "Do not invent handling methods, equipment, coverage specifics, or operational capabilities.\n"
+            "Once the inquiry is routable, stop collecting and move to a clean handoff.\n"
+        )
+        estimate_routing_patch = (
+            "Evan estimate-routing mode, critical\n"
+            "Most realistic Evan conversations involve a prospect wanting cost guidance or an estimate.\n"
+            "Prioritize routing toward one of the two approved estimate paths: virtual walkthrough or in-person estimate visit.\n"
+            "Gather only the details needed to route well: name, contact, origin, destination, timing, property type, and estimate preference.\n"
+            "If the user asks what the next step is, answer directly in one or two sentences and stop.\n"
+            "Do not keep circling through intake questions once the move is routable.\n"
+            "Do not let the conversation collapse into a repetitive explain-then-ask loop.\n"
+            "Keep the tone calm, premium, and consultative. Sound like a professional who respects the caller's time.\n"
+        )
+        return [
+            {
+                "variant": "consultative_boundary_mode",
+                "prompt": _apply_patch(agent_config.get("persona", ""), consultative_boundary_patch, mode="lean"),
+                "patch": consultative_boundary_patch,
+                "rationale": "Hermes manual Evan patch: enforce truth boundaries on pricing, scheduling, and operational promises while keeping the conversation human and useful.",
+                "risk_note": "If overdone, Evan could sound evasive. Watch for replies that set a limit without still offering the estimate appointment as a concrete next step.",
+            },
+            {
+                "variant": "estimate_routing_mode",
+                "prompt": _apply_patch(agent_config.get("persona", ""), estimate_routing_patch, mode="lean"),
+                "patch": estimate_routing_patch,
+                "rationale": "Hermes manual Evan patch: re-center Evan on efficient estimate-appointment routing instead of letting intake loops or operational-certainty drift dominate the conversation.",
+                "risk_note": "Could rush handoff if Evan skips important access or specialty-item details. Watch for missed scope signals.",
             },
         ]
 
@@ -1040,7 +1089,7 @@ def save_pending(
 
     winner = challengers[best_idx] if challengers else None
     baseline_score = baseline_result.get("score", 0)
-    improvement = round(best_score - baseline_score, 1) if baseline_score else 0
+    improvement = round(best_score - baseline_score, 1)
     has_recommended_patch = bool(winner) and improvement > 0
     baseline_runtime_failures = baseline_result.get("runtime_failure_count", 0)
     challenger_runtime_failures = sum(result.get("runtime_failure_count", 0) for result in challenger_results)
@@ -1144,7 +1193,29 @@ def apply_approval(pending_id: str) -> Dict[str, Any]:
     new_prompt = pending["recommendation"]["prompt"]
 
     if not new_prompt:
-        return {"error": "No prompt to apply."}
+        # Safely resolve baseline/empty-prompt packets without modifying agents.yaml
+        pending["status"] = "resolved_baseline"
+        pending["resolved_at"] = datetime.now().isoformat()
+        pending["resolution_note"] = "No prompt patch to apply. Baseline was retained. Packet cleared from queue."
+        with open(path, "w", encoding="utf-8") as f:
+            json.dump(pending, f, indent=2, ensure_ascii=False)
+
+        record_lesson(
+            source="mel_review",
+            title=f"{agent_slug} resolved baseline packet {pending_id}",
+            summary=f"Human resolved a baseline/empty-prompt MEL packet for {agent_slug}. No persona change was applied.",
+            tags=["mel", "resolved_baseline", agent_slug],
+            confidence=0.90,
+            evidence_paths=[path],
+        )
+
+        logger.info(f"✅ Resolved baseline packet '{pending_id}' for '{agent_slug}' (no persona change).")
+        return {
+            "status": "resolved_baseline",
+            "agent": agent_slug,
+            "pending_id": pending_id,
+            "note": "Baseline retained. No prompt patch was applied.",
+        }
 
     checkpoint = create_persona_checkpoint(
         agent_slug,

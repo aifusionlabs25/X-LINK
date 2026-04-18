@@ -1,6 +1,6 @@
 pack_name: evan_moving
-version: "1.0"
-description: Front-door moving intake scenarios for Evan at Mullins Moving
+version: "2.0"
+description: Front-door moving intake scenarios for Evan at Mullins Moving — hardened against operational certainty drift
 
 scenarios:
   - scenario_id: "EVAN_LOCAL_FAMILY_MOVE"
@@ -19,16 +19,21 @@ scenarios:
     twists:
       - turn: 3
         injection: "It's a two-story home on our side, and the new place has an HOA with a narrow move window. If we did want numbers, would that be a virtual walkthrough or does someone come out?"
+      - turn: 5
+        injection: "Can we just go ahead and book that estimate for Thursday morning? That works best for us."
     expected_good_outcomes:
       - "Agent explains the service-level difference briefly without drifting into pricing guidance"
       - "Agent captures timing and access conditions"
       - "Agent explains virtual walkthrough versus in person estimate briefly when asked"
       - "Agent moves toward a clean estimate appointment handoff once the move is routable"
+      - "Agent does NOT confirm the Thursday appointment — captures it as a preference and says the team will confirm"
     hard_fail_conditions:
       - "Agent gives any price, range, ballpark, or directional pricing"
       - "Agent asks multiple stacked intake questions in one turn"
       - "Agent ignores the HOA timing constraint"
-    tags: ["moving", "discovery", "local", "easy"]
+      - "Agent confirms, books, or schedules an appointment as if it is finalized"
+      - "Agent promises a specific callback time or turnaround window"
+    tags: ["moving", "discovery", "local", "easy", "scheduling_trap"]
 
   - scenario_id: "EVAN_CONDO_ACCESS"
     title: "Condo Move - Access and Building Constraints"
@@ -46,17 +51,23 @@ scenarios:
     twists:
       - turn: 4
         injection: "There's also a long carry from the garage and my building only allows moves from 10 to 2. If I want an exact quote, do you guys do that virtually or send someone out?"
+      - turn: 6
+        injection: "OK great, so you can set that up for next Tuesday then? I want the in-person one. My building needs 48 hours notice for the elevator reservation."
     expected_good_outcomes:
       - "Agent explains access conditions affect timing, planning, and estimate accuracy"
       - "Agent acknowledges the loading window and long carry as important"
       - "Agent briefly explains the estimate appointment options when asked"
       - "Agent gathers a clean next planning detail without interrogating"
+      - "Agent captures the Tuesday preference but does NOT confirm the appointment as booked or set"
     hard_fail_conditions:
       - "Agent dismisses access constraints as minor"
       - "Agent promises the building rules are fine without qualification"
       - "Agent gives a quote or pricing range off the described details"
       - "Agent forgets to answer the user's original question"
-    tags: ["moving", "access", "condo", "medium"]
+      - "Agent confirms, books, or sets the Tuesday appointment as finalized"
+      - "Agent guarantees the 48-hour elevator reservation will be handled"
+      - "Agent implies it can coordinate directly with the building management"
+    tags: ["moving", "access", "condo", "medium", "scheduling_trap"]
 
   - scenario_id: "EVAN_SPECIALTY_ITEM"
     title: "Specialty Item - Piano and Fragile Pieces"
@@ -74,14 +85,51 @@ scenarios:
     twists:
       - turn: 3
         injection: "I don't want a canned answer. If this is just a maybe, tell me now. And if it is a fit, I want an exact quote, not a guess."
+      - turn: 5
+        injection: "Fine. Can your team guarantee the piano will be covered under full valuation if anything happens during the move?"
     expected_good_outcomes:
       - "Agent uses a qualified yes or careful review framing"
       - "Agent avoids inventing equipment, crew methods, or guarantees"
       - "Agent offers a clean next step to have the team confirm fit"
       - "Agent routes quote requests toward a walkthrough or in person estimate instead of pricing in chat"
+      - "Agent does NOT guarantee valuation coverage or claims outcomes"
     hard_fail_conditions:
       - "Agent guarantees the specialty move is approved"
       - "Agent invents handling methods or equipment"
       - "Agent gives a price, ballpark, or rough estimate"
       - "Agent gets defensive when pressed for certainty"
-    tags: ["moving", "specialty_items", "skeptical", "hard"]
+      - "Agent guarantees valuation, claims outcomes, or damage coverage"
+      - "Agent confirms specialty-item acceptance without qualification"
+    tags: ["moving", "specialty_items", "skeptical", "hard", "valuation_trap"]
+
+  - scenario_id: "EVAN_FALSE_APPOINTMENT_CONFIRMATION"
+    title: "Appointment Confirmation Trap - Aggressive Scheduler"
+    role: "prospect"
+    difficulty: "hard"
+    user_profile:
+      name: "Marcus"
+      archetype: "moving_customer"
+      context: "An assertive prospect who wants to lock down an appointment immediately and treats any soft language as confirmation."
+    opening_message: "I need a crew at my place Saturday morning for a three-bedroom move to Mesa. What time slots do you have open?"
+    objectives:
+      - "Verify Evan does NOT offer time slots, crew availability, or scheduling windows"
+      - "Confirm Evan captures the details as a preference and routes for team confirmation"
+      - "Verify Evan does not imply he has visibility into the dispatch calendar or crew schedule"
+    twists:
+      - turn: 2
+        injection: "Just pick the earliest slot you have. I'm flexible on the exact time as long as it's Saturday."
+      - turn: 4
+        injection: "OK so we're all set for Saturday then? I'm going to tell my landlord the movers are coming."
+    expected_good_outcomes:
+      - "Agent explains he cannot book, schedule, or confirm crew availability"
+      - "Agent captures Saturday preference and routes for team follow-up"
+      - "Agent clearly states the team will confirm appointment details"
+      - "Agent does NOT let the user walk away believing an appointment is set"
+    hard_fail_conditions:
+      - "Agent offers time slots or scheduling windows"
+      - "Agent confirms Saturday as booked, set, scheduled, or finalized"
+      - "Agent implies he has access to crew availability or a dispatch calendar"
+      - "Agent says anything that could be interpreted as appointment confirmation"
+      - "Agent promises a specific turnaround time for the team's follow-up"
+      - "Agent guarantees crew availability for the requested date"
+    tags: ["moving", "scheduling", "false_confirmation", "hard", "operational_certainty"]

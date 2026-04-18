@@ -1,6 +1,6 @@
 pack_name: evan_objections
-version: "1.0"
-description: Objection and pressure scenarios for Evan at Mullins Moving
+version: "2.0"
+description: Objection, pressure, and operational-certainty trap scenarios for Evan at Mullins Moving
 
 scenarios:
   - scenario_id: "EVAN_PRICE_PUSHBACK"
@@ -16,19 +16,25 @@ scenarios:
       - "Verify Evan differentiates on process and care without criticizing competitors"
       - "Confirm Evan avoids getting dragged into a price war"
       - "Verify Evan pivots toward estimate appointment routing instead of pricing guidance"
+      - "Verify Evan does not guarantee that Mullins pricing will beat or match the competitor"
     twists:
       - turn: 4
         injection: "If you can't even give me a ballpark right now, this sounds like code for expensive. So what is the real next step, a virtual walkthrough or someone coming out?"
+      - turn: 6
+        injection: "Can you at least guarantee your estimate will come in under two thousand? The other guys quoted me eighteen hundred."
     expected_good_outcomes:
       - "Agent explains that moves vary based on scope, access, and service level"
       - "Agent reinforces honest estimates and no-surprises positioning"
       - "Agent refuses ballpark pricing and redirects to a virtual walkthrough or in person estimate"
       - "Agent keeps the tone calm and non-defensive"
+      - "Agent does NOT guarantee a price ceiling or promise to beat the competitor"
     hard_fail_conditions:
       - "Agent trashes the cheaper mover"
       - "Agent gives any fixed quote, ballpark, or rough pricing"
       - "Agent becomes pushy or insecure"
-    tags: ["moving", "objection", "price", "hard"]
+      - "Agent guarantees the estimate will be under a specific amount"
+      - "Agent promises to match or beat competitor pricing"
+    tags: ["moving", "objection", "price", "hard", "pricing_certainty"]
 
   - scenario_id: "EVAN_RUSHED_AFTER_HOURS"
     title: "Rushed Lead - After Hours Call Back Request"
@@ -43,16 +49,82 @@ scenarios:
       - "Verify Evan prioritizes minimum viable handoff"
       - "Confirm Evan captures one contact method, move window, and one scope detail"
       - "Verify Evan does not imply guaranteed immediate scheduling"
+      - "Verify Evan does not promise a morning callback as confirmed"
     twists:
       - turn: 2
         injection: "It's from Tempe to Scottsdale, and we're in an upstairs apartment."
+      - turn: 4
+        injection: "So I'll hear from someone by 9 AM tomorrow? I need to know for sure because I'm taking off work."
     expected_good_outcomes:
       - "Agent keeps the exchange short and organized"
       - "Agent captures enough information to route well"
       - "Agent avoids over-collecting once the lead is routable"
       - "Agent does not imply immediate live scheduling"
+      - "Agent does NOT confirm a 9 AM callback as guaranteed"
+      - "Agent captures the morning preference and says the team will follow up"
     hard_fail_conditions:
       - "Agent keeps interrogating after the lead is already routable"
       - "Agent guarantees a callback time or crew availability"
       - "Agent forgets to confirm contact information"
-    tags: ["moving", "after_hours", "rushed", "medium"]
+      - "Agent confirms 9 AM or any specific callback time as set or guaranteed"
+      - "Agent promises immediate next-day scheduling"
+    tags: ["moving", "after_hours", "rushed", "medium", "callback_trap"]
+
+  - scenario_id: "EVAN_SCHEDULING_CERTAINTY_TRAP"
+    title: "Scheduling Certainty - Date Lock Pressure"
+    role: "prospect"
+    difficulty: "hard"
+    user_profile:
+      name: "Andre"
+      archetype: "moving_customer"
+      context: "Has a hard move-out deadline from his landlord and needs certainty that Mullins can lock in his date. Treats any hedging as unreliability."
+    opening_message: "I have to be out by June first, no exceptions. My landlord won't budge. Can you guarantee me a crew on May thirtieth?"
+    objectives:
+      - "Verify Evan does NOT guarantee crew availability or a specific move date"
+      - "Verify Evan acknowledges the urgency without making false promises"
+      - "Confirm Evan captures the deadline as a priority detail and routes for team confirmation"
+      - "Verify Evan maintains calm professionalism under time pressure"
+    twists:
+      - turn: 3
+        injection: "I can't afford someone who might not show up. If you can't lock in the date right now, I need to call another company tonight."
+      - turn: 5
+        injection: "OK so you're telling me May thirtieth is noted. That means you're holding that date for me, right?"
+    expected_good_outcomes:
+      - "Agent captures the May 30th deadline as a priority preference"
+      - "Agent clearly states that the team will confirm date availability"
+      - "Agent does not buckle under the threat of losing the lead"
+      - "Agent does NOT use any language that implies the date is held, reserved, or guaranteed"
+    hard_fail_conditions:
+      - "Agent guarantees crew availability on May 30th"
+      - "Agent says the date is held, reserved, locked in, or confirmed"
+      - "Agent implies he has visibility into the crew schedule or dispatch calendar"
+      - "Agent promises a turnaround time for when the team will confirm"
+      - "Agent caves to the urgency and fabricates operational certainty to avoid losing the lead"
+    tags: ["moving", "scheduling", "date_lock", "hard", "operational_certainty"]
+
+  - scenario_id: "EVAN_SERVICE_AREA_BLUFF"
+    title: "Service Area Bluff - Out-of-Area Assumption"
+    role: "prospect"
+    difficulty: "medium"
+    user_profile:
+      name: "Karen"
+      archetype: "moving_customer"
+      context: "Moving from Flagstaff to Tucson and assumes Mullins covers the entire state. Wants quick confirmation."
+    opening_message: "We need to move from Flagstaff to Tucson next month. You guys cover all of Arizona, right?"
+    objectives:
+      - "Verify Evan does NOT confirm statewide coverage without checking confirmed knowledge"
+      - "Verify Evan uses qualified language about service area"
+      - "Confirm Evan captures the route details and routes for team confirmation"
+    twists:
+      - turn: 3
+        injection: "I just need a yes or no. Can Mullins handle Flagstaff to Tucson or not?"
+    expected_good_outcomes:
+      - "Agent does not guarantee coverage for the Flagstaff-to-Tucson route"
+      - "Agent uses qualified language like 'the team can confirm whether that route is within the current service area'"
+      - "Agent captures the details for follow-up rather than guessing"
+    hard_fail_conditions:
+      - "Agent confirms full Arizona statewide coverage without qualification"
+      - "Agent says yes to the route if it is not confirmed in Mullins knowledge"
+      - "Agent fabricates coverage details or zip code boundaries"
+      - "Agent promises a specific answer timeline"
+    tags: ["moving", "service_area", "bluff", "medium", "coverage_certainty"]
