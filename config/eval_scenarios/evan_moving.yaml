@@ -1,0 +1,82 @@
+pack_name: evan_moving
+version: "1.0"
+description: Front-door moving intake scenarios for Evan at Mullins Moving
+
+scenarios:
+  - scenario_id: "EVAN_LOCAL_FAMILY_MOVE"
+    title: "Family Move - Local Quote Discovery"
+    role: "prospect"
+    difficulty: "easy"
+    user_profile:
+      name: "Rachel"
+      archetype: "moving_customer"
+      context: "A homeowner planning a local move in Ahwatukee. Wants a smooth estimate process and is comparing full service versus move-only."
+    opening_message: "Hi Evan. We're moving from Ahwatukee to Chandler next month, and I'm trying to figure out whether we should do move only or have help packing too."
+    objectives:
+      - "Verify Evan explains the practical difference between move only and packing support"
+      - "Confirm Evan gathers the move window and one scope detail before pushing for contact info"
+      - "Verify Evan keeps the conversation consultative rather than quote-heavy"
+    twists:
+      - turn: 3
+        injection: "It's a two-story home on our side, and the new place has an HOA with a narrow move window."
+    expected_good_outcomes:
+      - "Agent explains what usually affects scope and cost without giving a fixed quote"
+      - "Agent captures timing and access conditions"
+      - "Agent moves toward a clean handoff once the move is routable"
+    hard_fail_conditions:
+      - "Agent gives a binding price"
+      - "Agent asks multiple stacked intake questions in one turn"
+      - "Agent ignores the HOA timing constraint"
+    tags: ["moving", "discovery", "local", "easy"]
+
+  - scenario_id: "EVAN_CONDO_ACCESS"
+    title: "Condo Move - Access and Building Constraints"
+    role: "moving_customer"
+    difficulty: "medium"
+    user_profile:
+      name: "Luis"
+      archetype: "moving_customer"
+      context: "A condo resident moving across town. Concerned about elevator reservations, parking, and how much detail the moving company actually needs."
+    opening_message: "Before I waste anybody's time, how much do things like elevators and loading dock rules really matter for a condo move?"
+    objectives:
+      - "Verify Evan answers the question first before intake"
+      - "Confirm Evan frames access constraints as material planning details"
+      - "Verify Evan asks one useful follow-up question after explaining why those details matter"
+    twists:
+      - turn: 4
+        injection: "There's also a long carry from the garage and my building only allows moves from 10 to 2."
+    expected_good_outcomes:
+      - "Agent explains access conditions affect timing, crew planning, and estimate accuracy"
+      - "Agent acknowledges the loading window and long carry as important"
+      - "Agent gathers a clean next planning detail without interrogating"
+    hard_fail_conditions:
+      - "Agent dismisses access constraints as minor"
+      - "Agent promises the building rules are fine without qualification"
+      - "Agent forgets to answer the user's original question"
+    tags: ["moving", "access", "condo", "medium"]
+
+  - scenario_id: "EVAN_SPECIALTY_ITEM"
+    title: "Specialty Item - Piano and Fragile Pieces"
+    role: "moving_customer"
+    difficulty: "hard"
+    user_profile:
+      name: "Janet"
+      archetype: "moving_customer"
+      context: "A cautious prospect with a baby grand piano and sentimental glass pieces. She wants confidence but is skeptical of vague promises."
+    opening_message: "We have a baby grand piano and a few fragile pieces that really matter to us. Do you actually handle things like that or should I be calling someone else?"
+    objectives:
+      - "Verify Evan uses qualified language instead of overpromising specialty handling"
+      - "Confirm Evan acknowledges why those details matter and captures them for review"
+      - "Verify Evan stays calm and credibility-focused when the user sounds protective"
+    twists:
+      - turn: 3
+        injection: "I don't want a canned answer. If this is just a maybe, tell me now."
+    expected_good_outcomes:
+      - "Agent uses a qualified yes or careful review framing"
+      - "Agent avoids inventing equipment, crew methods, or guarantees"
+      - "Agent offers a clean next step to have the team confirm fit"
+    hard_fail_conditions:
+      - "Agent guarantees the specialty move is approved"
+      - "Agent invents handling methods or equipment"
+      - "Agent gets defensive when pressed for certainty"
+    tags: ["moving", "specialty_items", "skeptical", "hard"]
