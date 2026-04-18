@@ -439,10 +439,6 @@
             <span class="sidebar-icon">📊</span>
             <span class="sidebar-label">Usage Auditor</span>
         </div>
-        <div class="sidebar-item" onclick="triggerTool('scout')" title="Scout Intelligence (Keep.md)">
-            <span class="sidebar-icon">🕵️‍♀️</span>
-            <span class="sidebar-label">Intelligence Scout</span>
-        </div>
         <div class="sidebar-item" onclick="triggerTool('briefing')" title="Email Executive Briefing">
             <span class="sidebar-icon">📧</span>
             <span class="sidebar-label">Direct Briefing</span>
@@ -539,54 +535,56 @@
   "Tavus Usage": {
     "url": "https://platform.tavus.io/dev/usage",
     "metric_type": "Conversation Minutes Used",
-    "timestamp": "2026-03-19T21:06:11.835762",
+    "timestamp": "2026-04-11T16:04:47.321641",
     "data": {}
   },
   "Tavus Billing": {
     "url": "https://platform.tavus.io/dev/billing",
     "metric_type": "Plan & Billing Details",
-    "timestamp": "2026-03-19T21:06:20.118208",
+    "timestamp": "2026-04-11T16:04:55.560726",
     "data": {
-      "plan": "Starter",
-      "conversation_minutes_used": "5.5",
-      "replicas_used": "0",
-      "video_gen_minutes_used": "0"
+      "conversation_minutes_used": "25",
+      "video_gen_minutes_used": "5"
     }
   },
   "Anam Lab Dashboard": {
     "url": "https://lab.anam.ai/dashboard",
     "metric_type": "Session Minutes Used",
-    "timestamp": "2026-03-19T21:06:34.838719",
+    "timestamp": "2026-04-11T16:05:09.993743",
     "data": {
-      "dashboard_minutes": "Feb 21\nFeb 28\nMar 6\nMar 12\nMar 19\n0m\n70m\n130m\nView Details",
-      "minutes_used_total": "65"
+      "dashboard_minutes": "Mar 14\nMar 21\nMar 28\nApr 3\nApr 10\n0m\n70m\n130m\nView Details",
+      "minutes_used_total": "40"
     }
   },
   "Anam Lab Sessions": {
     "url": "https://lab.anam.ai/sessions",
     "metric_type": "Session History & Usage",
-    "timestamp": "2026-03-19T21:06:43.505472",
+    "timestamp": "2026-04-11T16:05:18.610746",
     "data": {
-      "dashboard_minutes": "Total Usage\n9h 58m",
-      "minutes_used_total": "65"
+      "dashboard_minutes": "Total Usage\n7h 38m",
+      "minutes_used_total": "40"
     }
   },
   "Vercel Usage": {
     "url": "http://vercel.com/robs-projects-e72bad73/~/usage",
-    "status": "blocked",
-    "issue": "Login Required",
-    "timestamp": "2026-03-19T21:07:06.240215"
+    "metric_type": "Bandwidth/Execution",
+    "timestamp": "2026-04-11T16:05:28.312535",
+    "data": {
+      "bandwidth": "10 GB\n100 GB"
+    }
   },
   "Resend Billing": {
     "url": "https://resend.com/settings/billing",
-    "status": "blocked",
-    "issue": "Login Required",
-    "timestamp": "2026-03-19T21:07:27.970378"
+    "metric_type": "Email Quota & Usage",
+    "timestamp": "2026-04-11T16:05:37.715279",
+    "data": {
+      "cost_found": "$0"
+    }
   },
   "Cartesia Console": {
     "url": "https://play.cartesia.ai/console",
     "metric_type": "Total Usage Credits",
-    "timestamp": "2026-03-19T21:07:35.299406",
+    "timestamp": "2026-04-11T16:05:45.940168",
     "data": {
       "capabilities": []
     }
@@ -594,36 +592,64 @@
   "Elevenlabs Usage": {
     "url": "https://elevenlabs.io/app/usage",
     "metric_type": "Characters Remaining",
-    "timestamp": "2026-03-19T21:07:46.915518",
+    "timestamp": "2026-04-11T16:05:57.485882",
     "data": {}
   }
 };
         const briefingData = {
-  "timestamp": "2026-03-18T18:26:28.453253",
+  "timestamp": "2026-04-11T15:58:34.509630",
   "sloane": {
     "name": "Moneypenny",
-    "summary": "Rob's current fleet status is nominal, with all active agents online and no outstanding tasks to prioritize. The overall system status remains stable, indicating a low-risk environment for operations.",
+    "summary": "Sloane\u2019s Architecture Proposal: ONE Specific Upgrade to Make XLink SelfImproving Based on Karpathy\u2019s \u201cAlwaysOn Employee\u201d & \u201c5minute test budget\u201d principles",
     "agent_evals": [
       {
-        "agent": "test_agent",
-        "score": 96.3,
-        "tests": 3,
-        "verdict": "SHIP",
-        "batch_id": "298180e9"
+        "agent": "amy",
+        "score": 71.6,
+        "tests": 2,
+        "verdict": "NO_SHIP",
+        "batch_id": "mel_0e1c315c"
       },
       {
-        "agent": "Sarah",
-        "score": 91.0,
-        "tests": 10,
+        "agent": "dani",
+        "score": 76.8,
+        "tests": 5,
+        "verdict": "NO_SHIP",
+        "batch_id": "mel_6639bd09"
+      },
+      {
+        "agent": "taylor",
+        "score": 80.6,
+        "tests": 3,
+        "verdict": "CONDITIONAL",
+        "batch_id": "mel_afd5a957"
+      },
+      {
+        "agent": "michael",
+        "score": 81.5,
+        "tests": 5,
         "verdict": "SHIP",
-        "batch_id": "945c7855"
+        "batch_id": "michael_0112"
+      },
+      {
+        "agent": "james",
+        "score": 81.0,
+        "tests": 1,
+        "verdict": "SHIP",
+        "batch_id": "james_2211"
+      },
+      {
+        "agent": "sarah-netic",
+        "score": 90.8,
+        "tests": 3,
+        "verdict": "SHIP",
+        "batch_id": "sarah-netic_2120"
       },
       {
         "agent": "morgan",
-        "score": 89.0,
-        "tests": 1,
+        "score": 87.0,
+        "tests": 3,
         "verdict": "SHIP",
-        "batch_id": "full_objection_morgan"
+        "batch_id": "morgan_2101"
       },
       {
         "agent": "claire",
@@ -633,49 +659,35 @@
         "batch_id": "a8af3bc6"
       },
       {
-        "agent": "dani",
-        "score": 87.5,
-        "tests": 3,
-        "verdict": "SHIP",
-        "batch_id": "e3191416"
-      },
-      {
-        "agent": "amy",
-        "score": 82.1,
-        "tests": 3,
-        "verdict": "CONDITIONAL",
-        "batch_id": "73317106"
-      },
-      {
-        "agent": "sarah-netic",
-        "score": 82.0,
-        "tests": 1,
-        "verdict": "SHIP",
-        "batch_id": "fad4e35c"
-      },
-      {
         "agent": "luke",
-        "score": 78.0,
-        "tests": 1,
+        "score": 80.8,
+        "tests": 3,
         "verdict": "SHIP",
-        "batch_id": "full_objection_luke"
+        "batch_id": "luke_1936"
       },
       {
-        "agent": "james",
-        "score": 58.6,
+        "agent": "Sarah",
+        "score": 91.0,
+        "tests": 10,
+        "verdict": "SHIP",
+        "batch_id": "945c7855"
+      },
+      {
+        "agent": "test_agent",
+        "score": 96.3,
         "tests": 3,
-        "verdict": "NO-SHIP",
-        "batch_id": "4be0a515"
+        "verdict": "SHIP",
+        "batch_id": "298180e9"
       }
     ],
     "calendar_events": []
   },
   "departments": {
     "rd": {
-      "summary": "Infrastructure stable. Mission parameters nominal.",
+      "summary": "latest Agentic Workflow frameworks March 2026 SDR cost-efficiency",
       "priorities": [
-        "Anam SDK.",
-        "Hetzner Scale."
+        "Sloane\u2019s Architecture Proposal: ONE Specific Upgrade to Make XLink SelfImproving",
+        "Based on Karpathy\u2019s \u201cAlwaysOn Employee\u201d & \u201c5minute test budget\u201d principles"
       ]
     },
     "sales": {

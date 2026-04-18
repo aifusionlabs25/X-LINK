@@ -8,11 +8,64 @@ let currentBatchId = null;
 let currentDojoConfig = null;
 let healthInterval = null;
 
+function getDojoAgentConfig(agentSlug) {
+    if (!currentDojoConfig || !currentDojoConfig.agents) return null;
+    return currentDojoConfig.agents.find(a => a.slug === agentSlug) || null;
+}
+
+function getPackOwnerSlug(packName) {
+    if (!currentDojoConfig || !currentDojoConfig.agents || !packName) return '';
+    const owners = currentDojoConfig.agents.filter(agent => {
+        const allowed = (agent.eval && Array.isArray(agent.eval.allowed_packs)) ? agent.eval.allowed_packs : [];
+        return allowed.includes(packName);
+    });
+    return owners.length === 1 ? owners[0].slug : '';
+}
+
+function refreshPackOptionsForAgent(preferredPack = null, announce = false) {
+    const agentSelect = document.getElementById('dojo-agent-select');
+    const packSelect = document.getElementById('dojo-pack-select');
+    if (!agentSelect || !packSelect || !currentDojoConfig) return;
+
+    const agent = getDojoAgentConfig(agentSelect.value);
+    const allowedPacks = (agent && agent.eval && Array.isArray(agent.eval.allowed_packs) && agent.eval.allowed_packs.length)
+        ? agent.eval.allowed_packs
+        : (currentDojoConfig.scenario_packs || []);
+
+    populateSelect('dojo-pack-select', allowedPacks.map(pack => ({
+        id: pack,
+        label: pack.replace(/_/g, ' ').toUpperCase()
+    })));
+
+    const nextPack =
+        (preferredPack && allowedPacks.includes(preferredPack) && preferredPack) ||
+        (agent && agent.eval && allowedPacks.includes(agent.eval.default_pack) && agent.eval.default_pack) ||
+        allowedPacks[0] ||
+        '';
+
+    if (nextPack) {
+        packSelect.value = nextPack;
+        if (announce) {
+            showToast(`Scenario pack aligned: ${nextPack}`, false);
+        }
+    }
+}
+
 async function initDojo() {
     try {
+        const previousSelections = {
+            agent: document.getElementById('dojo-agent-select')?.value || '',
+            pack: document.getElementById('dojo-pack-select')?.value || '',
+            environment: document.getElementById('dojo-env-select')?.value || '',
+            difficulty: document.getElementById('dojo-diff-select')?.value || '',
+            runs: document.getElementById('dojo-count-select')?.value || '',
+            turns: document.getElementById('dojo-turn-select')?.value || '',
+            review: document.getElementById('dojo-review-select')?.value || '',
+        };
         const response = await fetch(`${API_BASE}/api/dojo/config`);
         const config = await response.json();
         currentDojoConfig = config;
+        window.dojoConfig = config; // Global Exposure
         
         populateSelect('dojo-agent-select', config.agents.map(a => ({ id: a.slug, label: `${a.name} (${a.role})` })));
         populateSelect('dojo-pack-select', config.scenario_packs.map(p => ({ id: p, label: p.replace(/_/g, ' ').toUpperCase() })));
@@ -21,6 +74,23 @@ async function initDojo() {
         populateSelect('dojo-count-select', config.profiles.run_counts.map(c => ({ id: c, label: `${c} ${c === 1 ? 'Run' : 'Runs'}` })));
         populateSelect('dojo-turn-select', config.profiles.turn_profiles);
         populateSelect('dojo-review-select', config.profiles.review_modes);
+
+        const restoreSelectValue = (id, value) => {
+            const select = document.getElementById(id);
+            if (!select || !value) return;
+            const exists = Array.from(select.options).some(option => option.value === value);
+            if (exists) {
+                select.value = value;
+            }
+        };
+
+        restoreSelectValue('dojo-agent-select', previousSelections.agent);
+        restoreSelectValue('dojo-env-select', previousSelections.environment);
+        restoreSelectValue('dojo-diff-select', previousSelections.difficulty);
+        restoreSelectValue('dojo-count-select', previousSelections.runs);
+        restoreSelectValue('dojo-turn-select', previousSelections.turns);
+        restoreSelectValue('dojo-review-select', previousSelections.review);
+        refreshPackOptionsForAgent(previousSelections.pack, false);
 
         // Populate Marathon Fields
         populateSelect('marathon-env-select', config.profiles.environments);
@@ -55,7 +125,7 @@ async function initDojo() {
 
         // Add change listeners
         const agentSelect = document.getElementById('dojo-agent-select');
-        agentSelect.addEventListener('change', autoAlignPack);
+        agentSelect.addEventListener('change', () => refreshPackOptionsForAgent(null, true));
         agentSelect.addEventListener('change', updateSyncStatus);
 
         loadDojoHistory();
@@ -104,16 +174,7 @@ function populateSelect(id, items) {
 }
 
 function autoAlignPack() {
-    const agentSlug = document.getElementById('dojo-agent-select').value;
-    const packSelect = document.getElementById('dojo-pack-select');
-    
-    if (currentDojoConfig && currentDojoConfig.agents) {
-        const agent = currentDojoConfig.agents.find(a => a.slug === agentSlug);
-        if (agent && agent.default_pack) {
-            packSelect.value = agent.default_pack;
-            showToast(`Auto-aligned pack: ${agent.default_pack}`, false);
-        }
-    }
+    refreshPackOptionsForAgent(null, true);
 }
 
 function updateSyncStatus() {
@@ -162,7 +223,29 @@ async function startDojoMission(overrideParams = null) {
         };
     }
 
-    showToast(params.rerun_batch_id ? "Rerunning Failed Scenarios..." : "Deploying Dojo Evaluator...", false);
+    const selectedAgent = getDojoAgentConfig(params.agent);
+    const allowedPacks = (selectedAgent && selectedAgent.eval && Array.isArray(selectedAgent.eval.allowed_packs))
+        ? selectedAgent.eval.allowed_packs
+        : [];
+    if (params.pack && allowedPacks.length && !allowedPacks.includes(params.pack)) {
+        const owningSlug = getPackOwnerSlug(params.pack);
+        if (owningSlug) {
+            params.agent = owningSlug;
+            const agentSelect = document.getElementById('dojo-agent-select');
+            if (agentSelect) agentSelect.value = owningSlug;
+            refreshPackOptionsForAgent(params.pack, false);
+            showToast(`Corrected agent to ${owningSlug.toUpperCase()} for pack ${params.pack}`, false);
+        } else {
+            refreshPackOptionsForAgent(null, false);
+            const packSelect = document.getElementById('dojo-pack-select');
+            if (packSelect) {
+                params.pack = packSelect.value;
+            }
+            showToast(`Corrected scenario pack for ${String(params.agent).toUpperCase()}`, false);
+        }
+    }
+
+    showToast(params.rerun_batch_id ? "Rerunning Failed Scenarios..." : `Deploying Dojo Evaluator for ${String(params.agent || 'selected agent').toUpperCase()}...`, false);
     
     try {
         const response = await fetch(`${API_BASE}/api/dojo/start`, {
@@ -563,4 +646,280 @@ function renderReviewCard(title, result) {
             </ul>
         </div>
     `;
+}
+
+// ======================================================================
+// ADRIAN LIVE DRILL - Coaching Dashboard
+// ======================================================================
+
+let activeDrillSessionId = null;
+let drillSending = false;
+
+async function startDrillSession() {
+    const btn = document.getElementById('drill-start-btn');
+    if (btn) btn.disabled = true;
+    showToast("Initializing Adrian coaching session...", false);
+    try {
+        const response = await fetch(API_BASE + '/api/drill/start', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({})
+        });
+        if (!response.ok) {
+            const err = await response.json();
+            throw new Error(err.detail || 'Failed to start drill session');
+        }
+        const data = await response.json();
+        activeDrillSessionId = data.session_id;
+        document.getElementById('drill-kb-status').innerText = 'KB: ' + data.kb_files_loaded + ' files';
+        document.getElementById('drill-memory-status').innerText = 'Memory: ' + data.memory_sessions_loaded + ' sessions';
+        document.getElementById('drill-turn-count').innerText = 'Turns: 1';
+        const transcript = document.getElementById('drill-transcript');
+        transcript.innerHTML = '';
+        appendDrillBubble('adrian', data.greeting);
+        document.getElementById('drill-input-area').style.display = 'flex';
+        document.getElementById('drill-input').focus();
+        showToast('Adrian online - Model: ' + data.model, false);
+        loadDrillHistory();
+    } catch (e) {
+        showToast('Drill Error: ' + e.message, true);
+        if (btn) btn.disabled = false;
+    }
+}
+
+async function sendDrillMessage() {
+    if (drillSending || !activeDrillSessionId) return;
+    const input = document.getElementById('drill-input');
+    const message = input.value.trim();
+    if (!message) return;
+    drillSending = true;
+    const sendBtn = document.getElementById('drill-send-btn');
+    sendBtn.disabled = true;
+    sendBtn.innerText = '...';
+    appendDrillBubble('user', message);
+    input.value = '';
+    try {
+        const response = await fetch(API_BASE + '/api/drill/chat', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ session_id: activeDrillSessionId, message: message })
+        });
+        if (!response.ok) {
+            const err = await response.json();
+            throw new Error(err.detail || 'Chat failed');
+        }
+        const data = await response.json();
+        appendDrillBubble('adrian', data.response);
+        document.getElementById('drill-turn-count').innerText = 'Turns: ' + data.turn_count;
+    } catch (e) {
+        appendDrillBubble('system', 'Error: ' + e.message);
+    } finally {
+        drillSending = false;
+        sendBtn.disabled = false;
+        sendBtn.innerText = 'Send';
+        input.focus();
+    }
+}
+
+async function endDrillSession() {
+    if (!activeDrillSessionId) { showToast("No active session to end.", true); return; }
+    showToast("Saving session and generating coaching summary...", false);
+    try {
+        const response = await fetch(API_BASE + '/api/drill/end', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ session_id: activeDrillSessionId })
+        });
+        if (!response.ok) {
+            const err = await response.json();
+            throw new Error(err.detail || 'Failed to end session');
+        }
+        const data = await response.json();
+        appendDrillBubble('system', 'Session saved (' + data.turn_count + ' turns). Coaching summary: ' + data.coaching_summary);
+        document.getElementById('drill-input-area').style.display = 'none';
+        const transcript = document.getElementById('drill-transcript');
+        const restartDiv = document.createElement('div');
+        restartDiv.className = 'drill-restart-area';
+        restartDiv.innerHTML = '<button class="dojo-primary-btn" onclick="startDrillSession()">Start New Session</button>';
+        transcript.appendChild(restartDiv);
+        activeDrillSessionId = null;
+        showToast("Session saved to Adrian memory.", false);
+        loadDrillHistory();
+    } catch (e) { showToast('Save Error: ' + e.message, true); }
+}
+
+function appendDrillBubble(role, text) {
+    const transcript = document.getElementById('drill-transcript');
+    const bubble = document.createElement('div');
+    bubble.className = 'drill-bubble drill-' + role;
+    const label = role === 'adrian' ? 'ADRIAN' : (role === 'user' ? 'ROB' : 'SYSTEM');
+    const safeText = document.createElement('div');
+    safeText.innerText = text;
+    bubble.innerHTML = '<span class="drill-speaker">' + label + '</span><div class="drill-text">' + safeText.innerHTML + '</div>';
+    transcript.appendChild(bubble);
+    transcript.scrollTop = transcript.scrollHeight;
+    if (role === 'adrian' && typeof speakDrillText === 'function') { speakDrillText(text); }
+}
+
+async function loadDrillHistory() {
+    try {
+        const response = await fetch(API_BASE + '/api/drill/history');
+        const history = await response.json();
+        const list = document.getElementById('drill-history-list');
+        if (!list) return;
+        if (history.length === 0) { list.innerHTML = '<div class="history-empty">No past sessions yet.</div>'; return; }
+        list.innerHTML = history.map(function(item) {
+            var summary = item.coaching_summary ? item.coaching_summary.substring(0, 100) + '...' : 'No summary';
+            return '<div class="history-item" onclick="loadDrillSession(\'' + item.session_id + '\')">' +
+                '<div class="b-id">' + item.session_id + '</div>' +
+                '<div class="b-agent">Turns: ' + item.turn_count + '</div>' +
+                '<div class="b-meta" style="font-size:0.7rem;color:var(--text-dim);margin-top:4px;">' + summary + '</div></div>';
+        }).join('');
+    } catch (e) { console.warn("Failed to load drill history"); }
+}
+
+async function loadDrillSession(sessionId) {
+    try {
+        const response = await fetch(API_BASE + '/api/drill/session/' + sessionId);
+        const data = await response.json();
+        const transcript = document.getElementById('drill-transcript');
+        transcript.innerHTML = '';
+        (data.turns || []).forEach(function(turn) {
+            appendDrillBubble(turn.role === 'user' ? 'user' : 'adrian', turn.content);
+        });
+        if (data.coaching_summary) { appendDrillBubble('system', 'Coaching Summary: ' + data.coaching_summary); }
+        document.getElementById('drill-input-area').style.display = 'none';
+        activeDrillSessionId = null;
+        var restartDiv = document.createElement('div');
+        restartDiv.className = 'drill-restart-area';
+        restartDiv.innerHTML = '<button class="dojo-primary-btn" onclick="startDrillSession()">Start New Session</button>';
+        transcript.appendChild(restartDiv);
+    } catch (e) { showToast("Failed to load session", true); }
+}
+
+document.addEventListener('keydown', function(e) {
+    if (e.target.id === 'drill-input' && e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        sendDrillMessage();
+    }
+});
+// --------------------------------------------------------------
+// ADRIAN LIVE DRILL — Voice IO (STT + TTS)
+// --------------------------------------------------------------
+
+var drillTTSEnabled = false;
+var drillRecognition = null;
+var drillRecognizing = false;
+
+// -- Text-to-Speech (Adrian speaks) ----------------------------
+
+function toggleDrillTTS() {
+    drillTTSEnabled = !drillTTSEnabled;
+    var btn = document.getElementById('drill-tts-toggle');
+    if (btn) {
+        btn.innerText = drillTTSEnabled ? '\uD83D\uDD0A Voice On' : '\uD83D\uDD07 Voice Off';
+        btn.classList.toggle('active', drillTTSEnabled);
+    }
+    if (!drillTTSEnabled) { window.speechSynthesis.cancel(); }
+    showToast(drillTTSEnabled ? 'Adrian voice enabled' : 'Adrian voice disabled', false);
+}
+
+var drillAudio = null;
+
+async function speakDrillText(text) {
+    if (!drillTTSEnabled) return;
+    
+    if (drillAudio) { 
+        drillAudio.pause(); 
+        drillAudio = null; 
+    }
+
+    try {
+        const response = await fetch(API_BASE + '/api/drill/speak', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ text: text })
+        });
+        
+        if (!response.ok) throw new Error('Neural TTS failed');
+        
+        const blob = await response.blob();
+        const url = URL.createObjectURL(blob);
+        drillAudio = new Audio(url);
+        drillAudio.play();
+    } catch (e) {
+        console.warn("Neural TTS Error:", e);
+        // Fallback to browser TTS if desired, but we prefer neural
+    }
+}
+
+// -- Speech-to-Text (Rob speaks) ------------------------------
+
+var drillMediaRecorder = null;
+var drillAudioChunks = [];
+
+function toggleDrillMic() {
+    if (drillRecognizing) {
+        stopDrillMic();
+        return;
+    }
+
+    navigator.mediaDevices.getUserMedia({ audio: true }).then(function(stream) {
+        drillMediaRecorder = new MediaRecorder(stream, { mimeType: 'audio/webm' });
+        drillAudioChunks = [];
+
+        var micBtn = document.getElementById('drill-mic-btn');
+
+        drillMediaRecorder.ondataavailable = function(event) {
+            if (event.data.size > 0) { drillAudioChunks.push(event.data); }
+        };
+
+        drillMediaRecorder.onstop = function() {
+            drillRecognizing = false;
+            if (micBtn) { micBtn.classList.remove('recording'); micBtn.innerText = '\uD83C\uDF99'; }
+            stream.getTracks().forEach(function(t) { t.stop(); });
+
+            if (drillAudioChunks.length === 0) return;
+
+            var blob = new Blob(drillAudioChunks, { type: 'audio/webm' });
+            var formData = new FormData();
+            formData.append('audio', blob, 'recording.webm');
+
+            showToast('Transcribing with local Whisper...', false);
+
+            fetch(API_BASE + '/api/drill/transcribe', {
+                method: 'POST',
+                body: formData
+            }).then(function(resp) {
+                if (!resp.ok) throw new Error('Transcription failed');
+                return resp.json();
+            }).then(function(data) {
+                var input = document.getElementById('drill-input');
+                if (input && data.text) {
+                    input.value = (input.value ? input.value + ' ' : '') + data.text;
+                    input.focus();
+                    showToast('Transcribed (' + data.duration + 's audio)', false);
+                }
+            }).catch(function(err) {
+                showToast('Transcription error: ' + err.message, true);
+            });
+        };
+
+        drillMediaRecorder.start();
+        drillRecognizing = true;
+        if (micBtn) { micBtn.classList.add('recording'); micBtn.innerText = '\uD83D\uDD34'; }
+        showToast('Recording... click mic again to stop', false);
+
+    }).catch(function(err) {
+        showToast('Microphone access denied: ' + err.message, true);
+    });
+}
+
+function stopDrillMic() {
+    if (drillMediaRecorder && drillMediaRecorder.state === 'recording') {
+        drillMediaRecorder.stop();
+    }
+    drillRecognizing = false;
+    var micBtn = document.getElementById('drill-mic-btn');
+    if (micBtn) { micBtn.classList.remove('recording'); micBtn.innerText = '\uD83C\uDF99'; }
 }

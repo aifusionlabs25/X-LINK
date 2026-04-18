@@ -44,6 +44,18 @@ class AnamSyncTool:
             logger.error("❌ Failed to connect to CDP.")
             return False
 
+        # Pre-flight: Verify CDP session is actually alive (catches stale sockets)
+        try:
+            test_page = self.engine.context.pages[0] if self.engine.context and self.engine.context.pages else None
+            if test_page:
+                _ = await test_page.title()  # Will throw if session is dead
+        except Exception:
+            logger.warning("⚠️ Stale CDP session detected. Reconnecting...")
+            await self.engine.close()
+            if not await self.engine.connect():
+                logger.error("❌ Reconnection failed.")
+                return False
+
         try:
             # 1. Load local agents.yaml
             with open(self.agents_path, "r", encoding="utf-8") as f:
@@ -84,9 +96,27 @@ class AnamSyncTool:
             
             logger.info("💾 Local config/agents.yaml updated.")
             
-            # Explicitly close the automation tab
+            # FINAL UX: Indicate success, then return to the Hub
             try:
-                await page.close()
+                await page.evaluate("() => { document.body.innerHTML = '<div style=\"background:#000; color:#00ff00; height:100vh; display:flex; align-items:center; justify-content:center; font-family:system-ui; font-size:2rem; font-weight:bold;\">✅ Sync Complete — returning to Hub</div>'; }")
+                await asyncio.sleep(2)
+                
+                # Return to the Hub tab
+                hub_page = None
+                for p in self.engine.context.pages:
+                    if "localhost:5001" in p.url or "hub" in p.url:
+                        hub_page = p
+                        break
+                
+                if hub_page:
+                    await hub_page.bring_to_front()
+                    # Close the Anam tab if it's separate
+                    if page != hub_page and len(self.engine.context.pages) > 1:
+                        await page.close()
+                else:
+                    # No Hub tab found — navigate this tab back to Hub
+                    await page.goto("http://localhost:5001/hub/")
+                    await asyncio.sleep(1)
             except:
                 pass
                 

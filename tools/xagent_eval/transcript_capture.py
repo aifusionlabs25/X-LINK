@@ -617,7 +617,7 @@ class LiveBrowserCapture:
 
         try:
             async with session.post(OLLAMA_URL, json={
-                "model": "qwen3-coder-next",
+                "model": "qwen2.5:14b-instruct-q6_K",
                 "prompt": prompt,
                 "stream": False,
                 "options": {

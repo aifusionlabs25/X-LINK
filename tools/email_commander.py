@@ -39,7 +39,7 @@ class EmailCommander:
         Available Tools:
         - 'audit': Usage extraction, cost audits, or checking balance.
         - 'sync': Full engine sync, updating metrics, or universal sync.
-        - 'scout': Scouting intelligence, checking Keep.md, or autoresearch.
+        - 'scout': Open-web research, trend scouting, or autoresearch.
         - 'briefing': Asking for a report, status update, or briefing.
 
         Return ONLY a JSON object: {{"is_command": true/false, "tool": "tool_name", "reason": "brief reason"}}.
@@ -48,7 +48,7 @@ class EmailCommander:
         
         try:
             response = requests.post(OLLAMA_URL, json={
-                "model": "qwen3-coder-next",
+                "model": "qwen2.5:14b-instruct-q6_K",
                 "prompt": prompt,
                 "stream": False,
                 "format": "json"

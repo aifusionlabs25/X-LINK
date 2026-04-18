@@ -1,0 +1,7 @@
+2026/04/05-13:57:15.846 238c Reusing MANIFEST C:\AI Fusion Labs\X AGENTS\REPOS\X-LINK\runtime\browser\xlink-automation-profile\Default\IndexedDB\https_elevenlabs.io_0.indexeddb.leveldb/MANIFEST-000001
+2026/04/05-13:57:15.846 238c Recovering log #4
+2026/04/05-13:57:15.847 238c Reusing old log C:\AI Fusion Labs\X AGENTS\REPOS\X-LINK\runtime\browser\xlink-automation-profile\Default\IndexedDB\https_elevenlabs.io_0.indexeddb.leveldb/000004.log 
+2026/04/05-13:57:15.894 6b00 Level-0 table #8: started
+2026/04/05-13:57:15.895 6b00 Level-0 table #8: 3274 bytes OK
+2026/04/05-13:57:15.897 6b00 Delete type=0 #4
+2026/04/05-13:57:15.897 238c Manual compaction at level-0 from '\x00\x05\x00\x00\x00' @ 72057594037927935 : 1 .. '\x00\x06\x00\x00\x00' @ 0 : 0; will stop at (end)

@@ -1,0 +1,21 @@
+2026/04/05-13:57:13.154 36b4 Reusing MANIFEST C:\AI Fusion Labs\X AGENTS\REPOS\X-LINK\runtime\browser\xlink-automation-profile\Default\Local Storage\leveldb/MANIFEST-000001
+2026/04/05-13:57:13.157 36b4 Recovering log #8
+2026/04/05-13:57:13.158 36b4 Reusing old log C:\AI Fusion Labs\X AGENTS\REPOS\X-LINK\runtime\browser\xlink-automation-profile\Default\Local Storage\leveldb/000008.log 
+2026/04/05-13:57:25.245 59a8 Level-0 table #12: started
+2026/04/05-13:57:25.249 59a8 Level-0 table #12: 131382 bytes OK
+2026/04/05-13:57:25.252 59a8 Delete type=0 #8
+2026/04/05-13:58:13.168 59a8 Level-0 table #14: started
+2026/04/05-13:58:13.173 59a8 Level-0 table #14: 117612 bytes OK
+2026/04/05-13:58:13.176 59a8 Delete type=0 #11
+2026/04/05-13:59:29.513 59a8 Level-0 table #16: started
+2026/04/05-13:59:29.519 59a8 Level-0 table #16: 119999 bytes OK
+2026/04/05-13:59:29.523 59a8 Delete type=0 #13
+2026/04/05-13:59:29.524 59a8 Compacting 4@0 + 1@1 files
+2026/04/05-13:59:29.528 59a8 Generated table #17@0: 63 keys, 124851 bytes
+2026/04/05-13:59:29.528 59a8 Compacted 4@0 + 1@1 files => 124851 bytes
+2026/04/05-13:59:29.529 59a8 compacted to: files[ 0 1 1 0 0 0 0 ]
+2026/04/05-13:59:29.529 59a8 Delete type=2 #7
+2026/04/05-13:59:29.529 59a8 Delete type=2 #9
+2026/04/05-13:59:29.529 59a8 Delete type=2 #12
+2026/04/05-13:59:29.529 59a8 Delete type=2 #14
+2026/04/05-13:59:29.529 59a8 Delete type=2 #16

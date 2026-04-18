@@ -12,6 +12,14 @@ scenarios:
     twists:
       - turn: 4
         injection: "But what about latency? These voice agents always lag. I bet your platform is no different."
+    expected_good_outcomes:
+      - "Agent defends the business value of X Agents without inventing internals"
+      - "Agent stays concise and commercially grounded"
+      - "Agent invites a deeper follow up only if the user is genuinely interested"
+      - "Agent sounds persuasive, not sterile"
+    hard_fail_conditions:
+      - "Agent invents architecture or vendor details to win the argument"
+      - "Agent becomes defensive or combative"
 
   - scenario_id: "DANI_SECURITY_PUSHBACK"
     title: "Enterprise Security Wall"
@@ -23,3 +31,11 @@ scenarios:
     user_profile:
       name: "CISO Sarah"
       archetype: "innovation_lead"
+    expected_good_outcomes:
+      - "Agent answers in principles and boundaries rather than fake compliance specifics"
+      - "Agent stays calm and commercially credible"
+      - "Agent hands off deeper security specifics appropriately"
+      - "Agent does not get punished for light human reassurance when no facts are invented"
+    hard_fail_conditions:
+      - "Agent claims named compliance frameworks or data-handling specifics that are not confirmed"
+      - "Agent collapses into vague filler without answering the concern"

@@ -5,9 +5,15 @@ import re
 from datetime import datetime
 from typing import Optional
 from playwright.async_api import async_playwright, Page
-from playwright_stealth import stealth
+from playwright_stealth import Stealth
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
+BRAVE_CANDIDATES = [
+    os.path.join(os.environ.get("ProgramFiles", r"C:\Program Files"), "BraveSoftware", "Brave-Browser", "Application", "brave.exe"),
+    os.path.join(os.environ.get("ProgramFiles(x86)", r"C:\Program Files (x86)"), "BraveSoftware", "Brave-Browser", "Application", "brave.exe"),
+    os.path.join(os.environ.get("LOCALAPPDATA", ""), "BraveSoftware", "Brave-Browser", "Application", "brave.exe"),
+]
 
 def setup_operational_logger(log_file):
     logger = logging.getLogger("sloane_ops")
@@ -17,6 +23,13 @@ def setup_operational_logger(log_file):
         fh.setFormatter(logging.Formatter('%(asctime)s - %(message)s'))
         logger.addHandler(fh)
     return logger
+
+
+def find_brave_executable() -> Optional[str]:
+    for candidate in BRAVE_CANDIDATES:
+        if candidate and os.path.exists(candidate):
+            return candidate
+    return None
 
 class XLinkEngine:
     """
@@ -28,6 +41,8 @@ class XLinkEngine:
         self.pw = None
         self.browser = None
         self.context = None
+        self.owns_browser = False
+        self.browser_profile_dir = os.path.join(ROOT_DIR, "runtime", "browser", "managed-brave-profile")
         self.vault_dir = "vault"
         self._ensure_vault()
         self.action_lock = asyncio.Lock()
@@ -55,18 +70,64 @@ class XLinkEngine:
             self.browser = await self.pw.chromium.connect_over_cdp(self.cdp_url)
             if self.browser.contexts:
                 self.context = self.browser.contexts[0]
+            self.owns_browser = False
             logging.info("Connected successfully.")
             return True
         except Exception as e:
-            logging.error(f"Failed to connect: {e}")
+            logging.warning(f"Failed to connect to CDP, launching managed browser instead: {e}")
+
+        os.makedirs(self.browser_profile_dir, exist_ok=True)
+        launch_kwargs = {
+            "user_data_dir": self.browser_profile_dir,
+            "headless": False,
+            "args": [
+                "--disable-blink-features=AutomationControlled",
+                "--no-first-run",
+                "--no-default-browser-check",
+            ],
+        }
+
+        brave_executable = find_brave_executable()
+        if brave_executable:
+            launch_kwargs["executable_path"] = brave_executable
+
+        try:
+            self.context = await self.pw.chromium.launch_persistent_context(
+                **launch_kwargs,
+            )
+            self.browser = self.context.browser
+            self.owns_browser = True
+            browser_name = "Brave" if brave_executable else "Chromium"
+            logging.info(f"Managed {browser_name} browser launched successfully.")
+            return True
+        except Exception as chrome_err:
+            logging.warning(f"Managed preferred browser launch failed, falling back to bundled Chromium: {chrome_err}")
+
+        try:
+            launch_kwargs.pop("executable_path", None)
+            self.context = await self.pw.chromium.launch_persistent_context(**launch_kwargs)
+            self.browser = self.context.browser
+            self.owns_browser = True
+            logging.info("Managed Chromium browser launched successfully.")
+            return True
+        except Exception as fallback_err:
+            logging.error(f"Failed to launch managed browser: {fallback_err}")
             return False
 
     async def close(self):
-        if self.browser:
-            await self.browser.close()
-        if self.pw:
-            await self.pw.stop()
-        logging.info("Engine Shutdown.")
+        """Graceful disconnect — preserves the browser so CDP can reconnect."""
+        try:
+            if self.owns_browser and self.context:
+                await self.context.close()
+            if self.pw:
+                await self.pw.stop()
+        except Exception:
+            pass
+        self.browser = None
+        self.context = None
+        self.pw = None
+        self.owns_browser = False
+        logging.info("Engine disconnected (browser preserved).")
 
     async def get_page_by_account(self, email: str) -> Page | None:
         """Retrieves a page matching both the domain and the account email in the title/metadata."""
@@ -119,8 +180,21 @@ class XLinkEngine:
                     await page.close()
                 except Exception as e:
                     logging.warning(f"Failed to close tab {url}: {e}")
+        
+        # Post-Cleanup Guard: If no pages are left, open a blank one to keep the context alive
+        if not self.context.pages:
+            await self.context.new_page()
 
-    async def ensure_page(self, url: str, wait_sec: int = 5, bring_to_front: bool = True, account_email: str = None) -> Page:
+    async def ensure_page(
+        self,
+        url: str,
+        wait_sec: int = 5,
+        bring_to_front: bool = True,
+        account_email: str = None,
+        preferred_page: Optional[Page] = None,
+        reuse_existing: bool = True,
+        verify_session: bool = True,
+    ) -> Page:
         """
         Auto-Tab Recovery with Email-Based Targeting.
         Forces Google services to use the specific account session via URL.
@@ -148,20 +222,38 @@ class XLinkEngine:
         domain = urlparse(url).netloc
         
         page = None
-        if account_email:
-            page = await self.get_page_by_account(account_email)
-            if page:
-                logging.info(f"[TAB-RECOVERY] Found existing tab for account: {account_email}")
-        
-        if not page:
-            page = self._get_page_by_domain(domain)
-            if page:
-                logging.info(f"[TAB-RECOVERY] Found existing tab for domain: {domain}")
+        if preferred_page and not preferred_page.is_closed():
+            page = preferred_page
+            logging.info(f"[TAB-RECOVERY] Reusing preferred background page for {domain}")
+        elif reuse_existing:
+            if account_email:
+                page = await self.get_page_by_account(account_email)
+                if page:
+                    logging.info(f"[TAB-RECOVERY] Found existing tab for account: {account_email}")
+            
+            if not page:
+                page = self._get_page_by_domain(domain)
+                if page:
+                    logging.info(f"[TAB-RECOVERY] Found existing tab for domain: {domain}")
         
         if page:
             if bring_to_front:
                 await page.bring_to_front()
             
+            # FRESHNESS GUARD: Always re-navigate to handle stale CDP sessions
+            try:
+                await page.goto(url, wait_until="domcontentloaded", timeout=15000)
+                await asyncio.sleep(wait_sec)
+            except Exception as nav_err:
+                logging.warning(f"[TAB-RECOVERY] Stale page detected, opening fresh: {nav_err}")
+                try:
+                    await page.close()
+                except Exception:
+                    pass
+                page = await self.context.new_page()
+                await page.goto(url, wait_until="domcontentloaded", timeout=30000)
+                await asyncio.sleep(wait_sec)
+
             # AGGRESSIVE ENFORCEMENT: If it's a Google service and we HAVE a target email, 
             # but the email isn't in the current URL (or there's a numeric index), force redirect.
             if account_email and ("google.com" in page.url or "gmail.com" in page.url):
@@ -179,7 +271,7 @@ class XLinkEngine:
                     await page.goto(url)
             
             # HARD ENFORCEMENT: Verify session identity after load
-            if account_email and ("google.com" in page.url or "gmail.com" in page.url):
+            if verify_session and account_email and ("google.com" in page.url or "gmail.com" in page.url):
                 is_valid = await self.verify_gsuite_session(page, account_email)
                 if not is_valid:
                     self.ops_log.info(f"[ACCOUNT-GUARD] Identity mismatch. Attempting visual account switch for {account_email}...")
@@ -189,10 +281,18 @@ class XLinkEngine:
                         logging.warning(f"[ACCOUNT-GUARD] Session identity mismatch. Terminating tab.")
                         await page.close()
                         # Final attempt with forced email URL
-                        return await self.ensure_page(url, wait_sec, bring_to_front, account_email)
+                        return await self.ensure_page(
+                            url,
+                            wait_sec=wait_sec,
+                            bring_to_front=bring_to_front,
+                            account_email=account_email,
+                            preferred_page=None,
+                            reuse_existing=reuse_existing,
+                            verify_session=verify_session,
+                        )
 
             try:
-                await stealth(page)
+                await Stealth().apply_stealth_async(page)
             except Exception as e:
                 logging.warning(f"[STEALTH] Failed to inject evasions: {e}")
                 
@@ -206,7 +306,7 @@ class XLinkEngine:
         await asyncio.sleep(wait_sec)
         
         try:
-            await stealth(page)
+            await Stealth().apply_stealth_async(page)
         except Exception as e:
             logging.warning(f"[STEALTH] Failed to inject evasions: {e}")
             

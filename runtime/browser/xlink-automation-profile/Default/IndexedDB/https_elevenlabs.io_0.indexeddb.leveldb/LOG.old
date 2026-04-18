@@ -1,0 +1,6 @@
+2026/04/05-13:53:26.430 1ffc Creating DB C:\AI Fusion Labs\X AGENTS\REPOS\X-LINK\runtime\browser\xlink-automation-profile\Default\IndexedDB\https_elevenlabs.io_0.indexeddb.leveldb since it was missing.
+2026/04/05-13:53:26.433 1ffc Reusing MANIFEST C:\AI Fusion Labs\X AGENTS\REPOS\X-LINK\runtime\browser\xlink-automation-profile\Default\IndexedDB\https_elevenlabs.io_0.indexeddb.leveldb/MANIFEST-000001
+2026/04/05-13:53:26.457 1d74 Level-0 table #5: started
+2026/04/05-13:53:26.459 1d74 Level-0 table #5: 1275 bytes OK
+2026/04/05-13:53:26.460 1d74 Delete type=0 #3
+2026/04/05-13:53:26.460 1d74 Manual compaction at level-0 from '\x00\x01\x00\x00\x00' @ 72057594037927935 : 1 .. '\x00\x02\x00\x00\x00' @ 0 : 0; will stop at (end)

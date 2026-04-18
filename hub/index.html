@@ -1,133 +1,267 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>X-LINK | Strategic Command Hub v3</title>
-    <link
-        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Outfit:wght@300;500;700&family=Cinzel:wght@400;700&display=swap"
-        rel="stylesheet">
-    <link rel="stylesheet" href="style.css?v=6">
-    <script src="app.js?v=7" defer></script>
-    <script src="dojo.js?v=7" defer></script>
+    <title>X-LINK | Operator Hub</title>
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Manrope:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <script src="app.js" defer></script>
+    <script src="dojo.js" defer></script>
 </head>
-
-<body>
+<body class="hub-redesign">
     <div class="ambient-glow"></div>
+    <div class="ambient-grid"></div>
 
-    <!-- COMMAND SIDEBAR — 4-Section Layout -->
     <nav class="sidebar">
         <div class="sidebar-logo">
-            <span class="sidebar-icon">🛰️</span>
-            <span class="sidebar-label">X-LINK v3</span>
+            <span class="sidebar-icon">XL</span>
+            <span class="sidebar-label">X-LINK</span>
         </div>
 
-        <!-- PRIMARY WORKSPACE -->
-        <div class="sidebar-section-label"><span class="sidebar-label">Primary</span></div>
+        <div class="sidebar-section-label"><span class="sidebar-label">Operate</span></div>
         <div class="sidebar-item" onclick="switchWorkspace('direct_line')" id="side-direct_line">
-            <span class="sidebar-icon">💬</span>
-            <span class="sidebar-label">Direct Line</span>
+            <span class="sidebar-icon">Chat</span>
+            <span class="sidebar-label">Hermes Console</span>
+        </div>
+        <div class="sidebar-item" onclick="switchWorkspace('multi_model_research')" id="side-multi_model_research">
+            <span class="sidebar-icon">Research</span>
+            <span class="sidebar-label">Multi-Model Research</span>
         </div>
         <div class="sidebar-item" onclick="switchWorkspace('usage_auditor')" id="side-usage_auditor">
-            <span class="sidebar-icon">📊</span>
+            <span class="sidebar-icon">Audit</span>
             <span class="sidebar-label">Usage Auditor</span>
         </div>
-        <div class="sidebar-item" onclick="switchWorkspace('intelligence_scout')" id="side-intelligence_scout">
-            <span class="sidebar-icon">🕵️</span>
-            <span class="sidebar-label">Intelligence Scout</span>
-        </div>
         <div class="sidebar-item" onclick="switchWorkspace('dojo')" id="side-dojo">
-            <span class="sidebar-icon">🎯</span>
+            <span class="sidebar-icon">Eval</span>
             <span class="sidebar-label">X-Agent Eval</span>
         </div>
+        <div class="sidebar-item" onclick="switchWorkspace('mel')" id="side-mel">
+            <span class="sidebar-icon">Lab</span>
+            <span class="sidebar-label">SuperHero Lab</span>
+        </div>
 
-        <!-- REPORTS -->
         <div class="sidebar-section-label"><span class="sidebar-label">Reports</span></div>
         <div class="sidebar-item" onclick="triggerTool('briefing')" title="Executive briefing output">
-            <span class="sidebar-icon">📧</span>
+            <span class="sidebar-icon">Brief</span>
             <span class="sidebar-label">Direct Briefing</span>
         </div>
-        <div class="sidebar-item" onclick="runArchivist()" title="Execute Great Archivist LLM scraping">
-            <span class="sidebar-icon">📚</span>
-            <span class="sidebar-label">Archive Intelligence</span>
+        <div class="sidebar-item" onclick="switchWorkspace('archive_intel')" id="side-archive_intel" title="Archive AI chat history into the local vault">
+            <span class="sidebar-icon">Arch</span>
+            <span class="sidebar-label">Archive Intel</span>
         </div>
 
-        <!-- SYSTEM STATUS -->
         <div class="sidebar-section-label"><span class="sidebar-label">System</span></div>
         <div class="sidebar-item sidebar-status" id="sync-status-btn" title="Sync routine state">
-            <span class="sidebar-icon">🔄</span>
+            <span class="sidebar-icon">Sync</span>
             <span class="sidebar-label" id="sync-status-text">Sync Status</span>
         </div>
         <div class="sidebar-item sidebar-status" id="bridge-status-btn" title="CDP bridge connectivity">
-            <span class="sidebar-icon">📡</span>
+            <span class="sidebar-icon">Link</span>
             <span class="sidebar-label" id="bridge-status-text">Bridge Offline</span>
         </div>
-        <div class="sidebar-section-label"><span class="sidebar-label">Anam Synchronization</span></div>
-        <div class="sync-container" style="padding: 0 15px 15px 15px; display: flex; flex-direction: column; gap: 8px;">
-            <select id="anam-sync-target" class="dojo-select" style="width: 100%; font-size: 0.8rem; padding: 6px;">
+
+        <div class="sidebar-section-label"><span class="sidebar-label">Anam Sync</span></div>
+        <div class="sync-container sidebar-mini-panel">
+            <select id="anam-sync-target" class="dojo-select mini-select">
                 <option value="all">Sync All Agents</option>
             </select>
-            <button class="dojo-primary-btn" onclick="syncAnam()" style="width: 100%; font-size: 0.8rem; padding: 6px;">
-                <span class="sidebar-icon">🧬</span> Start Sync
-            </button>
+            <button class="dojo-primary-btn mini-action" onclick="syncAnam()">Start Sync</button>
         </div>
-        <!-- ADVANCED -->
+
         <div class="sidebar-section-label"><span class="sidebar-label">Advanced</span></div>
         <div class="sidebar-item sidebar-internal" onclick="triggerTool('scout_workers')" title="Internal scout workers">
-            <span class="sidebar-icon">📦</span>
+            <span class="sidebar-icon">Ops</span>
             <span class="sidebar-label">Scout Workers</span>
         </div>
 
-        <div style="margin-top: auto;"></div>
+        <div class="sidebar-tail">
+            <div class="rail-note">
+                <span class="rail-note-label">Operator Note</span>
+                <p>Clean artifacts beat dramatic scores.</p>
+            </div>
+        </div>
     </nav>
 
     <main class="main-content">
         <header class="hub-header">
             <div class="header-left">
-                <span class="tag">Autonomous Command Center</span>
-                <h1>X-LINK HUB <span class="version-badge">v3</span></h1>
+                <span class="tag">Operator Console</span>
+                <h1>X-LINK Hub <span class="version-badge">Mission Control Pro</span></h1>
+                <p class="header-deck">A calmer operator surface for missions, validation, and live system state without the visual noise.</p>
             </div>
             <div class="header-right meta">
                 <div class="meta-item">
-                    <span class="meta-label">Last Sync:</span>
-                    <span id="sync-time" class="meta-value">—</span>
+                    <span class="meta-label">Last Sync</span>
+                    <span id="sync-time" class="meta-value">--</span>
                 </div>
                 <div class="meta-item">
-                    <span class="meta-label">System:</span>
+                    <span class="meta-label">System</span>
                     <span id="system-pulse" class="meta-value pulse-green">INITIALIZING</span>
                 </div>
                 <div class="meta-item">
-                    <span class="meta-label">Ollama:</span>
+                    <span class="meta-label">Hermes</span>
+                    <span id="hermes-pulse" class="meta-value">PLANNING</span>
+                    <span id="hermes-subvalue" class="meta-subvalue">Operator core booting</span>
+                </div>
+                <div class="meta-item">
+                    <span class="meta-label">Ollama</span>
                     <span id="ollama-pulse" class="meta-value">CHECKING</span>
+                    <span id="ollama-model" class="meta-subvalue"></span>
                 </div>
             </div>
         </header>
 
+        <section class="command-hero home-surface">
+            <div class="hero-copy">
+                <div class="hero-kicker">Mission Control Pro</div>
+                <h2>See the work, the state, and the next move without fighting the screen.</h2>
+                <p>Hermes plans, executes, and reports from the same operator surface, while the Hub keeps missions, telemetry, and validation lanes readable as they move.</p>
+            </div>
+            <div class="hero-actions">
+                <button class="hero-action primary active-launch" data-workspace="mel" onclick="switchWorkspace('mel')">Open SuperHero Lab</button>
+                <button class="hero-action secondary" data-workspace="dojo" onclick="switchWorkspace('dojo')">Open X-Agent Eval</button>
+                <button class="hero-action secondary" data-workspace="direct_line" onclick="switchWorkspace('direct_line')">Open Hermes Console</button>
+                <button class="hero-action secondary" data-workspace="multi_model_research" onclick="switchWorkspace('multi_model_research')">Research</button>
+            </div>
+        </section>
+
+        <section class="mission-theater home-surface" id="mission-theater">
+            <div class="mission-theater-header">
+                <div>
+                    <span class="mission-kicker">Mission Theater</span>
+                    <h3>Watch the workflow move, not just the logs.</h3>
+                    <p class="mission-theater-deck">Track intent, active step, blockers, and release movement from one disciplined execution rail.</p>
+                </div>
+                <div class="mission-status-pill" id="mission-status-pill">Idle</div>
+            </div>
+            <div class="mission-intelligence-strip">
+                <div class="mission-intel-card">
+                    <span class="mission-intel-label">Owner</span>
+                    <strong id="mission-owner">Hermes offline</strong>
+                </div>
+                <div class="mission-intel-card">
+                    <span class="mission-intel-label">Intent</span>
+                    <strong id="mission-intent">Awaiting mission</strong>
+                </div>
+                <div class="mission-intel-card">
+                    <span class="mission-intel-label">Rollback</span>
+                    <strong id="mission-rollback">No checkpoint</strong>
+                </div>
+            </div>
+            <div class="mission-rail" id="mission-rail">
+                <div class="mission-node pending" data-step="preflight">
+                    <span class="mission-node-dot"></span>
+                    <span class="mission-node-label">Preflight</span>
+                </div>
+                <div class="mission-node pending" data-step="sh_lab">
+                    <span class="mission-node-dot"></span>
+                    <span class="mission-node-label">SH Lab</span>
+                </div>
+                <div class="mission-node pending" data-step="xagent_eval">
+                    <span class="mission-node-dot"></span>
+                    <span class="mission-node-label">X-Agent Eval</span>
+                </div>
+                <div class="mission-node pending" data-step="report">
+                    <span class="mission-node-dot"></span>
+                    <span class="mission-node-label">Report</span>
+                </div>
+                <div class="mission-node pending" data-step="email">
+                    <span class="mission-node-dot"></span>
+                    <span class="mission-node-label">Dispatch</span>
+                </div>
+                <div class="mission-pulse" id="mission-pulse"></div>
+            </div>
+            <div class="mission-panels">
+                <div class="mission-panel mission-panel-primary">
+                    <div class="mission-panel-label">Latest Mission</div>
+                    <div class="mission-job-meta">
+                        <div>
+                            <span class="meta-chip">Job</span>
+                            <strong id="mission-job-id">No mission yet</strong>
+                        </div>
+                        <div>
+                            <span class="meta-chip">Target</span>
+                            <strong id="mission-target">Awaiting dispatch</strong>
+                        </div>
+                        <div>
+                            <span class="meta-chip">Mode</span>
+                            <strong id="mission-family">Validation idle</strong>
+                        </div>
+                    </div>
+                    <div class="mission-detail" id="mission-detail">Hermes missions and long-running evaluations will surface here once active.</div>
+                    <div class="mission-subdetail" id="mission-subdetail">No active telemetry.</div>
+                </div>
+                <div class="mission-panel mission-panel-secondary">
+                    <div class="mission-panel-label">Live Signals</div>
+                    <div class="signal-bars" id="signal-bars">
+                        <span></span><span></span><span></span><span></span><span></span><span></span>
+                    </div>
+                    <div class="mission-signal-list" id="mission-signal-list">
+                        <div class="signal-line">No live mission heartbeat yet.</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
         <section id="security-alert-banner" class="security-alert-banner" style="display: none;">
-            <span class="alert-icon">🚨</span>
+            <span class="alert-icon">Alert</span>
             <div id="security-alert-text" class="alert-text"></div>
         </section>
 
         <div id="workspace-desk" class="workspace-pane active">
+            <section class="desk-intro-strip desk-intro-strip--minimal">
+                <div class="intro-card intro-card--wide">
+                    <span class="intro-label">Operator Focus</span>
+                    <p>Keep the center surface for active work. Open telemetry, renewals, and audit detail only when you need to inspect the system more deeply.</p>
+                </div>
+            </section>
+
+            <section class="results-center" id="results-center">
+                <div class="results-center-header">
+                    <div>
+                        <span class="intro-label">Results Center</span>
+                        <h2 class="premium-serif gold-text">One place to check what just ran, what it means, and what to open next.</h2>
+                        <p class="results-center-deck">This is the operator readout for the latest Hermes mission and the latest SuperHero Lab verdict, with direct evidence links instead of hidden artifact hunting.</p>
+                    </div>
+                    <button class="hero-action secondary" onclick="refreshLatestResultsCenter(true)">Refresh Results</button>
+                </div>
+                <div class="results-center-grid">
+                    <section class="result-card result-card--mission">
+                        <div class="result-card-kicker">Latest Mission</div>
+                        <div class="result-card-headline" id="results-mission-headline">No Hermes mission has reported yet.</div>
+                        <div class="result-card-meta" id="results-mission-meta">Run SH Lab or X-Agent Eval to populate the mission inspector.</div>
+                        <div class="result-card-body" id="results-mission-body">Latest mission recommendation and report links will appear here.</div>
+                        <div class="result-link-row" id="results-mission-links"></div>
+                    </section>
+                    <section class="result-card result-card--mel">
+                        <div class="result-card-kicker">Latest SH Lab Verdict</div>
+                        <div class="result-card-headline" id="results-mel-headline">No SH Lab recommendation yet.</div>
+                        <div class="result-card-meta" id="results-mel-meta">Launch SuperHero Lab to generate a current verdict packet.</div>
+                        <div class="result-card-body" id="results-mel-body">Latest baseline score, recommended variant, and blocker summary will show up here.</div>
+                        <div class="result-link-row" id="results-mel-links"></div>
+                    </section>
+                </div>
+            </section>
+
             <section id="sloanes-desk" class="sloane-desk-card">
                 <div class="card-header">
                     <div class="header-text-container">
-                        <h2 class="premium-serif gold-text">Sloane's Desk</h2>
-                        <div class="cos-badge">CHIEF OF STAFF</div>
+                        <h2 class="premium-serif gold-text">Hermes Command Desk</h2>
+                        <div class="cos-badge">Operator Core</div>
                     </div>
                 </div>
                 <div id="sloane-summary" class="briefing-quote">
-                    "One moment, Founder. I'm reorganizing the command center..."
+                    "One moment, Founder. Hermes is aligning the command deck..."
                 </div>
                 <div class="dept-grid">
                     <div class="dept-card">
-                        <h3>R&D Briefing</h3>
+                        <h3>R&amp;D Briefing</h3>
                         <p id="rd-summary">Waiting for telemetry...</p>
                         <ul id="rd-priorities" class="priority-list"></ul>
                     </div>
                     <div class="dept-card">
-                        <h3>Sales & Marketing</h3>
+                        <h3>Sales &amp; Market Signal</h3>
                         <p id="sales-summary">Waiting for telemetry...</p>
                         <ul id="sales-priorities" class="priority-list"></ul>
                     </div>
@@ -140,260 +274,711 @@
 
                 <div class="eval-briefing-section">
                     <h3 class="premium-serif gold-text small-title">Latest X-Agent Testing Sessions</h3>
-                    <div id="briefing-evals-grid" class="evals-grid">
-                        <!-- Agent results injected via app.js -->
-                    </div>
+                    <div id="briefing-evals-grid" class="evals-grid"></div>
                 </div>
             </section>
 
-            <section class="stats-overview" id="stats-hero"></section>
-            <section class="renewal-timeline" id="renewal-timeline"></section>
-            <section class="platform-grid" id="audit-grid"></section>
+            <details class="surface-disclosure" id="telemetry-disclosure">
+                <summary class="surface-disclosure-summary">
+                    <div>
+                        <span class="intro-label">Telemetry Observatory</span>
+                        <strong>Open live GPU, workflow drag, and model-cost detail</strong>
+                    </div>
+                    <span class="surface-disclosure-state">Collapsed by default</span>
+                </summary>
+                <section id="telemetry-observatory" class="telemetry-observatory-card disclosure-body">
+                    <div class="telemetry-header">
+                        <div>
+                            <span class="intro-label">Telemetry Observatory</span>
+                            <h3 class="premium-serif gold-text">Local compute, workflow drag, and cloud-equivalent cost in one place.</h3>
+                            <p class="telemetry-deck">This turns the raw telemetry ledger into an operator panel so you can see what the 5080 is doing, which workflows are slow, and what local inference is likely saving versus cloud runs.</p>
+                        </div>
+                        <button class="hero-action secondary telemetry-refresh-btn" onclick="refreshTelemetryPanel(true)">Refresh Telemetry</button>
+                    </div>
+                    <div id="telemetry-summary-grid" class="telemetry-summary-grid">
+                        <div class="telemetry-empty-card">Telemetry summary loading...</div>
+                    </div>
+                    <div id="telemetry-coverage-note" class="telemetry-coverage-note">Checking telemetry coverage...</div>
+                    <div class="telemetry-detail-grid">
+                        <div class="telemetry-panel">
+                            <div class="telemetry-panel-label">Model Leaderboard</div>
+                            <div id="telemetry-model-list" class="telemetry-list">
+                                <div class="telemetry-empty-row">No model telemetry yet.</div>
+                            </div>
+                        </div>
+                        <div class="telemetry-panel">
+                            <div class="telemetry-panel-label">Workflow Health</div>
+                            <div id="telemetry-workflow-list" class="telemetry-list">
+                                <div class="telemetry-empty-row">No workflow telemetry yet.</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="telemetry-detail-grid bottom">
+                        <div class="telemetry-panel telemetry-panel-wide">
+                            <div class="telemetry-panel-label">RTX 5080 Live Inference</div>
+                            <div class="telemetry-chart-meta" id="telemetry-gpu-meta">Waiting for recent GPU samples...</div>
+                            <div id="telemetry-gpu-chart" class="telemetry-gpu-chart">
+                                <div class="telemetry-empty-row">No recent GPU samples yet.</div>
+                            </div>
+                            <div class="telemetry-gpu-axis">
+                                <span>0%</span>
+                                <span>GPU util history</span>
+                                <span>100%</span>
+                            </div>
+                        </div>
+                        <div class="telemetry-panel telemetry-panel-wide">
+                            <div class="telemetry-panel-label">Slowest Recent Runs</div>
+                            <div id="telemetry-slowest-list" class="telemetry-list">
+                                <div class="telemetry-empty-row">No recent workflow runs yet.</div>
+                            </div>
+                        </div>
+                        <div class="telemetry-panel">
+                            <div class="telemetry-panel-label">Telemetry Files</div>
+                            <div id="telemetry-files-list" class="telemetry-file-list">
+                                <div class="telemetry-empty-row">Waiting for telemetry files...</div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </details>
+
         </div>
 
-        <!-- DOJO CONSOLE WORKSPACE (Standardized for Routing) -->
+        <div id="workspace-usage-auditor" class="workspace-pane">
+            <section class="audit-workspace-shell">
+                <div class="workspace-header">
+                    <div>
+                        <span class="intro-label">Usage Auditor</span>
+                        <h2 class="premium-serif gold-text">Subscription visibility, monthly burn, and renewals without the dashboard pileup.</h2>
+                        <p class="results-center-deck">Use this workspace when you want the audit surface only. Refresh the audit, inspect the cards, and leave the rest of the Hub out of the way.</p>
+                    </div>
+                    <button class="hero-action secondary" onclick="triggerTool('usage_auditor')">Refresh Audit</button>
+                </div>
+                <section class="stats-overview" id="stats-hero"></section>
+                <section class="renewal-timeline" id="renewal-timeline"></section>
+                <section class="platform-grid" id="audit-grid"></section>
+            </section>
+        </div>
+
         <div id="workspace-dojo" class="workspace-pane">
             <section id="dojo-console" class="dojo-console">
-            <div class="dojo-nav">
-                <button class="dojo-tab active" onclick="switchDojoTab('run')">RUN</button>
-                <button class="dojo-tab" onclick="switchDojoTab('marathon')">BATCH TESTING</button>
-                <button class="dojo-tab" onclick="switchDojoTab('live')">LIVE SESSION</button>
-                <button class="dojo-tab" onclick="switchDojoTab('results')">RESULTS</button>
-                <button class="dojo-tab" onclick="switchDojoTab('patch')">PATCH LAB</button>
-                <button class="dojo-close" onclick="hideDojo()">×</button>
-            </div>
+                <div class="dojo-nav">
+                    <button class="dojo-tab active" onclick="switchDojoTab('run')">Run</button>
+                    <button class="dojo-tab" onclick="switchDojoTab('marathon')">Batch Testing</button>
+                    <button class="dojo-tab" onclick="switchDojoTab('live')">Live Session</button>
+                    <button class="dojo-tab" onclick="switchDojoTab('results')">Results</button>
+                    <button class="dojo-tab" onclick="switchDojoTab('patch')">Patch Lab</button>
+                    <button class="dojo-tab" onclick="switchDojoTab('drill')">Live Drill</button>
+                    <button class="dojo-close" onclick="hideDojo()">Close</button>
+                </div>
 
-            <div id="dojo-pane-run" class="dojo-pane active">
-                <div class="dojo-layout-split">
-                    <div class="dojo-config-cockpit">
-                        <h3 class="gold-text cinzel">Mission Setup</h3>
-                        <div class="config-group">
-                            <label>Target X Agent</label>
-                            <select id="dojo-agent-select" class="premium-input"></select>
-                            <div id="agent-sync-status" style="font-size: 0.75rem; margin-top: 5px; font-weight: 500;"></div>
-                        </div>
-                        <div class="config-group">
-                            <label>Scenario Pack</label>
-                            <select id="dojo-pack-select" class="premium-input"></select>
-                        </div>
-                        <div class="config-grid-2">
-                             <div class="config-group">
-                                <label>Environment</label>
-                                <select id="dojo-env-select" class="premium-input"></select>
+                <div id="dojo-pane-run" class="dojo-pane active">
+                    <div class="dojo-layout-split">
+                        <div class="dojo-config-cockpit">
+                            <h3 class="gold-text cinzel">Mission Setup</h3>
+                            <div class="config-group">
+                                <label>Target X Agent</label>
+                                <select id="dojo-agent-select" class="premium-input"></select>
+                                <div id="agent-sync-status" class="micro-status"></div>
                             </div>
                             <div class="config-group">
-                                <label>Run Type</label>
-                                <select id="dojo-type-select" class="premium-input">
-                                    <option value="single">Single Scenario</option>
-                                    <option value="batch">Batch Run</option>
-                                    <option value="regression">Regression Rerun</option>
-                                    <option value="stress">Stress Test</option>
-                                </select>
+                                <label>Scenario Pack</label>
+                                <select id="dojo-pack-select" class="premium-input"></select>
                             </div>
-                        </div>
-                        <div class="config-grid-2">
-                            <div class="config-group">
-                                <label>Difficulty</label>
-                                <select id="dojo-diff-select" class="premium-input"></select>
+                            <div class="config-grid-2">
+                                <div class="config-group">
+                                    <label>Environment</label>
+                                    <select id="dojo-env-select" class="premium-input"></select>
+                                </div>
+                                <div class="config-group">
+                                    <label>Run Type</label>
+                                    <select id="dojo-type-select" class="premium-input">
+                                        <option value="single">Single Scenario</option>
+                                        <option value="batch">Batch Run</option>
+                                        <option value="regression">Regression Rerun</option>
+                                        <option value="stress">Stress Test</option>
+                                    </select>
+                                </div>
                             </div>
-                            <div class="config-group">
-                                <label>Runs</label>
-                                <select id="dojo-count-select" class="premium-input"></select>
+                            <div class="config-grid-2">
+                                <div class="config-group">
+                                    <label>Difficulty</label>
+                                    <select id="dojo-diff-select" class="premium-input"></select>
+                                </div>
+                                <div class="config-group">
+                                    <label>Runs</label>
+                                    <select id="dojo-count-select" class="premium-input"></select>
+                                </div>
                             </div>
-                        </div>
-                        <div class="config-grid-2">
-                            <div class="config-group">
-                                <label>Turn Profile</label>
-                                <select id="dojo-turn-select" class="premium-input"></select>
+                            <div class="config-grid-2">
+                                <div class="config-group">
+                                    <label>Turn Profile</label>
+                                    <select id="dojo-turn-select" class="premium-input"></select>
+                                </div>
+                                <div class="config-group">
+                                    <label>Review Mode</label>
+                                    <select id="dojo-review-select" class="premium-input"></select>
+                                </div>
                             </div>
-                            <div class="config-group">
-                                <label>Review Mode</label>
-                                <select id="dojo-review-select" class="premium-input"></select>
-                            </div>
-                        </div>
-                        
-                        <div class="config-options-list">
-                            <label class="cb-container">Live Browser Mode
-                                <input type="checkbox" id="dojo-opt-browser-mode" checked>
-                                <span class="checkmark"></span>
-                            </label>
-                            <label class="cb-container">Save Screenshots
-                                <input type="checkbox" id="dojo-opt-screenshots" checked>
-                                <span class="checkmark"></span>
-                            </label>
-                            <label class="cb-container">Save Transcripts
-                                <input type="checkbox" id="dojo-opt-transcripts" checked>
-                                <span class="checkmark"></span>
-                            </label>
-                            <label class="cb-container">Rerun Failed Only
-                                <input type="checkbox" id="dojo-opt-rerun-failed">
-                                <span class="checkmark"></span>
-                            </label>
-                        </div>
 
-                            <!-- System Intelligence Context -->
+                            <div class="config-options-list">
+                                <label class="cb-container">Live Browser Mode
+                                    <input type="checkbox" id="dojo-opt-browser-mode" checked>
+                                    <span class="checkmark"></span>
+                                </label>
+                                <label class="cb-container">Save Screenshots
+                                    <input type="checkbox" id="dojo-opt-screenshots" checked>
+                                    <span class="checkmark"></span>
+                                </label>
+                                <label class="cb-container">Save Transcripts
+                                    <input type="checkbox" id="dojo-opt-transcripts" checked>
+                                    <span class="checkmark"></span>
+                                </label>
+                                <label class="cb-container">Rerun Failed Only
+                                    <input type="checkbox" id="dojo-opt-rerun-failed">
+                                    <span class="checkmark"></span>
+                                </label>
+                            </div>
+
                             <div class="dojo-status-panel">
-                                <h4 class="status-header">SYSTEM INTELLIGENCE STATUS</h4>
+                                <h4 class="status-header">System Intelligence</h4>
                                 <div id="dojo-health-grid" class="health-grid">
-                                    <div class="health-item" id="health-bridge">
-                                        <span class="dot"></span> Bridge: <span class="val">---</span>
-                                    </div>
-                                    <div class="health-item" id="health-demo">
-                                        <span class="dot"></span> Demo Server: <span class="val">---</span>
-                                    </div>
-                                    <div class="health-item" id="health-ollama">
-                                        <span class="dot"></span> Ollama: <span class="val">---</span>
-                                    </div>
+                                    <div class="health-item" id="health-bridge"><span class="dot"></span> Bridge: <span class="val">---</span></div>
+                                    <div class="health-item" id="health-demo"><span class="dot"></span> Demo Server: <span class="val">---</span></div>
+                                    <div class="health-item" id="health-ollama"><span class="dot"></span> Ollama: <span class="val">---</span></div>
                                 </div>
                             </div>
 
                             <div class="dojo-run-actions">
-                            <button id="dojo-start-btn" class="dojo-primary-btn" onclick="startDojoMission()">RUN MISSION</button>
-                            <button class="dojo-secondary-btn" onclick="loadLatestDojoReport()">LOAD LATEST</button>
+                                <button id="dojo-start-btn" class="dojo-primary-btn" onclick="startDojoMission()">Run Mission</button>
+                                <button class="dojo-secondary-btn" onclick="loadLatestDojoReport()">Load Latest</button>
+                            </div>
                         </div>
-                    </div>
-                    <div id="dojo-run-history" class="dojo-history-panel">
-                        <h4 class="gold-text">Recent Missions</h4>
-                        <div id="dojo-history-list" class="history-list">
-                            <!-- Injected -->
+                        <div id="dojo-run-history" class="dojo-history-panel">
+                            <h4 class="gold-text">Recent Missions</h4>
+                            <div id="dojo-history-list" class="history-list"></div>
                         </div>
                     </div>
                 </div>
-            </div>
 
-            <div id="dojo-pane-marathon" class="dojo-pane">
-                <div class="dojo-layout-split">
-                    <div class="dojo-config-cockpit">
-                        <h3 class="gold-text cinzel">Batch Testing Setup</h3>
-                        <div class="config-group">
-                            <label>Agent Roster (Select Multiple)</label>
-                            <div id="marathon-agent-grid" class="agent-multi-select-grid"></div>
-                        </div>
-                        <div class="config-grid-2">
-                             <div class="config-group">
-                                <label>Environment</label>
-                                <select id="marathon-env-select" class="premium-input"></select>
-                            </div>
+                <div id="dojo-pane-marathon" class="dojo-pane">
+                    <div class="dojo-layout-split">
+                        <div class="dojo-config-cockpit">
+                            <h3 class="gold-text cinzel">Batch Testing Setup</h3>
                             <div class="config-group">
-                                <label>Difficulty (Select Multiple)</label>
-                                <div id="marathon-diff-grid" class="agent-multi-select-grid" style="grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));"></div>
+                                <label>Agent Roster</label>
+                                <div id="marathon-agent-grid" class="agent-multi-select-grid"></div>
+                            </div>
+                            <div class="config-grid-2">
+                                <div class="config-group">
+                                    <label>Environment</label>
+                                    <select id="marathon-env-select" class="premium-input"></select>
+                                </div>
+                                <div class="config-group">
+                                    <label>Difficulty</label>
+                                    <div id="marathon-diff-grid" class="agent-multi-select-grid compact-grid"></div>
+                                </div>
+                            </div>
+                            <div class="config-grid-2">
+                                <div class="config-group">
+                                    <label>Runs per Agent</label>
+                                    <input type="number" id="marathon-count-input" class="premium-input" min="1" max="100" value="10">
+                                </div>
+                                <div class="config-group">
+                                    <label>Review Mode</label>
+                                    <select id="marathon-review-select" class="premium-input"></select>
+                                </div>
+                            </div>
+                            <div class="dojo-run-actions top-gap">
+                                <button class="dojo-primary-btn" onclick="startMarathonMission()">Deploy Batch Run</button>
                             </div>
                         </div>
-                        <div class="config-grid-2">
-                            <div class="config-group">
-                                <label>Runs per Agent</label>
-                                <input type="number" id="marathon-count-input" class="premium-input" min="1" max="100" value="10">
+                        <div class="dojo-history-panel">
+                            <h4 class="gold-text">Batch Guidance</h4>
+                            <p class="panel-copy">Queue multiple X Agents sequentially to keep the local box stable. Use compact review modes for faster overnight sweeps, then graduate strong candidates into fuller confirmation runs.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="dojo-pane-live" class="dojo-pane">
+                    <div class="dojo-live-layout">
+                        <div class="dojo-telemetry-header">
+                            <div class="tel-item"><span class="label">Batch</span> <span id="tel-batch-id">--</span></div>
+                            <div class="tel-item"><span class="label">Agent</span> <span id="tel-agent">--</span></div>
+                            <div class="tel-item"><span class="label">Status</span> <span id="tel-status" class="status-chip active">IDLE</span></div>
+                        </div>
+                        <div class="dojo-neural-link">
+                            <div class="neural-header">Live Transcript</div>
+                            <div id="dojo-transcript-live" class="neural-transcript">
+                                <div class="neural-placeholder">Awaiting link initialization...</div>
                             </div>
-                            <div class="config-group">
-                                <label>Review Mode</label>
-                                <select id="marathon-review-select" class="premium-input"></select>
+                        </div>
+                        <div class="dojo-diagnostics-panel">
+                            <h4 class="gold-text">System Diagnostics</h4>
+                            <div class="diag-item"><span class="label">State:</span> <span id="diag-state">OFFLINE</span></div>
+                            <div class="diag-item"><span class="label">Status:</span> <span id="diag-status">PENDING</span></div>
+                            <div class="diag-item"><span class="label">Reason:</span> <span id="diag-reason">--</span></div>
+                            <div class="diag-item"><span class="label">Turns:</span> <span id="diag-turns">0</span></div>
+                            <div class="diag-item"><span class="label">Errors:</span> <span id="diag-errors">--</span></div>
+                            <div id="diag-pulse" class="diag-pulse"></div>
+                        </div>
+                        <div id="review-progress-container" class="review-progress-container" style="display: none;">
+                            <div class="progress-label">
+                                <span id="review-step">Intelligence Review</span>
+                                <span id="review-percent">0%</span>
+                            </div>
+                            <div class="progress-track">
+                                <div id="review-progress-bar" class="progress-fill"></div>
                             </div>
                         </div>
-                        
-                        <div class="dojo-run-actions" style="margin-top: 30px;">
-                            <button class="dojo-primary-btn" onclick="startMarathonMission()">DEPLOY BATCH RUN</button>
-                        </div>
-                    </div>
-                    <div class="dojo-history-panel">
-                        <h4 class="gold-text">Instructions</h4>
-                        <p style="color:var(--text-dim); font-size: 0.9rem; line-height: 1.6;">
-                            Batch testing allows you to explicitly queue multiple X-Agents for sequential testing. 
-                            This guards your 5080's VRAM by running models safely one at a time.
-                            <br><br>
-                            Ensure <strong>Review Mode</strong> is set to <em>Score Only</em> or <em>Compact</em> for faster offline processing. Results will be saved automatically to your vault under each agent's respective batch folders when the overnight run finishes.
-                        </p>
                     </div>
                 </div>
-            </div>
 
-            <div id="dojo-pane-live" class="dojo-pane">
-                <div class="dojo-live-layout">
-                    <div class="dojo-telemetry-header">
-                        <div class="tel-item"><span class="label">BATCH:</span> <span id="tel-batch-id">—</span></div>
-                        <div class="tel-item"><span class="label">AGENT:</span> <span id="tel-agent">—</span></div>
-                        <div class="tel-item"><span class="label">STATUS:</span> <span id="tel-status" class="status-chip active">IDLE</span></div>
+                <div id="dojo-pane-results" class="dojo-pane">
+                    <div id="dojo-results-container">
+                        <div class="results-placeholder">No batch data loaded. Run a mission to see the intelligence summary.</div>
                     </div>
-                    <div class="dojo-neural-link">
-                        <div class="neural-header">🛰️ NEURAL LINK — LIVE TRANSCRIPT</div>
-                        <div id="dojo-transcript-live" class="neural-transcript">
-                            <div class="neural-placeholder">Awaiting link initialization...</div>
+                </div>
+
+                <div id="dojo-pane-patch" class="dojo-pane">
+                    <div id="dojo-patch-container">
+                        <div class="results-placeholder">Patch Lab idle. Run a mission with Troy enabled to generate candidates.</div>
+                    </div>
+                </div>
+
+                <div id="dojo-pane-drill" class="dojo-pane">
+                    <div class="drill-layout">
+                        <div class="drill-header">
+                            <div class="drill-title">
+                                <h3 class="gold-text cinzel">Adrian — Live Coaching Drill</h3>
+                                <span class="drill-badge">LOCAL · gemma4:26b · No Time Limit</span>
+                            </div>
+                            <div class="drill-meta">
+                                <span id="drill-kb-status" class="drill-meta-chip">KB: --</span>
+                                <span id="drill-memory-status" class="drill-meta-chip">Memory: --</span>
+                                <span id="drill-turn-count" class="drill-meta-chip">Turns: 0</span>
+                                <button id="drill-tts-toggle" class="drill-tts-btn" onclick="toggleDrillTTS()" title="Toggle Adrian voice">🔇 Voice Off</button>
+                            </div>
                         </div>
-                    </div>
-                    <div class="dojo-diagnostics-panel">
-                        <h4 class="gold-text">System Diagnostics</h4>
-                        <div class="diag-item"><span class="label">State:</span> <span id="diag-state">OFFLINE</span></div>
-                        <div class="diag-item"><span class="label">Status:</span> <span id="diag-status">PENDING</span></div>
-                        <div class="diag-item"><span class="label">Reason:</span> <span id="diag-reason">—</span></div>
-                        <div class="diag-item"><span class="label">Turns:</span> <span id="diag-turns">0</span></div>
-                        <div class="diag-item"><span class="label">Errors:</span> <span id="diag-errors">—</span></div>
-                        <div id="diag-pulse" class="diag-pulse"></div>
-                    </div>
-                    
-                    <div id="review-progress-container" class="review-progress-container" style="display: none;">
-                        <div class="progress-label">
-                            <span id="review-step">Intelligence Review</span>
-                            <span id="review-percent">0%</span>
+                        <div class="drill-chat-container">
+                            <div id="drill-transcript" class="drill-transcript">
+                                <div class="drill-placeholder">
+                                    <div class="drill-placeholder-icon">🎯</div>
+                                    <div class="drill-placeholder-text">Start a coaching session to practice pitches, interview answers, or communication drills with Adrian.</div>
+                                    <button class="dojo-primary-btn" id="drill-start-btn" onclick="startDrillSession()">Start Coaching Session</button>
+                                </div>
+                            </div>
+                            <div id="drill-input-area" class="drill-input-area" style="display:none;">
+                                <textarea id="drill-input" class="drill-input" placeholder="Type or speak your response to Adrian..." rows="2"></textarea>
+                                <div class="drill-actions">
+                                    <button class="drill-mic-btn" id="drill-mic-btn" onclick="toggleDrillMic()" title="Hold to speak">🎤</button>
+                                    <button class="dojo-primary-btn" id="drill-send-btn" onclick="sendDrillMessage()">Send</button>
+                                    <button class="dojo-secondary-btn" onclick="endDrillSession()">End &amp; Save Session</button>
+                                </div>
+                            </div>
                         </div>
-                        <div class="progress-track">
-                            <div id="review-progress-bar" class="progress-fill"></div>
+                        <div class="drill-history-panel">
+                            <h4 class="gold-text">Past Sessions</h4>
+                            <div id="drill-history-list" class="history-list"></div>
                         </div>
                     </div>
                 </div>
-            </div>
+            </section>
+        </div>
 
-            <div id="dojo-pane-results" class="dojo-pane">
-                <div id="dojo-results-container">
-                    <div class="results-placeholder">No batch data loaded. Run a mission to see intelligence summary.</div>
+        <div id="workspace-mel" class="workspace-pane" style="display:none;">
+            <section class="mel-console">
+                <div class="mel-header">
+                    <h2 class="premium-serif gold-text">SuperHero Lab <span class="version-badge">Beta</span></h2>
+                    <p class="mel-subtitle">Autonomous prompt evolution powered by Hermes diagnostics and Troy rewrites.</p>
                 </div>
-            </div>
 
-            <div id="dojo-pane-patch" class="dojo-pane">
-                <div id="dojo-patch-container">
-                    <div class="results-placeholder">Patch Lab idle. Run a mission with Troy enabled to generate candidates.</div>
+                <div class="mel-trigger-panel">
+                    <div class="mel-config-row">
+                        <div class="mel-field">
+                            <label>Target Agent</label>
+                            <select id="mel-agent-select" class="premium-input" onchange="onMelAgentChange()"></select>
+                        </div>
+                        <div class="mel-field">
+                            <label>Scenario Pack</label>
+                            <select id="mel-pack-select" class="premium-input">
+                                <option value="default_pack">Auto-Discover</option>
+                            </select>
+                        </div>
+                        <div class="mel-field">
+                            <label>Difficulty</label>
+                            <select id="mel-diff-select" class="premium-input">
+                                <option value="mixed">Mixed</option>
+                                <option value="cooperative">Cooperative</option>
+                                <option value="hard">Hard</option>
+                                <option value="extreme">Extreme</option>
+                            </select>
+                        </div>
+                        <div class="mel-field">
+                            <label>Scenarios</label>
+                            <select id="mel-scenario-count" class="premium-input">
+                                <option value="2">2 Quick</option>
+                                <option value="3" selected>3 Standard</option>
+                                <option value="5">5 Thorough</option>
+                            </select>
+                        </div>
+                        <div class="mel-field">
+                            <label>Max Turns</label>
+                            <select id="mel-turn-count" class="premium-input">
+                                <option value="6">6</option>
+                                <option value="8" selected>8</option>
+                                <option value="10">10</option>
+                                <option value="12">12</option>
+                                <option value="0">Limitless</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="mel-actions">
+                        <button id="mel-evolve-btn" class="dojo-primary-btn mel-evolve-btn" onclick="triggerMelLoop()">Start Evolution Cycle</button>
+                        <button id="mel-stop-btn" class="dojo-secondary-btn mel-stop-btn" onclick="stopMelLoop()" style="display:none;">Stop Evolution</button>
+                        <button class="dojo-secondary-btn mel-refresh-btn" onclick="refreshMelFeed()">Refresh Feed</button>
+                    </div>
+                    <div id="mel-status" class="mel-status-bar" style="display:none;">
+                        <span class="mel-spinner">...</span>
+                        <span id="mel-status-text">Evolution in progress...</span>
+                    </div>
                 </div>
-            </div>
-        </section>
 
-        <!-- CHAT OVERLAY (Direct Line) -->
-        <section id="chat-container" class="chat-container">
+                <div id="mel-progress-panel" class="mel-progress-panel" style="display:none;">
+                    <div class="mel-progress-header">
+                        <h3 class="mel-feed-title">Evolution Progress</h3>
+                        <div class="mel-progress-bar-container">
+                            <div class="mel-progress-bar">
+                                <div id="mel-progress-fill" class="mel-progress-fill" style="width:0%;"></div>
+                            </div>
+                            <span id="mel-progress-pct" class="mel-progress-pct">0%</span>
+                            <span id="mel-limitless-badge" class="tag" style="display:none;">LIMITLESS</span>
+                        </div>
+                    </div>
+                    <div id="mel-live-summary" class="mel-live-summary">
+                        <span id="mel-live-stage" class="mel-live-stage state-idle">Idle</span>
+                        <div class="mel-live-copy">
+                            <strong id="mel-live-detail">No active evolution cycle.</strong>
+                            <span id="mel-live-meta">SH Lab will report its current stage here once a run begins.</span>
+                        </div>
+                    </div>
+                    <div id="mel-timeline" class="mel-timeline"></div>
+                </div>
+
+                <div class="mel-feed">
+                    <div class="mel-latest-result-card" id="mel-latest-result-card">
+                        <div class="mel-latest-header">
+                            <div>
+                                <span class="intro-label">Latest Verdict</span>
+                                <strong id="mel-latest-headline">No SH Lab verdict packet yet.</strong>
+                            </div>
+                            <button class="chat-chip utility-chip" onclick="refreshLatestResultsCenter(true)">Refresh Verdict</button>
+                        </div>
+                        <p id="mel-latest-copy" class="mel-latest-copy">Run a cycle, then this panel will show the latest baseline, best challenger, and direct evidence links.</p>
+                        <div class="result-link-row result-link-row--mel" id="mel-latest-links"></div>
+                    </div>
+                    <h3 class="mel-feed-title">Evolution Feed</h3>
+                    <div id="mel-feed-container" class="mel-feed-container">
+                        <div class="mel-placeholder">No evolution cycles have been run yet. Select an agent and start a cycle to generate candidates.</div>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <section id="chat-container" class="chat-container workspace-pane">
             <div class="chat-header">
                 <div class="chat-profile-header">
                     <div class="chat-status-dot active"></div>
-                    <span class="chat-title cinzel">Direct Line: HQ</span>
+                    <div class="chat-heading-block">
+                        <span class="chat-title cinzel">Hermes Console</span>
+                        <span class="chat-subtitle">Talk naturally, type naturally, or use your mic when you want to move faster.</span>
+                    </div>
                 </div>
-                <button class="close-chat" onclick="toggleChat()">×</button>
+                <button class="close-chat" onclick="switchWorkspace('home')">Close</button>
+            </div>
+            <div class="chat-toolbar">
+                <button class="chat-chip" onclick="seedChatPrompt('Run a Dani SH Lab batch then send the report to aifusionlabs@gmail.com')">SH Lab Only</button>
+                <button class="chat-chip" onclick="seedChatPrompt('Show me the latest Hermes test report')">Latest Report</button>
+                <button class="chat-chip" onclick="seedChatPrompt('Check the status of the latest test mission')">Mission Status</button>
+            </div>
+            <div class="vault-strip">
+                <div class="vault-strip-header">
+                    <div>
+                        <span class="research-status-label">Recent Vault</span>
+                        <span class="vault-strip-caption">Latest files Hermes created or touched.</span>
+                    </div>
+                    <button class="chat-chip utility-chip" onclick="refreshVaultFeed('chat')">Refresh</button>
+                </div>
+                <div id="chat-vault-list" class="vault-file-list">
+                    <div class="vault-empty">Recent files will appear here.</div>
+                </div>
             </div>
             <div id="chat-messages" class="chat-messages">
-                <div class="message sloane">Good evening, Founder. The command center has been restructured. How can I assist?</div>
+                <div class="message sloane">
+                    <div class="message-meta">
+                        <span class="message-role">Hermes</span>
+                    </div>
+                    <div class="message-content">Operator console ready. What would you like moved first?</div>
+                </div>
             </div>
             <div class="chat-input-area">
-                <input type="text" id="chat-input" placeholder="Enter directive..."
-                    onkeypress="if(event.key === 'Enter') sendMessage()">
-                <button id="send-btn" onclick="sendMessage()">➤</button>
+                <div class="chat-composer-shell">
+                    <div class="chat-composer-header">
+                        <div class="chat-composer-copy">
+                            <span class="chat-composer-title">Direct Hermes Input</span>
+                            <span class="chat-composer-caption">Press <strong>Enter</strong> to send. Use <strong>Shift+Enter</strong> for a new line.</span>
+                        </div>
+                        <div class="chat-aux-controls">
+                            <button class="chat-secondary-btn" onclick="openUploadPicker('chat')">Attach</button>
+                            <button id="chat-edit-btn" class="chat-secondary-btn" onclick="editLastUserMessage()">Edit</button>
+                            <button id="chat-stop-btn" class="chat-secondary-btn danger" onclick="stopActiveMission()">Stop</button>
+                        </div>
+                    </div>
+                    <input id="chat-file-input" type="file" hidden multiple onchange="handleFileUpload(event, 'chat')">
+                    <div id="chat-upload-list" class="upload-chip-list" hidden></div>
+                    <div class="chat-composer-main">
+                        <textarea id="chat-input" rows="3" placeholder="Ask naturally. Example: Run Dani through SH Lab only, then send me the report." onkeydown="handleChatKey(event)"></textarea>
+                        <button id="send-btn" onclick="sendMessage()" type="button">Send</button>
+                    </div>
+                    <div class="chat-composer-foot">
+                        <div class="chat-foot-left">
+                            <span id="chat-input-status">Hermes Console is ready.</span>
+                        </div>
+                    </div>
+                </div>
             </div>
         </section>
 
+        <section id="research-container" class="research-container workspace-pane">
+            <div class="chat-header research-header">
+                <div class="chat-profile-header">
+                    <div class="chat-status-dot active"></div>
+                    <div class="chat-heading-block">
+                        <span class="chat-title cinzel">Multi-Model Research</span>
+                        <span class="chat-subtitle">Sweep ChatGPT, Perplexity, Gemini, and Grok in fresh sessions, then let Hermes turn the spread into one operator brief.</span>
+                    </div>
+                </div>
+                <button class="close-chat" onclick="switchWorkspace('home')">Close</button>
+            </div>
+            <div class="chat-toolbar research-toolbar">
+                <button class="chat-chip" onclick="seedResearchPrompt('Research the strongest next architecture move for X-LINK memory and retrieval.')">Architecture</button>
+                <button class="chat-chip" onclick="seedResearchPrompt('Compare the best workflow for vendor selection across AI tooling ops in 2026.')">Vendor Compare</button>
+                <button class="chat-chip" onclick="seedResearchPrompt('Research the most important product and tooling shifts relevant to AI Fusion Labs this week.')">Weekly Signal</button>
+            </div>
+            <div class="research-summary-bar">
+                <div class="research-status-card">
+                    <span class="research-status-label">Lane</span>
+                    <strong id="research-runtime-label">Hermes Judge</strong>
+                    <span class="research-status-meta">Four-model breadth, Hermes judgment</span>
+                </div>
+                <div class="research-status-card">
+                    <span class="research-status-label">Latest Artifact</span>
+                    <strong id="research-artifact-label">No report yet</strong>
+                    <span id="research-provider-label" class="research-status-meta">Waiting for dispatch</span>
+                </div>
+            </div>
+            <div class="vault-strip research-vault-strip">
+                <div class="vault-strip-header">
+                    <div>
+                        <span class="research-status-label">Research Vault</span>
+                        <span class="vault-strip-caption">Latest briefs, model captures, and uploaded source files.</span>
+                    </div>
+                    <button class="chat-chip utility-chip" onclick="refreshVaultFeed('research')">Refresh</button>
+                </div>
+                <div id="research-vault-list" class="vault-file-list">
+                    <div class="vault-empty">Research artifacts will appear here.</div>
+                </div>
+            </div>
+            <div id="research-messages" class="chat-messages research-messages">
+                <div class="message sloane research-intro-message">
+                    <div class="message-meta">
+                        <span class="message-role">Hermes</span>
+                    </div>
+                    <div class="message-content">Ready when you are. Ask for a market sweep, architecture comparison, or strategic recommendation and I’ll route it through the multi-model research lane.</div>
+                </div>
+            </div>
+            <div class="chat-input-area research-input-area">
+                <div class="chat-composer-shell research-composer-shell">
+                    <div class="chat-composer-header">
+                        <div class="chat-composer-copy">
+                            <span class="chat-composer-title">Research Prompt</span>
+                            <span class="chat-composer-caption">Describe the question once. Trinity sweeps the outside view, then Hermes turns it into the brief you actually need.</span>
+                        </div>
+                        <div class="chat-aux-controls">
+                            <button class="chat-secondary-btn" onclick="openUploadPicker('research')">Attach</button>
+                            <button id="research-edit-btn" class="chat-secondary-btn" onclick="editLastResearchMessage()">Edit</button>
+                            <button id="research-stop-btn" class="chat-secondary-btn danger" onclick="stopResearchRequest()">Stop</button>
+                        </div>
+                    </div>
+                    <input id="research-file-input" type="file" hidden multiple onchange="handleFileUpload(event, 'research')">
+                    <div id="research-upload-list" class="upload-chip-list" hidden></div>
+                    <div class="chat-composer-main">
+                        <textarea id="research-input" rows="4" placeholder="Ask for a comparative market read, architecture direction, or strategic recommendation." onkeydown="handleResearchKey(event)"></textarea>
+                        <button id="research-send-btn" onclick="sendResearchMessage()" type="button">Send</button>
+                    </div>
+                    <div class="chat-composer-foot">
+                        <div class="chat-foot-left">
+                            <span id="research-input-status">Research lane is ready.</span>
+                        </div>
+                        <span id="research-status-pill" class="chat-status-pill">Standby</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="archive-container" class="research-container archive-container workspace-pane">
+            <div class="chat-header research-header archive-header">
+                <div class="chat-profile-header">
+                    <div class="chat-status-dot active"></div>
+                    <div class="chat-heading-block">
+                        <span class="chat-title cinzel">Archive Intel</span>
+                        <span class="chat-subtitle">Sweep one provider or all of them, save the chats into the local vault, then let Hermes turn the pile into an operator brief.</span>
+                    </div>
+                </div>
+                <button class="close-chat" onclick="switchWorkspace('home')">Close</button>
+            </div>
+            <div class="chat-toolbar research-toolbar archive-toolbar">
+                <button class="chat-chip" onclick="seedArchivePrompt('Archive the latest 10 Perplexity chats and summarize the strongest recurring themes.')">Perplexity Sweep</button>
+                <button class="chat-chip" onclick="seedArchivePrompt('Archive the latest 8 ChatGPT chats from the X Agents project and prepare an executive summary.')">ChatGPT Project</button>
+                <button class="chat-chip" onclick="seedArchivePrompt('Archive the latest 6 chats across all providers and prepare an executive archive brief.')">All Providers</button>
+            </div>
+            <div class="research-summary-bar archive-summary-bar">
+                <div class="research-status-card">
+                    <span class="research-status-label">Run</span>
+                    <strong id="archive-run-label">No sweep yet</strong>
+                    <span id="archive-phase-label" class="research-status-meta">Waiting for dispatch</span>
+                </div>
+                <div class="research-status-card">
+                    <span class="research-status-label">Summary</span>
+                    <strong id="archive-summary-label">No summary yet</strong>
+                    <span id="archive-email-label" class="research-status-meta">Email optional</span>
+                </div>
+            </div>
+            <div id="archive-messages" class="chat-messages research-messages archive-messages">
+                <div class="message sloane research-intro-message">
+                    <div class="message-meta">
+                        <span class="message-role">Hermes</span>
+                    </div>
+                    <div class="message-content">Ready when you are. Tell me which provider to archive and how deep to scan. The brief stays local unless you explicitly turn email on.</div>
+                </div>
+            </div>
+            <div class="chat-input-area research-input-area">
+                <div class="chat-composer-shell research-composer-shell archive-composer-shell">
+                    <div class="archive-ops-grid">
+                        <div class="archive-ops-block">
+                            <span class="chat-composer-title">Provider</span>
+                            <select id="archive-platform-select" class="premium-input archive-select">
+                                <option value="all">All Providers</option>
+                                <option value="perplexity">Perplexity</option>
+                                <option value="chatgpt">ChatGPT</option>
+                                <option value="gemini">Gemini</option>
+                                <option value="grok">Grok</option>
+                            </select>
+                        </div>
+                        <div class="archive-ops-block">
+                            <span class="chat-composer-title">Depth</span>
+                            <select id="archive-limit-select" class="premium-input archive-select">
+                                <option value="5">5 chats</option>
+                                <option value="10" selected>10 chats</option>
+                                <option value="20">20 chats</option>
+                                <option value="all">All chats</option>
+                            </select>
+                        </div>
+                        <div class="archive-ops-block archive-email-block">
+                            <label class="cb-container">Email the summary to me
+                                <input type="checkbox" id="archive-email-toggle">
+                                <span class="checkmark"></span>
+                            </label>
+                        </div>
+                    </div>
+                    <div class="chat-composer-header">
+                        <div class="chat-composer-copy">
+                            <span class="chat-composer-title">Archive Prompt</span>
+                            <span class="chat-composer-caption">Add a keyword or instruction like “focus on X Agents” or “summarize Boardy prep threads.”</span>
+                        </div>
+                        <div class="chat-aux-controls">
+                            <button class="chat-secondary-btn" onclick="openUploadPicker('archive')">Attach</button>
+                            <button id="archive-edit-btn" class="chat-secondary-btn" onclick="editLastArchiveMessage()">Edit</button>
+                            <button id="archive-stop-btn" class="chat-secondary-btn danger" onclick="stopArchiveRequest()">Stop</button>
+                        </div>
+                    </div>
+                    <input id="archive-file-input" type="file" hidden multiple onchange="handleFileUpload(event, 'archive')">
+                    <div id="archive-upload-list" class="upload-chip-list" hidden></div>
+                    <div class="chat-composer-main">
+                        <textarea id="archive-input" rows="4" placeholder="Example: Archive the latest 10 Perplexity chats about X-LINK, then create an executive brief and email it to me." onkeydown="handleArchiveKey(event)"></textarea>
+                        <button id="archive-send-btn" onclick="sendArchiveMessage()" type="button">Run</button>
+                    </div>
+                    <div class="chat-composer-foot">
+                        <div class="chat-foot-left">
+                            <span id="archive-input-status">Archive lane is ready.</span>
+                        </div>
+                        <span id="archive-status-pill" class="chat-status-pill">Standby</span>
+                    </div>
+                </div>
+            </div>
+            <details class="archive-secondary-panel" open>
+                <summary>Latest Run Artifacts</summary>
+                <div class="vault-strip archive-artifact-strip">
+                    <div class="vault-strip-header">
+                        <div>
+                            <span class="research-status-label">Latest Run Artifacts</span>
+                            <span class="vault-strip-caption">Open the actual summary, inspect the run state, or copy the archive folder path without digging through the repo.</span>
+                        </div>
+                    </div>
+                    <div class="archive-artifact-grid">
+                        <div class="archive-artifact-card">
+                            <span class="research-status-label">Summary File</span>
+                            <strong id="archive-summary-file">No summary yet</strong>
+                            <div class="archive-artifact-actions">
+                                <a id="archive-open-summary" class="chat-chip utility-chip archive-action-link disabled" href="#" target="_blank" rel="noopener">Open Summary</a>
+                                <button id="archive-copy-summary" class="chat-chip utility-chip" type="button" onclick="copyArchivePath('summary')">Copy Path</button>
+                            </div>
+                        </div>
+                        <div class="archive-artifact-card">
+                            <span class="research-status-label">Archive Folder</span>
+                            <strong id="archive-folder-label">No archive folder yet</strong>
+                            <div class="archive-artifact-actions">
+                                <button id="archive-copy-folder" class="chat-chip utility-chip" type="button" onclick="copyArchivePath('folder')">Copy Folder Path</button>
+                                <button id="archive-copy-state" class="chat-chip utility-chip" type="button" onclick="copyArchivePath('state')">Copy Run State Path</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </details>
+            <details class="archive-secondary-panel">
+                <summary>Archive Vault</summary>
+                <div class="vault-strip research-vault-strip">
+                    <div class="vault-strip-header">
+                        <div>
+                            <span class="research-status-label">Archive Vault</span>
+                            <span class="vault-strip-caption">Saved chat archives, generated summary files, and any supporting uploads.</span>
+                        </div>
+                        <button class="chat-chip utility-chip" onclick="refreshVaultFeed('archive')">Refresh</button>
+                    </div>
+                    <div id="archive-vault-list" class="vault-file-list">
+                        <div class="vault-empty">Archive artifacts will appear here.</div>
+                    </div>
+                </div>
+            </details>
+        </section>
+
         <footer class="hub-footer">
-            &copy; 2026 X-LINK | Command Center v3.0
+            &copy; 2026 X-LINK | Operator Hub
         </footer>
     </main>
 
-    <!-- FOUNDER INTERVENTION OVERLAY (Moved to Root for Z-Index Safety) -->
     <div id="intervention-overlay" class="intervention-overlay" style="display: none; z-index: 9999;">
         <div class="intervention-card">
-            <div class="intervention-icon">🚨</div>
-            <h2 class="intervention-title">Sloane Needs Your Help</h2>
+            <div class="intervention-icon">Alert</div>
+            <h2 class="intervention-title">Hermes Needs Your Help</h2>
             <div class="intervention-service" id="intervention-service">Unknown Service</div>
             <div class="intervention-issue" id="intervention-issue">Unknown Issue</div>
             <p class="intervention-message" id="intervention-message">Details loading...</p>
-            <div class="intervention-url" id="intervention-url" style="word-wrap: break-word; color: var(--gold); font-size: 0.8rem; margin-bottom: 25px;"></div>
-            <button class="intervention-resume-btn" onclick="clearIntervention()">
-                ✅ Done — Resume Mission
-            </button>
+            <div class="intervention-url" id="intervention-url"></div>
+            <button id="intervention-resume-btn" class="intervention-resume-btn" onclick="clearIntervention()">Done | Resume Mission</button>
         </div>
     </div>
 
     <div id="toast" class="toast"></div>
 </body>
-
 </html>

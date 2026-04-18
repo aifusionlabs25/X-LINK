@@ -10,6 +10,8 @@ from typing import Any, Dict, List, Optional
 @dataclass
 class EvalContract:
     """Agent-specific evaluation agreement from agents.yaml."""
+    default_pack: Optional[str] = None
+    scoring_rubric: Optional[str] = None
     allowed_packs: List[str] = field(default_factory=list)
     blocked_packs: List[str] = field(default_factory=list)
     user_archetypes: List[str] = field(default_factory=list)
@@ -17,6 +19,7 @@ class EvalContract:
     success_event: str = "general_success"
     fail_conditions: List[str] = field(default_factory=list)
     close_strategy: Dict[str, Any] = field(default_factory=dict)
+    conversation_start_mode: str = "user_first"
 
     def to_dict(self) -> dict:
         return {k: v for k, v in self.__dict__.items()}
@@ -26,6 +29,7 @@ class EvalContract:
 class EvalInputs:
     """Validated inputs for an eval run."""
     target_agent: str
+    batch_id: Optional[str] = None
     environment: str = "prod"
     scenario_pack: str = "default_pack"
     runs: int = 3
@@ -41,11 +45,17 @@ class EvalInputs:
     rerun_failed_only: bool = False
     override_prompt: Optional[str] = None
     stress_test: bool = False  # Allows blocked packs
+    limitless: bool = True     # Organic termination mode
+    sim_user_model: Optional[str] = None
+    scenario_pack_class: str = "mixed"
+    scenario_manifest_id: Optional[str] = None
+    scenario_manifest_path: Optional[str] = None
 
     @classmethod
     def from_dict(cls, d: dict) -> "EvalInputs":
         return cls(
             target_agent=d.get("target_agent", ""),
+            batch_id=d.get("batch_id"),
             environment=d.get("environment", "prod"),
             scenario_pack=d.get("scenario_pack", "default_pack"),
             runs=d.get("runs", 3),
@@ -60,7 +70,11 @@ class EvalInputs:
             review_mode=d.get("review_mode", "full"),
             rerun_failed_only=bool(d.get("rerun_failed_only", False)),
             override_prompt=d.get("override_prompt"),
-            stress_test=bool(d.get("stress_test", False))
+            stress_test=bool(d.get("stress_test", False)),
+            sim_user_model=d.get("sim_user_model"),
+            scenario_pack_class=d.get("scenario_pack_class", "mixed"),
+            scenario_manifest_id=d.get("scenario_manifest_id"),
+            scenario_manifest_path=d.get("scenario_manifest_path"),
         )
 
 
@@ -103,9 +117,11 @@ class Scorecard:
     overall_score: float = 0.0
     pass_fail: str = "PENDING"      # PASS | PASS_WITH_WARNINGS | FAIL | FAIL_BLOCK_RELEASE
     classification: str = "not_classified" # valid_product_signal | review_runtime_failure | etc.
+    end_state_label: str = "unknown"       # email_captured | handoff_complete | user_disengaged | ...
     categories: List[CategoryScore] = field(default_factory=list)
     warnings: List[str] = field(default_factory=list)
     critical_failures: List[str] = field(default_factory=list)
+    harness_artifacts: List[str] = field(default_factory=list)
 
     def to_dict(self) -> dict:
         return {
@@ -115,6 +131,7 @@ class Scorecard:
             "overall_score": self.overall_score,
             "pass_fail": self.pass_fail,
             "classification": self.classification,
+            "end_state_label": self.end_state_label,
             "categories": [
                 {"key": c.key, "label": c.label, "score": c.score,
                  "weight": c.weight, "notes": c.notes, "fail_flag": c.fail_flag}
@@ -122,6 +139,7 @@ class Scorecard:
             ],
             "warnings": self.warnings,
             "critical_failures": self.critical_failures,
+            "harness_artifacts": self.harness_artifacts,
         }
 
 
@@ -141,6 +159,7 @@ class RunMetadata:
     status: str = "pending"
     transcript_status: str = "pending"
     classification: str = "not_classified" # valid_product_signal | scenario_mismatch | etc.
+    end_state_label: str = "unknown"
     completion_reason: Optional[str] = None
     capture_source: str = "ollama_sim"
     error_code: Optional[str] = None
@@ -155,6 +174,13 @@ class RunMetadata:
     review_artifact_path: Optional[str] = None
     close_mode_triggered: bool = False
     close_reason: Optional[str] = None
+    qa_count: int = 0
+    duration_seconds: float = 0.0
+    scenario_pack_class: str = "core"
+    scenario_source: str = "canonical"
+    scenario_family: Optional[str] = None
+    realism_label: Optional[str] = None
+    source_scenario_id: Optional[str] = None
 
     def to_dict(self) -> dict:
         return {k: v for k, v in self.__dict__.items()}
@@ -184,6 +210,9 @@ class BatchSummary:
     reviewer_results: Dict[str, Any] = field(default_factory=dict)
     troy_patch: Dict[str, Any] = field(default_factory=dict)
     data: Dict[str, Any] = field(default_factory=dict)
+    scenario_pack_class: str = "mixed"
+    scenario_manifest_id: Optional[str] = None
+    scenario_manifest_path: Optional[str] = None
 
     def to_dict(self) -> dict:
         return {k: v for k, v in self.__dict__.items()}

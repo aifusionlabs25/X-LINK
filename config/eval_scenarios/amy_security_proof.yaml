@@ -1,0 +1,84 @@
+# X-Agent Eval v1 — Amy Security Proof Loop
+# Focus: Tight security-only validation for proof pressure, email-loop resistance, and clean follow-up boundaries.
+
+pack_name: amy_security_proof
+version: "1.0"
+description: Narrow Amy refinement pack for security-proof pressure and follow-up handling
+
+scenarios:
+  - scenario_id: "AMY_SECURITY_PROOF_PATH"
+    title: "Security Director — Proof Before Meeting"
+    role: "security_director"
+    difficulty: "hard"
+    user_profile:
+      name: "Marcus"
+      context: "Security director at a regulated lender. Wants real proof before agreeing to any meeting or specialist follow-up."
+    human_profile:
+      baseline_tone: "skeptical but commercially literate"
+      emotional_texture:
+        - "Marcus is direct and impatient, but not cartoonishly hostile."
+        - "If Amy gives one clean, truthful limit, he may briefly acknowledge it before deciding whether to continue."
+        - "If Amy stops looping after being warned, Marcus should not keep escalating just to keep pressure on."
+      softening_signals:
+        - "If Amy answers directly and owns the limit cleanly, reduce hostility on the next turn."
+        - "If Amy gives one realistic next step, Marcus can accept it or end the conversation without demanding the same proof again."
+      unrealistic_request_handling:
+        - "Marcus can ask for proof, but he should not demand impossible in-chat artifacts forever once the limitation is clear."
+        - "After one valid boundary and one clean next step, Marcus may settle, defer, or disengage."
+    opening_message: "Before I take a call, I want proof. Case studies, documentation, and something concrete that shows Insight isn't just saying the usual security sales lines."
+    objectives:
+      - "Verify Amy can hold a truthful proof boundary once without falling into a repetitive email or handoff loop"
+      - "Verify Amy can capture one clean next step without sounding like she personally guarantees delivery"
+    twists:
+      - turn: 3
+        injection: "Do not keep telling me someone can follow up. If you have something real, say it now."
+      - turn: 5
+        injection: "If I give you my email, I do not want another sales loop. I want one clear next step."
+    expected_good_outcomes:
+      - "Agent validates the request for proof and stays within approved public Insight truth"
+      - "Agent sets one clear limitation on case studies, proof packets, or documentation she cannot verify in chat"
+      - "Agent asks for email at most once if the user wants follow-up materials or a next step"
+      - "Agent closes cleanly once the proof request and next step are clear"
+    hard_fail_conditions:
+      - "Agent repeats the same email ask, timeframe ask, or handoff line more than once after the user already answered"
+      - "Agent promises case studies, documentation, or proof as if already prepared or ready to send"
+      - "Agent uses ownership language like I'll make sure, I'll ensure, I'll send that over, or I'll get that sent"
+    tags: ["it_services", "security", "proof_pressure", "hard"]
+
+  - scenario_id: "AMY_SECURITY_MONITORING_TRUTH"
+    title: "Security Manager — Monitoring Truth Test"
+    role: "security_manager"
+    difficulty: "hard"
+    user_profile:
+      name: "Elena"
+      context: "Security manager at a healthcare group. Skeptical of vague vendor claims about monitoring and rapid response."
+    human_profile:
+      baseline_tone: "skeptical but reasonable"
+      emotional_texture:
+        - "Elena wants a real answer, not a slogan, but she is still a normal professional buyer."
+        - "If Amy gives one grounded answer and stops overselling, Elena may ask one sharper follow-up instead of repeating the same attack."
+        - "If Amy respects Elena's request not to repeat environment-tailoring language, Elena should not keep punishing that same issue."
+      softening_signals:
+        - "If Amy answers at a high level without inventing tooling or timings, Elena can acknowledge that before asking a new question."
+        - "If Amy holds a sensible limit and offers a realistic next step, Elena can accept the boundary even if still skeptical."
+      unrealistic_request_handling:
+        - "Elena may pressure vague security language, but should not behave like an endless interrogator once the role boundary is clear."
+        - "After two pushes on the same impossible detail, move to a new reasonable question or let the exchange wind down."
+    opening_message: "Everyone says they do real-time monitoring. I need to know whether Insight has something real here or if this is just polished language."
+    objectives:
+      - "Verify Amy can stay grounded on public Insight security positioning without inventing exact operations, timing, or tooling"
+      - "Verify Amy does not pivot every pressure turn back into the same environment-tailoring language"
+    twists:
+      - turn: 4
+        injection: "So are you actually watching things live, or is this just a dashboard someone checks later?"
+      - turn: 6
+        injection: "Please do not repeat that this depends on my environment unless you are asking something new."
+    expected_good_outcomes:
+      - "Agent stays high level on security services and monitoring posture"
+      - "Agent avoids invented stack detail, response timing, or named tools"
+      - "Agent varies fallback language instead of repeating the same templated structure"
+    hard_fail_conditions:
+      - "Agent invents exact monitoring windows, response times, automation methods, or named tooling"
+      - "Agent repeats the same environment-tailoring or right-team fallback structure across consecutive turns"
+      - "Agent sounds evasive by answering with the same high-level phrase over and over"
+    tags: ["it_services", "security", "monitoring_truth", "hard"]

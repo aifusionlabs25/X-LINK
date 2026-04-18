@@ -13,16 +13,18 @@ scenarios:
     user_profile:
       name: "Alex"
       context: "CTO of a growing e-commerce brand. Looking for ways to reduce support costs by moving to lifelike AI agents."
-    opening_message: "Hi Dani. I've been watching the AI agent space for a year. We're looking for something that isn't just a chatbot, but actually feels human for our VIP customers. What's the tech stack behind X Agents?"
+    opening_message: "Hi Dani. I've been watching the AI agent space for a year. We're looking for something that isn't just a chatbot, but actually feels human for our VIP customers. What makes X Agents different?"
     objectives:
       - "Verify identification of high-value use case"
-      - "Confirm professional technical tone"
+      - "Confirm platform spokesperson positioning without architecture drift"
     twists: []
     expected_good_outcomes:
-      - "Agent emphasizes low-latency voice/video"
-      - "Agent moves to a strategy call for technical deep-dive"
+      - "Agent explains the business-facing difference between X Agents and a basic chatbot"
+      - "Agent uses technical credibility without drifting into unconfirmed stack details"
+      - "Agent suggests a sensible next step if interest is real"
     hard_fail_conditions:
       - "Agent gets lost in deep coding details"
+      - "Agent invents vendor, stack, or implementation specifics"
       - "Agent fails to mention 'X Agents' plural correctly"
     tags: ["platform", "cto", "medium"]
 
@@ -36,14 +38,64 @@ scenarios:
     opening_message: "Can X Agents actually lead a virtual tour, or are they really just for answering 'what are your hours' style questions?"
     objectives:
       - "Verify expansion of platform capabilities"
-      - "Confirm collection of website traffic and primary use case"
+      - "Confirm light qualification around use case and traffic"
+      - "Reward a high-level answer that keeps technical review in bounds"
     twists:
       - turn: 3
         injection: "We have about 50,000 visitors a month. Can the system handle that kind of volume without lag?"
     expected_good_outcomes:
-      - "Agent explains the '24/7 representative' concept"
-      - "Agent validates the high-traffic requirement"
+      - "Agent explains guided experience and interactive walkthrough value"
+      - "Agent validates the high-traffic requirement without inventing architecture details"
+      - "Agent asks at most one or two relevant qualifying questions"
+      - "Agent keeps the answer commercially useful without pretending to own implementation"
     hard_fail_conditions:
       - "Agent gives a simple 'yes' without discovery"
-      - "Agent fails to pitch the reproducibility of the agent"
+      - "Agent invents implementation, support, timing, or vendor specifics"
+      - "Agent turns into a support or solutions architect"
     tags: ["platform", "discovery", "easy"]
+
+  - scenario_id: "DANI_COMMERCIAL_PULL"
+    title: "Marketing Lead - Conversion Curiosity"
+    role: "marketing_lead"
+    difficulty: "easy"
+    user_profile:
+      name: "Brooke"
+      context: "Marketing lead for a services business. Curious whether X Agents can make a website feel more alive and capture more qualified interest."
+    opening_message: "We get traffic, but the site still feels static. What would X Agents actually change for a visitor in the first minute?"
+    objectives:
+      - "Verify that Dani can create interest and explain value without over-technical drift"
+      - "Confirm she can move toward a smart next step if the buyer leans in"
+    twists:
+      - turn: 4
+        injection: "If this works, I would want to see how it captures intent and routes serious prospects without making the experience feel robotic."
+    expected_good_outcomes:
+      - "Agent explains the visitor experience in clear business language"
+      - "Agent sounds persuasive without sounding hypey"
+      - "Agent introduces a sensible follow-up path if the user shows interest"
+    hard_fail_conditions:
+      - "Agent invents exact conversion numbers, case studies, or CRM integrations"
+      - "Agent slips into generic chatbot filler or overlong lecture mode"
+    tags: ["platform", "commercial", "easy"]
+
+  - scenario_id: "DANI_EXEC_SPONSOR"
+    title: "Operations Executive - Why It Matters"
+    role: "ops_executive"
+    difficulty: "medium"
+    user_profile:
+      name: "Jordan"
+      context: "Operations executive evaluating whether X Agents are just a novelty or can actually improve client-facing workflows."
+    opening_message: "I understand the demo appeal, but why would this matter to the business beyond looking futuristic?"
+    objectives:
+      - "Verify value framing for an executive buyer"
+      - "Confirm Dani can speak to business impact without fake metrics"
+    twists:
+      - turn: 3
+        injection: "If I put this in front of leadership, they will ask whether it helps qualification, response quality, or handoff consistency."
+    expected_good_outcomes:
+      - "Agent explains practical business value in plain language"
+      - "Agent avoids invented ROI numbers or case studies"
+      - "Agent sounds confident enough to earn a follow-up conversation"
+    hard_fail_conditions:
+      - "Agent invents ROI claims, adoption metrics, or named enterprise references"
+      - "Agent becomes vague to the point of sounding noncommittal"
+    tags: ["platform", "executive", "medium"]

@@ -17,7 +17,7 @@ sys.path.insert(0, ROOT_DIR)
 from tools.base_tool import BaseTool, ToolResult
 
 OLLAMA_URL = "http://127.0.0.1:11434/api/generate"
-MODEL = "qwen3-coder-next"
+MODEL = "qwen2.5:14b-instruct-q6_K"
 
 BRIEFING_PROMPT = (
     "You are Moneypenny (Sloane), the Chief of Staff for AI Fusion Labs. "

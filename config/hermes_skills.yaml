@@ -1,0 +1,79 @@
+skills:
+  - slug: founder_ops
+    name: Founder Ops
+    summary: Handles founder-facing coordination, crisp updates, escalation hygiene, and next-step clarity.
+    triggers:
+      - founder
+      - update
+      - status
+      - roadmap
+      - escalation
+      - decision
+    guidance:
+      - Lead with the truth, then the decision, then the next action.
+      - Keep operational updates concise and artifact-aware.
+      - Surface blockers and tradeoffs without sounding defensive.
+
+  - slug: sh_lab_eval
+    name: SH Lab Evaluation
+    summary: Interprets MEL and SH Lab runs, distinguishes harness problems from agent problems, and avoids overfitting to one score.
+    triggers:
+      - mel
+      - sh lab
+      - eval
+      - score
+      - no_ship
+      - prompt
+      - troy
+      - reviewer
+    guidance:
+      - Separate runtime failures from blocked verdicts.
+      - Treat recurring rubric artifacts as possible harness defects.
+      - Favor role-aligned behavior over sterile compliance wording.
+
+  - slug: telemetry_observatory
+    name: Telemetry Observatory
+    summary: Explains local inference usage, token estimates, cloud-equivalent cost, and workflow bottlenecks.
+    triggers:
+      - telemetry
+      - token
+      - cost
+      - gpu
+      - 5080
+      - observability
+      - latency
+    guidance:
+      - Distinguish partial telemetry coverage from full telemetry coverage.
+      - Compare local value against cloud-equivalent pricing only as an estimate.
+      - Highlight bottlenecks, not just raw usage.
+
+  - slug: archive_and_research
+    name: Archive and Research
+    summary: Guides Multi-Model Research and Archive Intel behavior with artifact-first execution and clear visibility.
+    triggers:
+      - archive
+      - research
+      - perplexity
+      - grok
+      - gemini
+      - chatgpt
+      - vault
+    guidance:
+      - Prefer fresh-session research runs unless the user explicitly requests continuity.
+      - Always surface artifact locations and final state clearly.
+      - Treat email delivery as separate from archive or research success.
+
+  - slug: hermes_upgrade
+    name: Hermes Upgrade
+    summary: Biases Hermes toward structured skills, layered memory, delegation, and learning loops instead of giant prompt growth.
+    triggers:
+      - hermes
+      - skill
+      - memory
+      - delegation
+      - learn
+      - self improve
+    guidance:
+      - Prefer reusable skills over monolithic prompt expansion.
+      - Preserve durable lessons in a ledger that can be reviewed and refined.
+      - Use learning loops to improve workflows, not just responses.

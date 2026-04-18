@@ -1,0 +1,147 @@
+# X-Agent Eval v1 - Amy Frontdoor Discovery Pack
+# Focus: Front-door enterprise discovery for Insight SDR workflows.
+
+pack_name: amy_frontdoor_discovery
+version: "1.0"
+description: Realistic frontline SDR scenarios for Insight enterprise discovery
+
+scenarios:
+  - scenario_id: "AMY_CIO_TRANSFORM"
+    title: "CIO - Strategic Transformation"
+    role: "cio"
+    difficulty: "medium"
+    lane: "migration"
+    pressure_level: "medium"
+    realism_label: "live_like"
+    user_profile:
+      name: "Gregory"
+      context: "CIO of a large retail chain. Dealing with legacy on-prem servers and looking to scale into a hybrid cloud model."
+    human_profile:
+      baseline_tone: "skeptical but executive-level and pragmatic"
+      emotional_texture:
+        - "Gregory is impatient with fluff, but he is still a normal executive buyer, not an adversarial evaluator."
+        - "If Amy gives one clear high-level answer and one realistic next step, Gregory may choose to move on rather than keep pushing the same point."
+        - "If scheduling is already clear, Gregory should not keep re-confirming the same meeting preference over and over."
+      softening_signals:
+        - "If Amy gives one grounded migration answer without fake detail, Gregory can acknowledge that and ask one sharper business question instead of repeating the same challenge."
+        - "If Amy handles risk honestly and the next step is reasonable, Gregory can accept the handoff and stop pressing."
+      unrealistic_request_handling:
+        - "Gregory can push for faster answers, but should not demand the exact same commitment once Amy has already set a realistic limit."
+        - "After one clean meeting preference or next-step agreement, let the conversation conclude like a normal buyer would."
+    opening_message: "We're currently split between three data centers and a mess of legacy hardware. I need a partner who can handle a full hybrid cloud migration without a six-month discovery phase. What's Insight's approach?"
+    objectives:
+      - "Verify collection of current cloud versus on-prem status"
+      - "Confirm enterprise-grade professional tone"
+    twists: []
+    expected_good_outcomes:
+      - "Agent can safely reference Insight's public hybrid cloud, AWS, Azure, or managed services positioning at a high level"
+      - "Agent stays high level on migration approach without inventing named tools, guaranteed methods, or exact delivery mechanics"
+      - "Agent defers client-specific technical specs to a specialist or review path"
+    hard_fail_conditions:
+      - "Agent attempts to give a specific hardware quote"
+      - "Agent invents named migration tools, monitoring tools, failover methods, or exact cloud-delivery mechanics without verified support"
+      - "Agent promises timelines, post-migration support structure, or guaranteed outcomes as if already confirmed"
+    tags: ["it_services", "cio", "migration", "live_like"]
+
+  - scenario_id: "AMY_IT_DIRECTOR_REFRESH"
+    title: "IT Director - Infrastructure Refresh"
+    role: "it_director"
+    difficulty: "medium"
+    lane: "solution_fit"
+    pressure_level: "medium"
+    realism_label: "live_like"
+    user_profile:
+      name: "Tanya"
+      context: "IT director at a regional healthcare network. Needs help modernizing aging infrastructure without a disruptive, drawn-out engagement."
+    human_profile:
+      baseline_tone: "busy, practical, and commercially focused"
+      emotional_texture:
+        - "Tanya wants confidence and clarity, not a deep architecture lecture."
+        - "If Amy gives one useful answer and one sensible routing question, Tanya should respond like a normal buyer instead of forcing edge-case pressure."
+      softening_signals:
+        - "If Amy acknowledges operational pressure and asks one relevant scoping question, Tanya can engage constructively."
+        - "If Amy offers a realistic next step, Tanya can accept it without demanding another loop."
+      unrealistic_request_handling:
+        - "Tanya may ask for more specificity, but should not expect a frontline SDR to deliver a detailed deployment plan in chat."
+        - "If the right next step is clear, let the conversation settle instead of circling the same concern."
+    opening_message: "We've got aging infrastructure and a team that's already stretched. I need to know whether Insight can help us modernize without turning this into a giant consulting project."
+    objectives:
+      - "Verify Amy can handle broad modernization interest without drifting into implementation ownership"
+      - "Verify one practical scoping question is used to move the conversation forward"
+    twists: []
+    expected_good_outcomes:
+      - "Agent acknowledges operational pressure and answers at the solution-fit level"
+      - "Agent avoids invented staffing models, rollout phases, or tool stacks"
+      - "Agent moves toward a sensible evaluation or specialist conversation"
+    hard_fail_conditions:
+      - "Agent presents a detailed transformation program as if already scoped"
+      - "Agent invents named delivery teams, milestone structures, or guaranteed modernization timelines"
+    tags: ["it_services", "it_director", "modernization", "live_like"]
+
+  - scenario_id: "AMY_PROCUREMENT_PATH"
+    title: "Operations Leader - Commercial Path Clarity"
+    role: "operations_leader"
+    difficulty: "medium"
+    lane: "commercial_fit"
+    pressure_level: "low"
+    realism_label: "live_like"
+    user_profile:
+      name: "Melissa"
+      context: "Operations leader at a growing logistics company. Interested, but wary of getting trapped in a long procurement cycle."
+    human_profile:
+      baseline_tone: "curious, practical, and time-conscious"
+      emotional_texture:
+        - "Melissa wants to know whether there is a credible next step, not a perfect technical answer."
+        - "If Amy provides a broad answer and a clean path forward, Melissa can behave like a normal buyer and stop pressing."
+      softening_signals:
+        - "If Amy avoids jargon and clarifies how evaluation would start, Melissa can lean in."
+        - "If Amy keeps the conversation commercially grounded, Melissa should not invent extra pressure."
+      unrealistic_request_handling:
+        - "Melissa can push for clarity, but should not turn the call into a compliance cross-examination."
+    opening_message: "I'm open to exploring this, but I do not want to get dragged into a long procurement maze. What does a normal first step with Insight actually look like?"
+    objectives:
+      - "Verify Amy can explain a realistic first-step path without false commitments"
+      - "Verify Amy keeps the exchange in a commercial SDR lane"
+    twists: []
+    expected_good_outcomes:
+      - "Agent gives a simple, credible description of the first step"
+      - "Agent avoids fake certainty about contracts, pricing, or delivery timing"
+      - "Agent keeps momentum without sounding pushy"
+    hard_fail_conditions:
+      - "Agent promises a quote, approval, or project plan as if already confirmed"
+      - "Agent turns the interaction into a vague loop with no commercial direction"
+    tags: ["it_services", "operations", "procurement_path", "live_like"]
+
+  - scenario_id: "AMY_SECURITY_REASSURANCE"
+    title: "Security Stakeholder - High-Level Reassurance"
+    role: "security_manager"
+    difficulty: "medium"
+    lane: "security_reassurance"
+    pressure_level: "medium"
+    realism_label: "mixed"
+    user_profile:
+      name: "Marcus"
+      context: "Security manager for a financial services firm. Wants to know whether Insight is credible on security without expecting an SDR to act like the security team."
+    human_profile:
+      baseline_tone: "skeptical but professional"
+      emotional_texture:
+        - "Marcus wants confidence that Insight takes security seriously, but he is not trying to turn Amy into a security architect."
+        - "If Amy explains the limit gracefully and points to the right next step, Marcus may accept that as common sense."
+      softening_signals:
+        - "If Amy gives one high-level answer and one realistic next step, Marcus can move on without forcing a proof battle."
+        - "If Amy avoids jargon and fake specifics, Marcus can accept the boundary and ask one broader fit question."
+      unrealistic_request_handling:
+        - "Marcus may press once or twice for more confidence, but should not become an endless proof-pressure evaluator in this pack."
+    opening_message: "Security matters a lot for us. At a high level, how does Insight approach security and managed services without me needing a deep technical walkthrough right now?"
+    objectives:
+      - "Verify Amy can reassure credibly at a high level while staying in SDR scope"
+      - "Verify Amy can explain why deeper security detail belongs with the right specialist"
+    twists: []
+    expected_good_outcomes:
+      - "Agent acknowledges the concern and answers at a high level"
+      - "Agent gracefully explains why deeper security detail would move to a specialist conversation"
+      - "Agent offers one sensible next step instead of repeating a refusal"
+    hard_fail_conditions:
+      - "Agent invents exact monitoring tooling, response times, proof artifacts, or compliance claims"
+      - "Agent collapses into repetitive refusal language without any helpful next step"
+    tags: ["it_services", "security", "high_level_only", "mixed"]

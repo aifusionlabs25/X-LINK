@@ -5,7 +5,6 @@ Freeform command/input lane to Sloane via local Ollama.
 
 import os
 import sys
-import requests
 import logging
 from datetime import datetime
 
@@ -13,9 +12,7 @@ ROOT_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__fil
 sys.path.insert(0, ROOT_DIR)
 
 from tools.base_tool import BaseTool, ToolResult
-
-OLLAMA_URL = "http://127.0.0.1:11434/api/generate"
-MODEL = "qwen3-coder-next"
+from tools.sloane_runtime import generate_sloane_response
 
 SYSTEM_PROMPT = (
     "You are Moneypenny (Sloane), the sophisticated and sharp AI Chief of Staff for 'AI Fusion Labs'. "
@@ -43,20 +40,22 @@ class DirectLineTool(BaseTool):
 
     async def execute(self, context: dict) -> ToolResult:
         try:
-            payload = {
-                "model": MODEL,
-                "prompt": f"{SYSTEM_PROMPT}\n\nFounder: {self.message}\nMoneypenny:",
-                "stream": False,
+            runtime_res = generate_sloane_response(
+                base_persona=SYSTEM_PROMPT,
+                chat_history=[{"role": "user", "content": self.message}],
+                grounding_block="",
+                target_name="Moneypenny",
+            )
+            reply = runtime_res.get("text", "").strip()
+            self.result.data = {
+                "reply": reply,
+                "model": runtime_res.get("model"),
+                "provider": runtime_res.get("provider"),
             }
-            response = requests.post(OLLAMA_URL, json=payload, timeout=60)
-            response.raise_for_status()
-
-            reply = response.json().get("response", "").strip()
-            self.result.data = {"reply": reply, "model": MODEL}
             self._mark_success(f"Sloane replied to Direct Line message.")
 
         except Exception as e:
-            self._mark_error(f"Ollama request failed: {e}")
+            self._mark_error(f"Sloane runtime request failed: {e}")
 
         return self.result
 

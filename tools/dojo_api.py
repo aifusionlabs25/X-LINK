@@ -15,9 +15,71 @@ CONFIG_DIR = os.path.join(ROOT_DIR, "config")
 EVALS_DIR = os.path.join(ROOT_DIR, "vault", "evals")
 BATCHES_DIR = os.path.join(EVALS_DIR, "batches")
 RUNS_DIR = os.path.join(EVALS_DIR, "runs")
+SESSIONS_DIR = os.path.join(EVALS_DIR, "sessions")
 PYTHON_EXE = os.path.join(ROOT_DIR, ".venv", "Scripts", "python.exe")
 if not os.path.exists(PYTHON_EXE):
     PYTHON_EXE = sys.executable
+
+
+def _load_agents_index() -> dict:
+    agents_path = os.path.join(CONFIG_DIR, "agents.yaml")
+    if not os.path.exists(agents_path):
+        return {}
+
+    with open(agents_path, "r", encoding="utf-8") as f:
+        agents = yaml.safe_load(f).get("agents", [])
+
+    index = {}
+    for agent in agents:
+        slug = str(agent.get("slug") or "").strip().lower()
+        if slug:
+            index[slug] = agent
+    return index
+
+
+def _normalize_eval_launch_params(params: dict) -> dict:
+    normalized = dict(params or {})
+    agents_index = _load_agents_index()
+
+    agent_slug = str(normalized.get("agent") or "").strip().lower()
+    pack_name = str(normalized.get("pack") or "").strip()
+
+    if not agent_slug or agent_slug not in agents_index:
+        return normalized
+
+    agent = agents_index[agent_slug]
+    eval_block = agent.get("eval") or {}
+    allowed_packs = [str(pack).strip() for pack in (eval_block.get("allowed_packs") or []) if str(pack).strip()]
+    default_pack = str(eval_block.get("default_pack") or "").strip()
+
+    if pack_name and allowed_packs and pack_name not in allowed_packs:
+        owning_agents = []
+        for slug, cfg in agents_index.items():
+            owner_allowed = [str(pack).strip() for pack in ((cfg.get("eval") or {}).get("allowed_packs") or []) if str(pack).strip()]
+            if pack_name in owner_allowed:
+                owning_agents.append(slug)
+
+        if len(owning_agents) == 1:
+            normalized["agent"] = owning_agents[0]
+            owner_eval = (agents_index[owning_agents[0]].get("eval") or {})
+            owner_allowed = [str(pack).strip() for pack in (owner_eval.get("allowed_packs") or []) if str(pack).strip()]
+            if pack_name not in owner_allowed and owner_eval.get("default_pack"):
+                normalized["pack"] = str(owner_eval["default_pack"]).strip()
+        elif default_pack:
+            normalized["pack"] = default_pack
+    elif not pack_name and default_pack:
+        normalized["pack"] = default_pack
+
+    return normalized
+
+
+def _safe_session_name(batch_id: str) -> str:
+    return str(batch_id).replace("/", "__").replace("\\", "__").replace(":", "_")
+
+
+def _session_path_for(batch_id: str) -> str:
+    os.makedirs(SESSIONS_DIR, exist_ok=True)
+    return os.path.join(SESSIONS_DIR, f"{_safe_session_name(batch_id)}.json")
 
 @router.get("/config")
 async def get_dojo_config():
@@ -59,18 +121,27 @@ async def start_eval(params: dict):
     """Launches an eval batch via subprocess."""
     # params: { agent, pack, environment, run_type, difficulty, runs, turn_profile, review_mode, browser_mode, rerun_batch_id }
     try:
+        params = _normalize_eval_launch_params(params)
         # Build the command for the tool wrapper (to be created)
         # We'll use a new wrapper 'tools/run_eval.py' that takes these JSON params
         script_path = os.path.join(ROOT_DIR, "tools", "run_eval.py")
+        if not params.get("batch_id"):
+            now = datetime.now()
+            date_str = now.strftime("%Y-%m-%d")
+            time_str = now.strftime("%H%M%S")
+            params["batch_id"] = params.get("rerun_batch_id") or f"{date_str}/{params.get('agent', 'agent')}_{time_str}"
         
         # Write intended session info to track active batch
         session_info = {
             "status": "starting",
             "params": params,
-            "timestamp": datetime.now().isoformat()
+            "timestamp": datetime.now().isoformat(),
+            "batch_id": params["batch_id"],
         }
         os.makedirs(EVALS_DIR, exist_ok=True)
         with open(os.path.join(EVALS_DIR, "active_session.json"), "w", encoding="utf-8") as f:
+            json.dump(session_info, f)
+        with open(_session_path_for(params["batch_id"]), "w", encoding="utf-8") as f:
             json.dump(session_info, f)
 
         # Launch non-blocking
@@ -106,9 +177,9 @@ async def start_marathon(params: dict):
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.get("/session")
-async def get_active_session():
+async def get_active_session(batch_id: str = None):
     """Polls for live session telemetry."""
-    active_path = os.path.join(EVALS_DIR, "active_session.json")
+    active_path = _session_path_for(batch_id) if batch_id else os.path.join(EVALS_DIR, "active_session.json")
     if not os.path.exists(active_path):
         return {"active": False}
 

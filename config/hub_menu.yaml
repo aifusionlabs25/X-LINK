@@ -1,4 +1,4 @@
-# X-LINK HUB v3 — Menu Configuration
+﻿# X-LINK HUB v3 - Menu Configuration
 # This file drives the sidebar UI. Do NOT hard-code menu items in HTML.
 
 sections:
@@ -7,28 +7,21 @@ sections:
     items:
       - key: direct_line
         label: Direct Line
-        icon: "💬"
+        icon: "chat"
         type: tool
         description: Freeform command/input lane to Sloane
         route: direct_line
 
       - key: usage_auditor
         label: Usage Auditor
-        icon: "📊"
+        icon: "audit"
         type: tool
         description: Inspect usage/billing/consumption targets
         route: usage_auditor
 
-      - key: intelligence_scout
-        label: Intelligence Scout
-        icon: "🕵️"
-        type: tool
-        description: Research, gather, compare, synthesize
-        route: intelligence_scout
-
       - key: xagent_eval
         label: X-Agent Eval
-        icon: "🎯"
+        icon: "eval"
         type: tool
         description: Automated X Agent test sessions and scoring
         route: xagent_eval
@@ -38,7 +31,7 @@ sections:
     items:
       - key: briefing
         label: Direct Briefing
-        icon: "📧"
+        icon: "brief"
         type: output
         description: Executive summaries from tool outputs
         route: briefing
@@ -48,14 +41,14 @@ sections:
     items:
       - key: sync_status
         label: Sync Status
-        icon: "🔄"
+        icon: "sync"
         type: status
         description: Sync routine state and last run
         status_source: sync
 
       - key: bridge_status
         label: Bridge Status
-        icon: "📡"
+        icon: "link"
         type: status
         description: CDP bridge connectivity state
         status_source: bridge
@@ -65,8 +58,8 @@ sections:
     items:
       - key: scout_workers
         label: Scout Workers
-        icon: "📦"
+        icon: "ops"
         type: internal
-        description: Internal delegated execution lane for Intelligence Scout
+        description: Internal delegated execution lane for scout automation
         route: scout_workers
         visibility: collapsed

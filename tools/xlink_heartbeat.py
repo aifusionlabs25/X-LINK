@@ -77,8 +77,7 @@ def daily_routine():
 
 # ── Scheduler Configuration ──────────────────────────────────────────
 
-# 02:00 AM - Midnight Scout (Intelligence Gathering)
-schedule.every().day.at("02:00").do(lambda: run_script('intelligence_sweeper.py'))
+# 02:00 AM - Reserved scout slot (legacy scout ingestion retired)
 
 # 03:00 AM - Discord Presence Check
 schedule.every().day.at("03:00").do(lambda: run_script('discord_watcher.py'))

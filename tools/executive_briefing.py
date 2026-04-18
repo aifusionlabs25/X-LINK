@@ -38,7 +38,7 @@ STRICT RULES:
     
     try:
         response = requests.post(OLLAMA_URL, json={
-            "model": "qwen3-coder-next",
+            "model": "qwen2.5:14b-instruct-q6_K",
             "messages": [
                 {"role": "system", "content": system_prompt.strip()},
                 {"role": "user", "content": user_prompt}
@@ -113,6 +113,53 @@ def get_latest_eval_summaries(root_dir):
     for r in results: r.pop('mtime', None) # Clean up
     return results
 
+def get_latest_strategic_synthesis(root_dir):
+    """Scans vault/intel for the latest Pro Research report and extracts the synthesis."""
+    intel_dir = os.path.join(root_dir, 'vault', 'intel')
+    reports = glob.glob(os.path.join(intel_dir, 'PRO_RESEARCH_*.md'))
+    if not reports:
+        return None, None
+    
+    latest_report = max(reports, key=os.path.getmtime)
+    try:
+        with open(latest_report, 'r', encoding='utf-8') as f:
+            content = f.read()
+            
+        # Extract Title
+        title_match = re.search(r'# 💎 Pro Research: (.*)', content)
+        title = title_match.group(1).strip() if title_match else "Latest Intelligence"
+        
+        # Extract Synthesis (between ## Strategic Synthesis and next ## OR end of file)
+        synthesis_match = re.search(r'## Strategic Synthesis(.*?)(?=\n##|\Z)', content, re.DOTALL)
+        if synthesis_match:
+            raw_synthesis = synthesis_match.group(1).strip()
+            
+            # Clean up: Remove all markdown symbols except basic punctuation
+            clean_synthesis = re.sub(r'[#*_\-`\[\]()]', '', raw_synthesis)
+            
+            # Split into lines and filter for content
+            lines = [l.strip() for l in clean_synthesis.split('\n') if l.strip()]
+            
+            # Priorities: Take the first 3 meaningful lines
+            priorities = []
+            for line in lines:
+                # Skip short labels or common dividers
+                if len(line) < 10 or line.lower() in ['source url', 'synthesis']:
+                    continue
+                priorities.append(line)
+                if len(priorities) >= 3:
+                    break
+            
+            # If still nothing, fallback to first 3 lines regardless
+            if not priorities:
+                priorities = lines[:3]
+                
+            return title, raw_synthesis.strip(), priorities
+    except Exception as e:
+        print(f"Error extracting synthesis: {e}")
+    
+    return None, None, []
+
 def synthesize_briefing(email_push=False):
     root_dir = ROOT_DIR
     brain_dir = r"c:\AI Fusion Labs\X AGENTS\REPOS\xagents-brain"
@@ -138,7 +185,10 @@ def synthesize_briefing(email_push=False):
     # 3. Dynamic Intelligence Synthesis
     registry_data = read_file(registry_path)
     task_data = read_file(task_path)
-    audit_log = read_file(log_path)
+    audit_log_at = read_file(log_path)
+    
+    # NEW: Fetch Sloane's latest Strategic Synthesis from PRO_RESEARCH
+    intel_title, intel_summary, intel_priorities = get_latest_strategic_synthesis(root_dir)
     
     # Load latest audit report for blockers
     audit_blockers = []
@@ -153,7 +203,7 @@ def synthesize_briefing(email_push=False):
                         audit_blockers.append(target)
         except: pass
 
-    stability = "stable" if "Connection Established" in audit_log else "degraded"
+    stability = "stable" if "Connection Established" in audit_log_at else "degraded"
     
     # Extract identifying features for Ollama context
     active_agents = re.findall(r'## (.*?)\s+—', registry_data)
@@ -171,8 +221,20 @@ def synthesize_briefing(email_push=False):
     
     moneypenny_briefing = get_moneypenny_tone_dynamic(context_str)
 
-    rd_summary = "Infrastructure stable. Mission parameters nominal."
+    # If we have FRESH INTEL from research, update the summary/priorities
+    rd_summary = intel_title if intel_title else "Infrastructure stable. Mission parameters nominal."
+    rd_priorities = intel_priorities if intel_priorities else ["Anam SDK.", "Hetzner Scale."]
     
+    # If the Ollama briefing is the fallback one, OR we have FRESH intel, prioritize the intel summary
+    # Sloane should sound even smarter when she has research data!
+    if intel_summary:
+        # Clean up synthesis for a cleaner summary (remove line breaks / too many stars)
+        clean_intel = re.sub(r'[#*_\-`\[\]()]', '', intel_summary).strip()
+        clean_intel = re.sub(r'\s+', ' ', clean_intel)
+        moneypenny_briefing = clean_intel[:350] + ("..." if len(clean_intel) > 350 else "")
+    else:
+        moneypenny_briefing = get_moneypenny_tone_dynamic(context_str)
+
     briefing = {
         "timestamp": datetime.now().isoformat(),
         "sloane": {
@@ -182,7 +244,7 @@ def synthesize_briefing(email_push=False):
             "calendar_events": calendar_events[:5]
         },
         "departments": {
-            "rd": {"summary": rd_summary, "priorities": ["Anam SDK.", "Hetzner Scale."]},
+            "rd": {"summary": rd_summary, "priorities": rd_priorities},
             "sales": {"summary": "8 agents live.", "priorities": ["Legal Pro.", "Sarah-Netic Fix."]},
             "ops": {"summary": f"System is {stability}.", "priorities": ["Heartbeat.", "Cost Audit."]}
         }

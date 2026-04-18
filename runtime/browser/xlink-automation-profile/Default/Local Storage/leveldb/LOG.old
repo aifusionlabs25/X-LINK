@@ -1,0 +1,11 @@
+2026/04/05-13:45:36.427 6158 Creating DB C:\AI Fusion Labs\X AGENTS\REPOS\X-LINK\runtime\browser\xlink-automation-profile\Default\Local Storage\leveldb since it was missing.
+2026/04/05-13:45:36.437 6158 Reusing MANIFEST C:\AI Fusion Labs\X AGENTS\REPOS\X-LINK\runtime\browser\xlink-automation-profile\Default\Local Storage\leveldb/MANIFEST-000001
+2026/04/05-13:53:33.292 598 Level-0 table #5: started
+2026/04/05-13:53:33.295 598 Level-0 table #5: 137829 bytes OK
+2026/04/05-13:53:33.297 598 Delete type=0 #3
+2026/04/05-13:54:33.295 598 Level-0 table #7: started
+2026/04/05-13:54:33.299 598 Level-0 table #7: 116411 bytes OK
+2026/04/05-13:54:33.301 598 Delete type=0 #4
+2026/04/05-13:56:27.412 598 Level-0 table #9: started
+2026/04/05-13:56:27.418 598 Level-0 table #9: 118274 bytes OK
+2026/04/05-13:56:27.421 598 Delete type=0 #6

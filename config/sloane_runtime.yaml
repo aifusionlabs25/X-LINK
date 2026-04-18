@@ -1,0 +1,21 @@
+runtime:
+  default_provider: auto
+  fallback_provider: ollama
+  providers:
+    ollama:
+      enabled: true
+      model: qwen2.5:14b-instruct-q6_K
+      endpoint: http://127.0.0.1:11434/api/generate
+      timeout_seconds: 600
+      temperature: 0.5
+      stop:
+        - "Rob:"
+        - "###"
+    hermes_api:
+      enabled: true
+      base_url: http://127.0.0.1:8642
+      model: hermes-agent
+      timeout_seconds: 180
+      temperature: 0.3
+      api_key: xlink-local-key
+      api_key_env: HERMES_API_KEY

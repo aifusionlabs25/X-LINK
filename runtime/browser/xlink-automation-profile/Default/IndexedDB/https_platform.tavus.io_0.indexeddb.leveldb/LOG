@@ -1,0 +1,4 @@
+2026/04/05-13:59:24.513 238c Reusing MANIFEST C:\AI Fusion Labs\X AGENTS\REPOS\X-LINK\runtime\browser\xlink-automation-profile\Default\IndexedDB\https_platform.tavus.io_0.indexeddb.leveldb/MANIFEST-000001
+2026/04/05-13:59:24.513 238c Recovering log #6
+2026/04/05-13:59:24.513 238c Reusing old log C:\AI Fusion Labs\X AGENTS\REPOS\X-LINK\runtime\browser\xlink-automation-profile\Default\IndexedDB\https_platform.tavus.io_0.indexeddb.leveldb/000006.log 
+2026/04/05-13:59:24.516 6b00 Manual compaction at level-0 from '\x00\x06\x00\x00\x00' @ 72057594037927935 : 1 .. '\x00\x07\x00\x00\x00' @ 0 : 0; will stop at (end)

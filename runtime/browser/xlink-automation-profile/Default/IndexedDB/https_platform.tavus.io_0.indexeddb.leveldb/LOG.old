@@ -1,0 +1,10 @@
+2026/04/05-13:51:06.720 1ffc Creating DB C:\AI Fusion Labs\X AGENTS\REPOS\X-LINK\runtime\browser\xlink-automation-profile\Default\IndexedDB\https_platform.tavus.io_0.indexeddb.leveldb since it was missing.
+2026/04/05-13:51:06.724 1ffc Reusing MANIFEST C:\AI Fusion Labs\X AGENTS\REPOS\X-LINK\runtime\browser\xlink-automation-profile\Default\IndexedDB\https_platform.tavus.io_0.indexeddb.leveldb/MANIFEST-000001
+2026/04/05-13:51:06.732 1220 Level-0 table #5: started
+2026/04/05-13:51:06.734 1220 Level-0 table #5: 1323 bytes OK
+2026/04/05-13:51:06.735 1220 Delete type=0 #3
+2026/04/05-13:51:06.735 1ffc Manual compaction at level-0 from '\x00\x01\x00\x00\x00' @ 72057594037927935 : 1 .. '\x00\x02\x00\x00\x00' @ 0 : 0; will stop at (end)
+2026/04/05-13:51:28.045 6510 Level-0 table #7: started
+2026/04/05-13:51:28.047 6510 Level-0 table #7: 4277 bytes OK
+2026/04/05-13:51:28.048 6510 Delete type=0 #4
+2026/04/05-13:51:28.049 1ffc Manual compaction at level-0 from '\x00\x05\x00\x00\x00' @ 72057594037927935 : 1 .. '\x00\x06\x00\x00\x00' @ 0 : 0; will stop at (end)

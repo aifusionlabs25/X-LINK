@@ -188,7 +188,7 @@ class SloaneBot(discord.Client):
                 try:
                     import requests
                     OLLAMA_URL = "http://127.0.0.1:11434/api/generate"
-                    MODEL = "qwen3-coder-next"
+                    MODEL = "aratan/qwen3.5-agent-multimodal:9b"
                     
                     system_prompt = (
                         "You are Moneypenny (Sloane), the sophisticated and sharp AI Chief of Staff for 'AI Fusion Labs'. "

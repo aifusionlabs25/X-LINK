@@ -19,7 +19,6 @@ sys.path.insert(0, ROOT_DIR)
 EXPECTED_TOOLS = [
     ("direct_line", "DirectLineTool"),
     ("usage_auditor", "UsageAuditorTool"),
-    ("intelligence_scout", "IntelligenceScoutTool"),
     ("xagent_eval", "XAgentEvalTool"),
     ("briefing", "BriefingTool"),
 ]
@@ -62,7 +61,6 @@ def test_menu_has_all_items():
             all_items.append(item["key"])
     assert "direct_line" in all_items
     assert "usage_auditor" in all_items
-    assert "intelligence_scout" in all_items
     assert "xagent_eval" in all_items
     assert "briefing" in all_items
     assert "sync_status" in all_items
@@ -74,13 +72,13 @@ def test_menu_tool_keys():
     """get_tool_keys() must return only tool-type items."""
     from hub.menu_state import get_tool_keys
     keys = get_tool_keys()
-    assert set(keys) == {"direct_line", "usage_auditor", "intelligence_scout", "xagent_eval"}
+    assert set(keys) == {"direct_line", "usage_auditor", "xagent_eval"}
 
 
 # ── 3. Each tool returns structured result contract ───────────
 
 @pytest.mark.parametrize("tool_key", [
-    "direct_line", "usage_auditor", "intelligence_scout", "xagent_eval", "briefing",
+    "direct_line", "usage_auditor", "xagent_eval", "briefing",
 ])
 def test_tool_result_contract(tool_key):
     """Each tool must return a ToolResult with required fields when run."""
@@ -117,6 +115,108 @@ def test_tool_result_contract(tool_key):
     json.dumps(d)  # Must not raise
 
 
+def test_sloane_runtime_status_surface():
+    from tools.sloane_runtime import get_runtime_status
+
+    status = get_runtime_status()
+    assert "default_provider" in status
+    assert "active_provider" in status
+    assert "providers" in status
+    assert "ollama" in status["providers"]
+
+
+def test_tool_registry_describes_hermes_console():
+    import yaml
+
+    path = os.path.join(ROOT_DIR, "config", "tool_registry.yaml")
+    with open(path, "r", encoding="utf-8") as f:
+        data = yaml.safe_load(f)
+
+    assert data["tools"]["direct_line"]["description"] == "Freeform conversational command lane to Hermes"
+
+
+def test_mel_pending_summary_builder_surfaces_best_artifacts():
+    from tools.synapse_bridge import _summarize_pending_payload
+
+    payload = {
+        "pending_id": "amy_20260412_081030",
+        "agent_slug": "amy",
+        "created_at": "2026-04-12T08:10:30.734943",
+        "snapshot_path": "C:\\repo\\vault\\mel\\history\\amy_snapshot.txt",
+        "diagnostic": {
+            "failure_category": "flow_naturalness",
+            "failed_exchange": "Weakest category: flow_naturalness",
+        },
+        "baseline": {
+            "batch_id": "mel_e60a48b6",
+            "score": 63.4,
+            "pass_rate": 0.0,
+            "verdict": "NO_SHIP",
+        },
+        "challengers": [
+            {
+                "variant": "proof_pressure_mode",
+                "result": {
+                    "batch_id": "mel_169b74ce",
+                    "score": 61.8,
+                },
+            }
+        ],
+        "recommendation": {
+            "variant": "baseline",
+            "score": 63.4,
+            "improvement": -1.6,
+            "passes_threshold": False,
+            "rationale": "Baseline outperformed all challengers.",
+        },
+    }
+
+    summary = _summarize_pending_payload(payload, latest_log_path="C:\\repo\\vault\\mel\\logs\\session.log")
+
+    assert summary["available"] is True
+    assert summary["agent_slug"] == "amy"
+    assert summary["best_variant"] == "baseline"
+    assert summary["artifacts"]["pending_path"].endswith("amy_20260412_081030.json")
+    assert summary["artifacts"]["snapshot_path"].endswith("amy_snapshot.txt")
+    assert summary["artifacts"]["latest_log_path"].endswith("session.log")
+
+
+def test_mel_pending_summary_builder_uses_recommended_challenger_batch():
+    from tools.synapse_bridge import _summarize_pending_payload
+
+    payload = {
+        "pending_id": "amy_test",
+        "agent_slug": "amy",
+        "baseline": {
+            "batch_id": "mel_base",
+            "score": 70.0,
+            "pass_rate": 0.0,
+            "verdict": "NO_SHIP",
+        },
+        "challengers": [
+            {
+                "variant": "proof_pressure_mode",
+                "result": {
+                    "batch_id": "mel_best",
+                    "score": 73.3,
+                },
+            }
+        ],
+        "recommendation": {
+            "variant": "proof_pressure_mode",
+            "score": 73.3,
+            "improvement": 3.3,
+            "passes_threshold": False,
+        },
+    }
+
+    summary = _summarize_pending_payload(payload)
+
+    assert summary["best_variant"] == "proof_pressure_mode"
+    assert summary["best_score"] == 73.3
+    assert summary["artifacts"]["recommended_batch_summary_path"] in {"", os.path.join(ROOT_DIR, "vault", "evals", "batches", "mel_best", "batch_summary.json")}
+
+
 # ── 4. Status registry loads cleanly ──────────────────────────
 
 def test_status_registry_loads():
@@ -141,6 +241,21 @@ def test_status_registry_bridge_fields():
 
 # ── 5. Config files parse ─────────────────────────────────────
 
+def test_reveal_hub_identifies_startup_leftovers():
+    from tools.reveal_hub_safe import is_startup_leftover_url
+
+    assert is_startup_leftover_url("about:blank") is True
+    assert is_startup_leftover_url("chrome-error://chromewebdata/") is True
+    assert is_startup_leftover_url("chrome://newtab/") is True
+    assert is_startup_leftover_url("http://localhost:5001/hub/index.html") is False
+
+
+def test_reveal_hub_default_url_forces_clean_home():
+    from tools.reveal_hub_safe import DEFAULT_HUB_URL
+
+    assert "startup_home=1" in DEFAULT_HUB_URL
+
+
 def test_tool_registry_parses():
     """tool_registry.yaml must parse and contain expected tools."""
     import yaml
@@ -150,7 +265,6 @@ def test_tool_registry_parses():
     tools = data.get("tools", {})
     assert "direct_line" in tools
     assert "usage_auditor" in tools
-    assert "intelligence_scout" in tools
     assert "xagent_eval" in tools
     assert "briefing" in tools
 

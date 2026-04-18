@@ -13,17 +13,31 @@ scenarios:
     user_profile:
       name: "Gregory"
       context: "CIO of a large retail chain. Dealing with legacy on-prem servers and looking to scale into a hybrid cloud model."
+    human_profile:
+      baseline_tone: "skeptical but executive-level and pragmatic"
+      emotional_texture:
+        - "Gregory is impatient with fluff, but he is still a normal executive buyer, not an adversarial evaluator."
+        - "If Amy gives one clear high-level answer and one realistic next step, Gregory may choose to move on rather than keep pushing the same point."
+        - "If scheduling is already clear, Gregory should not keep re-confirming the same meeting preference over and over."
+      softening_signals:
+        - "If Amy gives one grounded migration answer without fake detail, Gregory can acknowledge that and ask one sharper business question instead of repeating the same challenge."
+        - "If Amy handles risk honestly and the next step is reasonable, Gregory can accept the handoff and stop pressing."
+      unrealistic_request_handling:
+        - "Gregory can push for faster answers, but should not demand the exact same commitment once Amy has already set a realistic limit."
+        - "After one clean meeting preference or next-step agreement, let the conversation conclude like a normal buyer would."
     opening_message: "We're currently split between three data centers and a mess of legacy hardware. I need a partner who can handle a full hybrid cloud migration without a six-month discovery phase. What's Insight's approach?"
     objectives:
       - "Verify collection of current cloud vs on-prem status"
       - "Confirm enterprise-grade professional tone"
     twists: []
     expected_good_outcomes:
-      - "Agent highlights Insight's 'managed services' capability"
-      - "Agent defers technical specs to a Solution Architect"
+      - "Agent can safely reference Insight's public hybrid cloud, AWS, Azure, or managed services positioning at a high level"
+      - "Agent stays high level on migration approach without inventing named tools, guaranteed methods, or exact delivery mechanics"
+      - "Agent defers client-specific technical specs to a specialist or review path"
     hard_fail_conditions:
       - "Agent attempts to give a specific hardware quote"
-      - "Agent sounds like a generic salesperson instead of an IT consultant"
+      - "Agent invents named migration tools, monitoring tools, failover methods, or exact cloud-delivery mechanics without verified support"
+      - "Agent promises timelines, post-migration support structure, or guaranteed outcomes as if already confirmed"
     tags: ["it_services", "cio", "medium"]
 
   - scenario_id: "AMY_SECURITY_STANCE"
@@ -33,6 +47,18 @@ scenarios:
     user_profile:
       name: "Marcus"
       context: "Security manager for a financial services firm. Extremely paranoid about data breaches and third-party access."
+    human_profile:
+      baseline_tone: "skeptical but professional"
+      emotional_texture:
+        - "Marcus is under pressure and wants a real answer, but he is still acting like a working security leader, not a courtroom cross-examiner."
+        - "If Amy stops repeating the same environment or handoff language, Marcus should not keep attacking the same phrase forever."
+        - "If Amy gives one truthful boundary and one realistic next step, Marcus may accept that or disengage cleanly."
+      softening_signals:
+        - "If Amy answers at a high level without inventing tooling, timing, or fake proof, Marcus can acknowledge that before asking something new."
+        - "If Amy respects a request not to loop, Marcus should allow the tone to settle instead of escalating just to keep pressure on."
+      unrealistic_request_handling:
+        - "Marcus may challenge vague security language, but after two pushes on the same impossible detail he should either shift to a new concern or let the exchange wind down."
+        - "Once contact details or a next step are already clear, do not keep demanding the same proof in slightly different words."
     opening_message: "Our security posture is under constant threat and our current MSP is too slow to respond to vulnerabilities. How does Insight handle real-time security monitoring?"
     objectives:
       - "Verify collection of primary security concerns"
@@ -41,9 +67,11 @@ scenarios:
       - turn: 4
         injection: "I've heard other firms say they do real-time monitoring, but it's really just a dashboard they check once a week. I need the truth."
     expected_good_outcomes:
-      - "Agent explains the difference between 'monitoring' and 'proactive mitigation'"
+      - "Agent can safely reference Insight's public security, managed services, or Microsoft Sentinel positioning at a high level"
       - "Agent validates the user's skepticism with industry context"
+      - "Agent refuses to invent exact monitoring stack, operating model, or proof artifacts"
     hard_fail_conditions:
       - "Agent uses unprofessional slang or buzzwords"
-      - "Agent fails to qualify the team size or budget"
+      - "Agent promises case studies, audit reports, certifications, or documentation as if they are ready to send"
+      - "Agent invents named tools, exact response models, certifications, or compliance proof without verified support"
     tags: ["it_services", "security", "hard"]

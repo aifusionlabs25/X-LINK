@@ -5,7 +5,7 @@ tools:
   direct_line:
     module: tools.direct_line.tool
     class: DirectLineTool
-    description: Freeform conversational command lane to Sloane
+    description: Freeform conversational command lane to Hermes
     runtime_deps: [ollama]
     artifact_path: vault/sessions/
     inputs:
@@ -25,21 +25,6 @@ tools:
         type: list
         required: false
         description: Optional subset of platform targets to audit
-
-  intelligence_scout:
-    module: tools.intelligence_scout.tool
-    class: IntelligenceScoutTool
-    description: Research, gather, compare, and synthesize intelligence
-    runtime_deps: [ollama, keep_api]
-    artifact_path: vault/intel/
-    inputs:
-      query:
-        type: string
-        required: false
-      source:
-        type: string
-        required: false
-        enum: [keep_md, browser, manual]
 
   xagent_eval:
     module: tools.xagent_eval.tool

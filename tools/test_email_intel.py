@@ -24,7 +24,7 @@ async def test_classification(test_cases):
         Available Tools:
         - 'audit': Usage extraction, cost audits, or checking balance.
         - 'sync': Full engine sync, updating metrics, or universal sync.
-        - 'scout': Scouting intelligence, checking Keep.md, or autoresearch.
+        - 'scout': Open-web research, trend scouting, or autoresearch.
         - 'briefing': Asking for a report, status update, or briefing.
 
         Return ONLY a JSON object: {{"is_command": true/false, "tool": "tool_name", "reason": "brief reason"}}.
@@ -33,7 +33,7 @@ async def test_classification(test_cases):
         
         try:
             response = requests.post(OLLAMA_URL, json={
-                "model": "qwen3-coder-next",
+                "model": "aratan/qwen3.5-agent-multimodal:9b",
                 "prompt": prompt,
                 "stream": False,
                 "format": "json"
@@ -50,7 +50,7 @@ if __name__ == "__main__":
         ("rvicks@gmail.com", "sync", "Hey Sloane, can you sync the engines?"),
         ("rvicks@gmail.com", "Report", "I need a fresh briefing on my desk now."),
         ("aifusionlabs@gmail.com", "Usage", "Run a full audit of our spending."),
-        ("novaaifusionlabs@gmail.com", "Self-Note", "I should scout Keep.md for those Karpathy notes later tonight."),
+        ("novaaifusionlabs@gmail.com", "Self-Note", "I should scout the open web for those Karpathy notes later tonight."),
         ("someone@random.com", "Hello", "Just wanted to say hi!")
     ]
     asyncio.run(test_classification(tests))

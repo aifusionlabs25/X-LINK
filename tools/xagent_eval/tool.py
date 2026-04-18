@@ -43,8 +43,23 @@ class XAgentEvalTool(BaseTool):
         self.inputs: EvalInputs = None
         self.batch_id = str(uuid.uuid4())[:8]
 
+    @staticmethod
+    def _resolve_agent(agents_data: dict, target_agent: str):
+        needle = (target_agent or "").strip().lower()
+        if not needle:
+            return None
+
+        for agent in agents_data.get("agents", []):
+            slug = str(agent.get("slug", "")).strip().lower()
+            name = str(agent.get("name", "")).strip().lower()
+            if needle in {slug, name}:
+                return agent
+        return None
+
     async def prepare(self, context: dict, inputs: dict) -> bool:
         self.inputs = EvalInputs.from_dict(inputs)
+        if self.inputs.batch_id:
+            self.batch_id = self.inputs.batch_id
 
         if not self.inputs.target_agent:
             self._mark_error("No target_agent specified.")
@@ -58,22 +73,33 @@ class XAgentEvalTool(BaseTool):
             with open(agents_path, "r", encoding="utf-8") as f:
                 agents_data = yaml.safe_load(f)
             
-            self.agent_conf = next((a for a in agents_data.get("agents", []) if a["slug"] == self.inputs.target_agent), None)
+            self.agent_conf = self._resolve_agent(agents_data, self.inputs.target_agent)
             if not self.agent_conf:
                 self._mark_error(f"Agent '{self.inputs.target_agent}' not found in agents.yaml.")
                 self.result.data = {"error_code": EvalError.AGENT_NOT_FOUND}
                 return False
+            self.inputs.target_agent = self.agent_conf.get("slug", self.inputs.target_agent)
 
             eval_block = self.agent_conf.get("eval", {})
             self.contract = EvalContract(
+                default_pack=eval_block.get("default_pack"),
+                scoring_rubric=eval_block.get("scoring_rubric"),
                 allowed_packs=eval_block.get("allowed_packs", []),
                 blocked_packs=eval_block.get("blocked_packs", []),
                 user_archetypes=eval_block.get("user_archetypes", []),
                 must_collect=eval_block.get("must_collect", []),
                 success_event=eval_block.get("success_event", "general_success"),
                 fail_conditions=eval_block.get("fail_conditions", []),
-                close_strategy=self.agent_conf.get("close_strategy", {})
+                close_strategy=self.agent_conf.get("close_strategy", {}),
+                conversation_start_mode=(
+                    eval_block.get("conversation_start_mode")
+                    or ("speak_first" if "you speak first" in str(self.agent_conf.get("persona", "")).lower() else "user_first")
+                ),
             )
+            if self.inputs.scenario_pack == "default_pack" and self.contract.default_pack:
+                self.inputs.scenario_pack = self.contract.default_pack
+            if self.inputs.scoring_rubric == "default_v1" and self.contract.scoring_rubric:
+                self.inputs.scoring_rubric = self.contract.scoring_rubric
         except Exception as e:
             self._mark_error(f"Failed to load eval contract: {e}")
             self.result.data = {"error_code": EvalError.BATCH_ABORTED}
@@ -88,6 +114,14 @@ class XAgentEvalTool(BaseTool):
     async def execute(self, context: dict, progress_callback=None) -> ToolResult:
         """Execute the full eval batch: select scenarios, run sims, score, aggregate."""
         from tools.xagent_eval.transcript_capture import LiveBrowserCapture
+
+        def emit_progress(step: str, percent: int, **extra):
+            if not progress_callback:
+                return
+            try:
+                progress_callback(step, percent, **extra)
+            except TypeError:
+                progress_callback(step, percent)
 
         try:
             # ── 1. Hard-Gating Scenario Pack Verification ────────
@@ -183,7 +217,7 @@ class XAgentEvalTool(BaseTool):
 
             capture = None
             if self.inputs.browser_mode:
-                if progress_callback: progress_callback("Initializing Live Browser", 5)
+                emit_progress("Initializing Live Browser", 5)
                 capture = LiveBrowserCapture()
                 connected = await capture.connect(self.inputs.target_agent, context)
                 if not connected:
@@ -199,9 +233,26 @@ class XAgentEvalTool(BaseTool):
                     f"Run {i+1}/{len(scenarios)}: {scenario.get('title', 'unknown')} "
                     f"(mode: {'browser' if self.inputs.browser_mode else 'sim'})"
                 )
+                emit_progress(
+                    f"Preparing Run {i+1}",
+                    min(10 + (i * 10), 95),
+                    run_id=run_id,
+                    idx=i + 1,
+                    total_runs=len(scenarios),
+                    scenario_id=scenario.get("scenario_id"),
+                    scenario_title=scenario.get("title"),
+                )
 
                 if self.inputs.browser_mode:
-                    if progress_callback: progress_callback(f"Capturing Run {i+1}", 10 + (i * 10))
+                    emit_progress(
+                        f"Capturing Run {i+1}",
+                        10 + (i * 10),
+                        run_id=run_id,
+                        idx=i + 1,
+                        total_runs=len(scenarios),
+                        scenario_id=scenario.get("scenario_id"),
+                        scenario_title=scenario.get("title"),
+                    )
                     # Phase 5A: Live Browser Path
                     navigated = await capture.navigate_to_agent(env_url, self.inputs.target_agent)
                     if not navigated:
@@ -240,7 +291,15 @@ class XAgentEvalTool(BaseTool):
                             rubric_name=self.inputs.scoring_rubric, pass_threshold=self.inputs.pass_threshold
                         )
                 else:
-                    if progress_callback: progress_callback(f"Simulating Run {i+1}", 10 + (i * 10))
+                    emit_progress(
+                        f"Simulating Run {i+1}",
+                        10 + (i * 10),
+                        run_id=run_id,
+                        idx=i + 1,
+                        total_runs=len(scenarios),
+                        scenario_id=scenario.get("scenario_id"),
+                        scenario_title=scenario.get("title"),
+                    )
                     # Phase 4 Path: Simulated
                     metadata, transcript, scorecard = await execute_simulated_run(
                         run_id=run_id,
@@ -270,6 +329,16 @@ class XAgentEvalTool(BaseTool):
                         scorecards.append(scorecard)
 
                 all_metadata.append(metadata)
+                emit_progress(
+                    f"Completed Run {i+1}",
+                    min(15 + ((i + 1) * 15), 96),
+                    run_id=run_id,
+                    idx=i + 1,
+                    total_runs=len(scenarios),
+                    scenario_id=scenario.get("scenario_id"),
+                    scenario_title=scenario.get("title"),
+                    status=metadata.status,
+                )
 
             if capture:
                 await capture.close()
@@ -281,10 +350,10 @@ class XAgentEvalTool(BaseTool):
             reviewer_error = None
             
             # Identify if at least one run is reviewable (has enough transcript turns)
-            has_reviewable_data = any(m.is_reviewable for m in all_metadata)
+            has_reviewable_data = bool(scorecards) or any(m.is_reviewable for m in all_metadata)
             
             if has_reviewable_data and self.inputs.review_mode != "score_only":
-                if progress_callback: progress_callback("Initializing APEX Reviewer Team", 30)
+                emit_progress("Initializing APEX Reviewer Team", 30)
                 self.logger.info("🛡️ Initiating APEX Reviewer Team...")
                 
                 reviewer_status = "pending"
@@ -296,7 +365,7 @@ class XAgentEvalTool(BaseTool):
                     patch_gen = PromptPatchGenerator(os.path.join(ROOT_DIR, "config", "review_team"), runner)
 
                     # Collect session data for reviewers (V1: Use first run as representative)
-                    representative_run = all_metadata[0]
+                    representative_run = next((m for m in all_metadata if m.is_reviewable), all_metadata[0])
                     transcript_path = os.path.join(ROOT_DIR, "vault", "evals", "runs", representative_run.run_id, "transcript.txt")
                     
                     transcript_text = "No transcript available."
@@ -309,7 +378,6 @@ class XAgentEvalTool(BaseTool):
                         "role_name": self.inputs.target_agent, 
                         "persona_description": "X-Agent Professional",
                         "scenario": representative_run.scenario_title,
-                        "transcript_excerpt": transcript_text[:4000], 
                         "transcript_excerpt": transcript_text[:4000], 
                         "scorecard": scorecards[0].to_dict() if scorecards else {},
                         "failure_extract": "\n".join(scorecards[0].critical_failures) if (scorecards and scorecards[0].critical_failures) else "None",
