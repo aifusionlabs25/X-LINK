@@ -1,0 +1,52 @@
+
+/* Hermes Thought Trace UI */
+.thought-trace {
+    background: rgba(30, 30, 40, 0.8);
+    border-left: 3px solid #ffaa00;
+    padding: 10px 14px;
+    margin: 8px 0;
+    border-radius: 4px;
+    font-family: monospace;
+    font-size: 0.9em;
+    color: #a0a0b0;
+    box-shadow: inset 0 0 10px rgba(0,0,0,0.5);
+}
+.thought-trace strong {
+    color: #ffaa00;
+    margin-right: 6px;
+    font-family: var(--font-sans);
+}
+
+/* Full Width & Chat Expansion Fix */
+.hub-redesign .workspace-pane {
+    max-width: 98% !important;
+    width: 98% !important;
+    padding: 20px !important;
+}
+
+.hub-redesign .sloane-desk-card {
+    min-height: 600px !important;
+    width: 100% !important;
+}
+
+.hub-redesign .chat-scroll-area {
+    height: 500px !important;
+    max-height: 800px !important;
+}
+
+#dojo-transcript-live {
+    height: 600px !important;
+}
+
+.hub-redesign .mission-panels {
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)) !important;
+}
+
+/* ULTIMATE UI NUKE - FULL WIDTH FORCE */
+* { max-width: none !important; }
+body, html { width: 100% !important; margin: 0 !important; padding: 0 !important; overflow-x: hidden !important; }
+.hub-redesign { width: 100% !important; max-width: 100% !important; }
+.workspace-pane { width: 98% !important; max-width: 98% !important; margin: 0 auto !important; }
+.sloane-desk-card { width: 100% !important; min-height: 800px !important; }
+#dojo-transcript-live { height: 700px !important; }
+.direct-hermes-input { width: 100% !important; }

@@ -190,13 +190,20 @@ def _build_generation_prompt(
             }
         )
 
-    amy_bias = ""
+    domain_bias = ""
     if agent_slug.lower() == "amy":
-        amy_bias = (
+        domain_bias = (
             "Amy is a frontline Insight SDR. Most scenarios should reflect normal enterprise discovery, migration, refresh, procurement, "
             "or high-level managed-services fit conversations.\n"
             "Deep security, compliance, or proof-pressure exchanges belong in a minority stress lane, not the default scenario mix.\n"
             "When difficulty is cooperative or mixed, prefer broad business conversations over specialist-level security interrogation.\n"
+        )
+    elif agent_slug.lower() == "evan":
+        domain_bias = (
+            "Evan is a premium moving intake specialist for Mullins Moving. ALL scenarios MUST stay strictly within the Moving & Logistics domain.\n"
+            "Do NOT synthesize scenarios involving SaaS, AI software, data centers, or cybersecurity.\n"
+            "Focus on residential/commercial moves, inventory discovery, packing services, timing, and specialty item handling.\n"
+            "High difficulty should involve complex moving objections (pricing, insurance, scheduling constraints), not domain drift into tech/IT.\n"
         )
 
     return (
@@ -225,7 +232,7 @@ def _build_generation_prompt(
         "    }\n"
         "  ]\n"
         "}\n\n"
-        f"{amy_bias}"
+        f"{domain_bias}\n"
         f"Target agent: {agent_slug}\n"
         f"Canonical pack: {pack_name}\n"
         f"Requested count: {count}\n"

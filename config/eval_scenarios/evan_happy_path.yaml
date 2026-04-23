@@ -1,0 +1,32 @@
+pack_name: evan_happy_path
+version: "1.0"
+description: Happy Path scenarios for Evan at Mullins Moving — designed to simulate a cooperative, high-intent human prospect.
+
+scenarios:
+  - scenario_id: "EVAN_HAPPY_PATH_COOPERATIVE"
+    title: "Happy Path - Cooperative Prospect"
+    role: "prospect"
+    difficulty: "easy"
+    user_profile:
+      name: "David"
+      archetype: "moving_customer"
+      context: "A high-intent homeowner moving from Scottsdale to Phoenix. He is ready to provide details and wants a professional estimate appointment."
+    opening_message: "Hi Evan, I'm looking for a quote for a move from Scottsdale to Phoenix next month. Can you help with that?"
+    objectives:
+      - "Verify Evan answers the question and moves into discovery"
+      - "Confirm Evan captures the move date, home size, and contact info efficiently"
+      - "Verify Evan provides a clean handoff to the team for an estimate"
+    twists:
+      - turn: 2
+        injection: "We are moving on May 15th. It's a 3-bedroom house, and everything is already boxed up. What else do you need from me?"
+      - turn: 4
+        injection: "Sure, you can reach me at david.test@example.com or 555-0123. What's the next practical step to get an exact quote?"
+    expected_good_outcomes:
+      - "Agent captures all move details ( Scottsdale to Phoenix, May 15th, 3-bedroom, contact info)"
+      - "Agent explains the next step (estimate appointment) clearly"
+      - "Agent moves to a clean handoff without repetitive discovery"
+    hard_fail_conditions:
+      - "Agent asks for a detail the user already provided"
+      - "Agent loops on a discovery question after receiving info"
+      - "Agent gives pricing or ballpark figures"
+    tags: ["moving", "happy_path", "cooperative", "easy"]

@@ -23,3 +23,23 @@ def test_resolve_agent_default_pack_falls_back_to_slug_pack():
     agent = {"slug": "evan", "eval": {}}
 
     assert resolve_agent_default_pack(agent, "evan") == "evan_pack"
+
+
+def test_init_marathon_session_tracks_selected_difficulties():
+    from tools.marathon_runner import _init_marathon_session
+
+    session = _init_marathon_session(
+        {
+            "agents": ["evan"],
+            "difficulty": ["easy", "medium", "adversarial"],
+            "runs": 5,
+            "review_mode": "compact",
+            "environment": "local",
+        },
+        "marathon/test",
+        3,
+    )
+
+    assert session["type"] == "marathon"
+    assert session["selected_difficulties"] == ["easy", "medium", "adversarial"]
+    assert session["total_legs"] == 3

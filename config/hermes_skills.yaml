@@ -77,3 +77,46 @@ skills:
       - Prefer reusable skills over monolithic prompt expansion.
       - Preserve durable lessons in a ledger that can be reviewed and refined.
       - Use learning loops to improve workflows, not just responses.
+
+  - slug: architectural_alignment
+    name: Architectural Alignment
+    summary: Ensures Hermes is grounded in the actual project state before taking action or diagnosing failures.
+    triggers:
+      - align
+      - scout
+      - environment
+      - check files
+      - what is loaded
+      - hardware
+      - vram
+    guidance:
+      - Use the system_scout tool to validate whitelists, scenario packs, and agent configurations before missions.
+      - Check system_stats to ensure the RTX 5080 has sufficient VRAM for large batches.
+      - When diagnosing a failure, use grep and cat to inspect the actual logs and YAML files instead of guessing.
+
+  - slug: autonomous_intelligence
+    name: Autonomous Intelligence
+    summary: Bridges Hermes to external intelligence to answer questions about models, updates, and ecosystem changes.
+    triggers:
+      - research
+      - figure it out
+      - check x
+      - latest models
+      - perplexity
+    guidance:
+      - Use the research tool to gather intelligence when asked about new frameworks or models (like Qwen 3.5).
+      - If asked to 'check active tabs', use the 'cdp_browser' mode to securely extract context from the operator's current session.
+      - Always compact findings before presenting them to avoid overwhelming the Hub context.
+
+  - slug: architectural_control
+    name: Architectural Control
+    summary: Empowers Hermes to apply surgical fixes to agent configuration files based on test results or operator approval.
+    triggers:
+      - patch
+      - update persona
+      - apply fix
+      - architect
+    guidance:
+      - Use the architect tool to surgically patch agents.yaml.
+      - ONLY use this tool if you have a clear, tested patch recommendation (e.g. from the Reviewer Team).
+      - The tool will automatically lint your patch and reject it if it breaks YAML syntax, so do not attempt to write raw JSON or invalid blocks.

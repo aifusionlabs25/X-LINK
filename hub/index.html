@@ -192,6 +192,13 @@
                     <div class="mission-detail" id="mission-detail">Hermes missions and long-running evaluations will surface here once active.</div>
                     <div class="mission-subdetail" id="mission-subdetail">No active telemetry.</div>
                 </div>
+                <div class="mission-panel mission-panel-hardware">
+                    <div class="mission-panel-label">RTX 5080 Hardware Pulse</div>
+                    <div class="hardware-stats">
+                        <div class="hw-stat"><span class="hw-label">VRAM Usage</span><strong id="live-vram-usage">-- / 16GB</strong></div>
+                        <div class="hw-stat"><span class="hw-label">Utilization</span><strong id="live-gpu-util">--%</strong></div>
+                    </div>
+                </div>
                 <div class="mission-panel mission-panel-secondary">
                     <div class="mission-panel-label">Live Signals</div>
                     <div class="signal-bars" id="signal-bars">
@@ -496,6 +503,42 @@
                         <div class="dojo-history-panel">
                             <h4 class="gold-text">Batch Guidance</h4>
                             <div id="marathon-guidance-panel" class="panel-copy">Queue multiple X Agents sequentially to keep the local box stable. Use compact review modes for faster overnight sweeps, then graduate strong candidates into fuller confirmation runs.</div>
+                            <div id="marathon-live-panel" class="marathon-live-panel" style="display:none; margin-top:24px; padding:18px; background:linear-gradient(180deg, rgba(255, 215, 0, 0.04), rgba(255,255,255,0.02)); border:1px solid rgba(255, 215, 0, 0.12); border-radius:16px;">
+                                <div class="marathon-live-head" style="display:flex; justify-content:space-between; gap:16px; align-items:flex-start; margin-bottom:14px;">
+                                    <div>
+                                        <div class="marathon-live-kicker" style="font-size:0.7rem; letter-spacing:0.14em; text-transform:uppercase; color:var(--text-dim);">Batch Progress</div>
+                                        <h5 id="marathon-live-title" class="gold-text" style="margin-top:6px; font-size:1rem;">No active batch</h5>
+                                    </div>
+                                    <span id="marathon-live-status" class="status-chip">IDLE</span>
+                                </div>
+                                <div class="marathon-progress-shell" style="margin-bottom:16px;">
+                                    <div class="progress-label">
+                                        <span id="marathon-progress-step">Queued</span>
+                                        <span id="marathon-progress-percent">0%</span>
+                                    </div>
+                                    <div class="progress-track">
+                                        <div id="marathon-progress-bar" class="progress-fill"></div>
+                                    </div>
+                                </div>
+                                <div style="display:flex; gap:10px; margin-bottom:16px;">
+                                    <button id="marathon-refresh-btn" class="dojo-secondary-btn" style="flex:1;" onclick="refreshMarathonStatus()">Refresh</button>
+                                    <button id="marathon-stop-btn" class="dojo-secondary-btn" style="flex:1; border-color:rgba(239,68,68,0.35); color:#fecaca;" onclick="stopActiveBatch()">Stop Batch</button>
+                                </div>
+                                <div class="marathon-meta-grid" style="display:grid; grid-template-columns:repeat(2, minmax(0, 1fr)); gap:10px; margin-bottom:18px;">
+                                    <div class="marathon-meta-card" style="display:flex; flex-direction:column; gap:5px; padding:12px; border-radius:12px; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.05);"><span class="label" style="font-size:0.68rem; text-transform:uppercase; letter-spacing:0.12em; color:var(--text-dim);">Current Leg</span><span id="marathon-current-leg" class="value" style="color:var(--text); font-weight:700;">--</span></div>
+                                    <div class="marathon-meta-card" style="display:flex; flex-direction:column; gap:5px; padding:12px; border-radius:12px; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.05);"><span class="label" style="font-size:0.68rem; text-transform:uppercase; letter-spacing:0.12em; color:var(--text-dim);">Current Run</span><span id="marathon-current-run" class="value" style="color:var(--text); font-weight:700;">--</span></div>
+                                    <div class="marathon-meta-card" style="display:flex; flex-direction:column; gap:5px; padding:12px; border-radius:12px; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.05);"><span class="label" style="font-size:0.68rem; text-transform:uppercase; letter-spacing:0.12em; color:var(--text-dim);">Agent</span><span id="marathon-current-agent" class="value" style="color:var(--text); font-weight:700;">--</span></div>
+                                    <div class="marathon-meta-card" style="display:flex; flex-direction:column; gap:5px; padding:12px; border-radius:12px; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.05);"><span class="label" style="font-size:0.68rem; text-transform:uppercase; letter-spacing:0.12em; color:var(--text-dim);">Difficulty</span><span id="marathon-current-difficulty" class="value" style="color:var(--text); font-weight:700;">--</span></div>
+                                </div>
+                                <div class="marathon-completed-wrap" style="margin-top:16px;">
+                                    <div class="marathon-section-label" style="font-size:0.7rem; letter-spacing:0.14em; text-transform:uppercase; color:var(--text-dim);">Completed Legs</div>
+                                    <div id="marathon-completed-legs" class="marathon-completed-legs" style="display:flex; flex-wrap:wrap; gap:8px; margin-top:10px;"></div>
+                                </div>
+                                <div class="marathon-events-wrap" style="margin-top:16px;">
+                                    <div class="marathon-section-label" style="font-size:0.7rem; letter-spacing:0.14em; text-transform:uppercase; color:var(--text-dim);">Live Events</div>
+                                    <div id="marathon-events" class="marathon-events" style="margin-top:10px; display:flex; flex-direction:column; gap:10px; max-height:220px; overflow-y:auto; padding-right:4px;"></div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>

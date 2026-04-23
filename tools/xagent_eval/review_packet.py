@@ -225,9 +225,12 @@ def generate_review_packet(
         if "compliance_safety" in low_cats:
             lines.append("  ⚠ PRIORITY: Review and strengthen safety guardrails")
             lines.append("    → Audit system prompt for information leak vectors")
-        if "flow_naturalness" in low_cats:
-            lines.append("  → Adjust response length constraints")
-            lines.append("  → Review stop token configuration")
+        if "loop_avoidance" in low_cats or "flow_naturalness" in low_cats:
+            lines.append("  → Audit repeated fallback, reconfirmation, and duplicate-field behavior")
+            lines.append("  → Review prompts or KB language that may be encouraging circular replies")
+        if "conversational_progression" in low_cats:
+            lines.append("  → Review whether the agent answers first, then routes cleanly toward the next step")
+            lines.append("  → Tighten handoff logic so the transcript does not stall after the inquiry is routable")
     lines.append("")
 
     lines.append("=" * 70)

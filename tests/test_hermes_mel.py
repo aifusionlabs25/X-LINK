@@ -81,7 +81,7 @@ def test_aggregate_batch_carries_manifest_metadata():
         target_agent="amy",
         overall_score=82.0,
         pass_fail="PASS",
-        categories=[CategoryScore(key="flow_naturalness", label="Flow", score=4, weight=15)],
+        categories=[CategoryScore(key="loop_avoidance", label="Loop Avoidance", score=4, weight=15)],
     )
 
     summary = aggregate_batch("batch1", inputs, [scorecard], ["r1"])

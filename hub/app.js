@@ -101,6 +101,11 @@ async function switchWorkspace(id) {
         pane.classList.remove('active');
         pane.style.display = 'none';
     });
+    // Force-hide all overlay containers to prevent CSS leaking
+    ['chat-container', 'research-container', 'archive-container'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) { el.style.display = 'none'; el.classList.remove('active'); }
+    });
 
     const workspaceMap = {
         home: 'workspace-desk',
@@ -115,9 +120,18 @@ async function switchWorkspace(id) {
     const target = document.getElementById(targetId);
     if (target) {
         target.classList.add('active');
-        target.style.display = 'block';
+        // Use flex for chat/research containers, block for everything else
+        if (['chat-container', 'research-container', 'archive-container'].includes(targetId)) {
+            target.style.display = 'flex';
+        } else {
+            target.style.display = 'block';
+        }
     }
     updateHomeSurfaceVisibility(targetId === 'workspace-desk');
+    // Hide header for tool workspaces (chat, research, archive, dojo, mel)
+    const isHome = (targetId === 'workspace-desk');
+    const header = document.querySelector('.hub-header');
+    if (header) header.style.display = isHome ? '' : 'none';
 
     // Toggle Sidebar Active State
     document.querySelectorAll('.sidebar-item').forEach(item => {
@@ -3139,3 +3153,24 @@ async function rejectPatch(pendingId) {
     }
 }
 window.rejectPatch = rejectPatch;
+
+
+// Phase 4: Hardware Pulse Update hook
+const originalRenderTelemetryGpuChart = renderTelemetryGpuChart;
+renderTelemetryGpuChart = function(summary) {
+    originalRenderTelemetryGpuChart(summary);
+    try {
+        const gpu = summary?.gpu?.latest_sample;
+        if (gpu) {
+            const vramEl = document.getElementById('live-vram-usage');
+            const utilEl = document.getElementById('live-gpu-util');
+            if (vramEl && gpu.memory_used_mb != null) {
+                const total = gpu.memory_total_mb ? Math.round(gpu.memory_total_mb/1024) : 16;
+                vramEl.innerText = Math.round(gpu.memory_used_mb/1024) + ' / ' + total + 'GB';
+            }
+            if (utilEl && gpu.gpu_util_percent != null) {
+                utilEl.innerText = Math.round(gpu.gpu_util_percent) + '%';
+            }
+        }
+    } catch(e) { console.error('Pulse update error', e); }
+};

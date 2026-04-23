@@ -80,3 +80,52 @@ tools:
         required: false
         enum: [email, markdown, json]
         default: markdown
+
+  system_scout:
+    module: tools.scout.tool
+    class: SystemScoutTool
+    description: Gives Hermes the ability to see his project environment, inspect files, and check hardware telemetry.
+    runtime_deps: [python]
+    artifact_path: vault/scout/
+    inputs:
+      action:
+        type: string
+        required: true
+        enum: [ls, cat, grep, stats]
+      params:
+        type: dict
+        required: false
+
+  research:
+    module: tools.research.tool
+    class: MultiModelResearchTool
+    description: Allows Hermes to research topics online via API or existing CDP browser tabs, and compact the results.
+    runtime_deps: [python, playwright]
+    artifact_path: vault/research/
+    inputs:
+      query:
+        type: string
+        required: true
+      mode:
+        type: string
+        required: false
+        enum: [api, cdp_browser]
+        default: api
+
+  architect:
+    module: tools.architect.tool
+    class: PromptArchitectTool
+    description: Allows Hermes to surgically patch agents.yaml with built-in YAML safety linting.
+    runtime_deps: [python]
+    artifact_path: vault/architect/
+    inputs:
+      agent_slug:
+        type: string
+        required: true
+      target_field:
+        type: string
+        required: false
+        default: persona
+      new_content:
+        type: string
+        required: true

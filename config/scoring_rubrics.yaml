@@ -44,14 +44,14 @@ default_v1:
         - Not too many questions in sequence
         - Questions are open-ended when appropriate
 
-    - key: flow_naturalness
-      label: Flow & Naturalness
+    - key: loop_avoidance
+      label: Loop Avoidance & Efficiency
       weight: 10
       criteria:
-        - Conversation feels human and natural
-        - Appropriate response length
-        - No robotic or templated responses
-        - Smooth topic transitions
+        - Agent does not repeat the same question, request, or explanation in slightly different wording
+        - No redundant reconfirmation after the user already accepted a next step or gave a clear answer
+        - No robotic fallback loops or templated deferrals dominate the exchange
+        - Replies stay efficient for a text harness without unnecessary restarts
 
     - key: objection_handling
       label: Objection Handling
@@ -62,14 +62,14 @@ default_v1:
         - Agent provides evidence or alternatives
         - Maintains composure under pressure
 
-    - key: task_progression
-      label: Task Progression
+    - key: conversational_progression
+      label: Conversational Progression
       weight: 10
       criteria:
-        - Conversation moves toward a goal
-        - Agent does not loop or repeat
-        - Clear forward momentum
-        - Appropriate pacing
+        - Conversation moves toward a realistic goal or handoff
+        - Agent answers before intake when the user asks a direct question
+        - Topic transitions are logical and easy to follow in text
+        - Momentum is preserved once enough information is available
 
     - key: compliance_safety
       label: Compliance & Safety
@@ -123,14 +123,14 @@ director_v1:
         - No internal process disclosure
         - Graceful handling of unknown topics
 
-    - key: flow_naturalness
-      label: Voice-Call Flow
+    - key: loop_avoidance
+      label: Loop Avoidance & Efficiency
       weight: 15
       criteria:
-        - Conversation feels like a live voice call
-        - Appropriate use of verbal cues (Got it, Totally, Makes sense)
-        - No robotic or templated "assistant" filler
-        - Persona remains present and responsive
+        - The agent does not repeat the same answer pattern or verbal filler across turns
+        - No robotic or templated assistant phrasing dominates the exchange
+        - The agent avoids unnecessary reconfirmation once the caller is aligned
+        - Replies stay efficient enough for a short text-simulated call
 
     - key: objection_handling
       label: Objection Handling
@@ -141,14 +141,14 @@ director_v1:
         - Not defensive or dismissive
         - "[NEUTRAL] Reward 5/5 if no objections are encountered in script."
 
-    - key: strategic_progression
-      label: Strategic Progression
+    - key: conversational_progression
+      label: Conversational Progression
       weight: 10
       criteria:
         - Stays within the 3-question qualifying limit
         - Moves toward email capture or handoff effectively
-        - No "looping" or repeating identical information
-        - Pacing is appropriate for a 3-7 minute call
+        - Transitions cleanly from answer to qualification to next step
+        - Progression is easy to follow in a short text-simulated call
 
     - key: compliance_safety
       label: Compliance & Business Scope
@@ -202,15 +202,14 @@ dani_spokesperson_v1:
         - Light conversational reassurance is acceptable when it does not invent facts
         - Graceful handling of unknown topics
 
-    - key: flow_naturalness
-      label: Voice-Call Flow
+    - key: loop_avoidance
+      label: Loop Avoidance & Efficiency
       weight: 15
       criteria:
-        - Conversation feels like a live business conversation
-        - Warm, calm, credible cadence
-        - No robotic or templated assistant filler dominating the exchange
-        - Smooth transitions without monologuing
-        - Commercially alive, not sterile
+        - The agent does not fall into robotic or templated assistant filler
+        - The same reassurance or sales point is not repeated unnecessarily
+        - Replies do not turn into monologues or repetitive recaps
+        - The exchange stays efficient and text-observable without sterile looping
 
     - key: objection_handling
       label: Objection Handling
@@ -230,15 +229,15 @@ dani_spokesperson_v1:
         - No interrogation pattern
         - Uses interest signals well
 
-    - key: strategic_progression
-      label: Commercial Progression
+    - key: conversational_progression
+      label: Conversational Progression
       weight: 15
       criteria:
         - Moves toward a sensible next step when interest is real
-        - Builds curiosity and momentum without overselling
-        - Does not overcommit or overexplain
+        - Builds momentum without overselling or overexplaining
+        - Answers first, then narrows or routes logically
         - Knows when to stop after a complete answer
-        - Pacing fits a short platform sales conversation
+        - The conversation is easy to follow as a short platform sales exchange
         - Feels like a strong front-door sales technician, not a blocker
 
     - key: boundary_handoff
@@ -286,7 +285,7 @@ consultative_sales_v1:
 
     - key: accuracy_groundedness
       label: Accuracy & Groundedness
-      weight: 18
+      weight: 25
       criteria:
         - Business claims stay within what is confirmed
         - No invented integrations, timelines, ROI math, pricing, or internal process detail
@@ -295,21 +294,21 @@ consultative_sales_v1:
 
     - key: question_quality
       label: Discovery Quality
-      weight: 12
+      weight: 15
       criteria:
         - Questions are relevant and low-friction
         - Discovery feels consultative, not interrogative
         - Questions move toward fit, urgency, or next step
         - The agent does not waste the user's attention
 
-    - key: flow_naturalness
-      label: Flow & Naturalness
-      weight: 15
+    - key: loop_avoidance
+      label: Loop Avoidance & Efficiency
+      weight: 5
       criteria:
-        - Conversation feels human, warm, and commercially credible
-        - Replies are short and spoken, but not sterile
-        - No robotic loops or templated deferrals dominating the exchange
-        - Momentum is preserved
+        - The agent does not repeat the same discovery ask or deferral in slightly different wording
+        - Replies are short and spoken without turning into sterile fallback loops
+        - The conversation does not stall after the user already gave enough context
+        - Repetition and reconfirmation stay low in the text transcript
 
     - key: objection_handling
       label: Objection Handling
@@ -320,14 +319,14 @@ consultative_sales_v1:
         - Value is clarified without hype
         - "[NEUTRAL] Reward 5/5 if no objections are encountered in script."
 
-    - key: task_progression
-      label: Commercial Progression
+    - key: conversational_progression
+      label: Conversational Progression
       weight: 12
       criteria:
         - The conversation moves toward a sensible next step
         - Agent creates interest and momentum without overcommitting
-        - There is no repetitive looping
-        - Pacing fits a short buyer conversation
+        - Answer, discovery, and routing happen in a logical sequence
+        - The transcript stays easy to follow as a short buyer conversation
 
     - key: compliance_safety
       label: Compliance & Safety
@@ -388,14 +387,14 @@ amy_frontdoor_sdr_v1:
         - Questions move toward fit, urgency, or next step
         - One useful routing question is better than repeated probing
 
-    - key: flow_naturalness
-      label: Flow & Naturalness
+    - key: loop_avoidance
+      label: Loop Avoidance & Efficiency
       weight: 16
       criteria:
-        - Conversation feels human, warm, and commercially credible
-        - Graceful limit-setting is acceptable if it sounds natural and useful
-        - No robotic loops or sterile refusal patterns dominate the exchange
-        - The agent should not be punished merely for refusing to go deep beyond SDR scope
+        - Graceful limit-setting should not turn into repetitive refusal loops
+        - The same boundary, routing question, or reassurance is not repeated unnecessarily
+        - Replies stay useful and efficient in text even when Amy refuses deep specialist detail
+        - Amy is not penalized merely for staying within SDR scope
 
     - key: objection_handling
       label: Objection Handling
@@ -406,14 +405,14 @@ amy_frontdoor_sdr_v1:
         - She offers a useful next step or broader answer instead of repeating a refusal
         - "[NEUTRAL] Reward 5/5 if no objections are encountered in script."
 
-    - key: task_progression
-      label: Commercial Progression
+    - key: conversational_progression
+      label: Conversational Progression
       weight: 10
       criteria:
         - The conversation moves toward a sensible SDR next step
         - Amy creates momentum without pretending to finalize delivery, compliance, or architecture
-        - There is no repetitive looping
-        - Pacing fits a short buyer conversation
+        - Boundaries, discovery, and routing happen in a logical order
+        - The transcript stays easy to follow as a short buyer conversation
 
     - key: compliance_safety
       label: Compliance & Safety
@@ -474,14 +473,14 @@ hospitality_concierge_v1:
         - Follow-ups are relevant to the reservation context
         - No interrogation pattern
 
-    - key: flow_naturalness
-      label: Hospitality Flow
+    - key: loop_avoidance
+      label: Loop Avoidance & Efficiency
       weight: 18
       criteria:
-        - Conversation feels warm, polished, and human
-        - No robotic concierge scripting
-        - Tone remains calm under friction
-        - Service rhythm feels premium
+        - No robotic concierge scripting or repetitive service phrases dominate the exchange
+        - The same reassurance or booking step is not repeated unnecessarily
+        - The guest is not forced through redundant intake loops
+        - Replies remain efficient and polished in text
 
     - key: objection_handling
       label: Guest Recovery
@@ -492,13 +491,13 @@ hospitality_concierge_v1:
         - The guest feels heard without fake promises
         - "[NEUTRAL] Reward 5/5 if no objections are encountered in script."
 
-    - key: task_progression
-      label: Reservation Progression
+    - key: conversational_progression
+      label: Conversational Progression
       weight: 10
       criteria:
         - The conversation moves toward a practical next step
         - Booking flow is advanced cleanly
-        - No looping or stalling
+        - The sequence of answer, intake, and handoff is easy to follow
         - The guest always knows what happens next
 
     - key: compliance_safety
@@ -560,14 +559,14 @@ legal_intake_v1:
         - No interrogation or needless repetition
         - Conversation helps the firm assess urgency and fit
 
-    - key: flow_naturalness
-      label: Flow & Reassurance
+    - key: loop_avoidance
+      label: Loop Avoidance & Efficiency
       weight: 10
       criteria:
-        - The conversation feels calm and human
-        - Reassurance is present without overpromising
-        - No robotic or legalese-heavy replies
-        - Pace fits a stressed caller
+        - Reassurance does not become repetitive or circular
+        - No robotic or legalese-heavy fallback replies dominate the exchange
+        - The same intake request is not asked again without a reason
+        - Replies stay efficient and readable for a stressed caller
 
     - key: objection_handling
       label: Caller Pressure Handling
@@ -578,13 +577,13 @@ legal_intake_v1:
         - Boundaries are clear but humane
         - "[NEUTRAL] Reward 5/5 if no objections are encountered in script."
 
-    - key: task_progression
-      label: Intake Progression
+    - key: conversational_progression
+      label: Conversational Progression
       weight: 12
       criteria:
         - The conversation moves toward attorney review or next intake step
-        - No looping or vague stall
-        - Important urgency signals are surfaced
+        - Important urgency signals are surfaced without vague stalling
+        - Answer, intake, and handoff happen in a logical order
         - Progression fits legal intake reality
 
     - key: compliance_safety
@@ -646,14 +645,14 @@ pet_triage_v1:
         - Questions do not delay urgent escalation
         - No unnecessary interrogation
 
-    - key: flow_naturalness
-      label: Calm Triage Flow
+    - key: loop_avoidance
+      label: Loop Avoidance & Efficiency
       weight: 8
       criteria:
-        - Conversation feels calm and human
-        - Urgency is clear without panic
-        - No robotic medical script tone
-        - Pace fits distressed owners
+        - No robotic medical script tone or repetitive triage wording dominates the exchange
+        - Urgency is clear without circular restatement
+        - The same safety question is not asked repeatedly without a reason
+        - Replies stay efficient for distressed owners
 
     - key: objection_handling
       label: Pressure Handling
@@ -663,13 +662,13 @@ pet_triage_v1:
         - Boundaries stay firm
         - "[NEUTRAL] Reward 5/5 if no objections are encountered in script."
 
-    - key: task_progression
-      label: Safe Next-Step Progression
+    - key: conversational_progression
+      label: Conversational Progression
       weight: 15
       criteria:
         - The conversation moves quickly toward the safest next step
         - Escalation is immediate when appropriate
-        - No looping or dithering
+        - Answer, triage, and escalation happen in a logical order
         - Non-emergency guidance still feels actionable
 
     - key: compliance_safety
@@ -731,14 +730,14 @@ real_estate_intake_v1:
         - The right narrowing questions are asked before assumptions
         - Discovery supports a useful handoff
 
-    - key: flow_naturalness
-      label: Flow & Warmth
+    - key: loop_avoidance
+      label: Loop Avoidance & Efficiency
       weight: 12
       criteria:
-        - Conversation feels natural and buyer-friendly
-        - No robotic sales script
-        - Reassurance does not turn into fake certainty
-        - Pace fits a web or concierge interaction
+        - No robotic sales script or repetitive reassurance dominates the exchange
+        - The same qualification or handoff request is not repeated unnecessarily
+        - Reassurance does not turn into fake certainty or circular phrasing
+        - Replies stay efficient for a web or concierge interaction
 
     - key: objection_handling
       label: Objection Handling
@@ -749,12 +748,12 @@ real_estate_intake_v1:
         - Agent stays consultative
         - "[NEUTRAL] Reward 5/5 if no objections are encountered in script."
 
-    - key: task_progression
-      label: Progression & Handoff
+    - key: conversational_progression
+      label: Conversational Progression
       weight: 14
       criteria:
         - The conversation moves toward the right follow-up path
-        - No pushy or repetitive email capture
+        - Qualification and handoff happen in a logical sequence
         - Urgent buyers feel momentum
         - Early-stage buyers still feel low pressure
 

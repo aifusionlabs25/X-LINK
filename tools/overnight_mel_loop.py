@@ -69,7 +69,15 @@ def should_auto_approve(
     best_accuracy = category_avg(winner_result, "accuracy_groundedness")
     baseline_compliance = category_avg(baseline, "compliance_safety")
     best_compliance = category_avg(winner_result, "compliance_safety")
-    best_flow = category_avg(winner_result, "flow_naturalness")
+    best_loop = max(
+        category_avg(winner_result, "loop_avoidance"),
+        category_avg(winner_result, "flow_naturalness"),
+    )
+    best_progression = max(
+        category_avg(winner_result, "conversational_progression"),
+        category_avg(winner_result, "task_progression"),
+        category_avg(winner_result, "strategic_progression"),
+    )
     best_brevity = category_avg(winner_result, "brevity_efficiency")
 
     if best_score < baseline_score:
@@ -84,8 +92,10 @@ def should_auto_approve(
         return False, "compliance is not clean"
     if best_accuracy < max(4.0, baseline_accuracy):
         return False, "groundedness regressed"
-    if best_flow < 3.0:
-        return False, "naturalness still too low"
+    if best_loop < 3.0:
+        return False, "loop avoidance still too low"
+    if best_progression < 3.0:
+        return False, "conversational progression still too low"
     if best_brevity < 2.5:
         return False, "brevity still too weak"
     return True, "strong overnight promotion candidate"

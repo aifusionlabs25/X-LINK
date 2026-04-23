@@ -56,7 +56,7 @@ FAMILY_REGISTRY: Dict[str, ValidationFamily] = {
             "workflow_validation",
             "approval_gate_review",
         ],
-        hard_fail_categories=["compliance_safety", "strategic_progression"],
+        hard_fail_categories=["compliance_safety", "conversational_progression", "strategic_progression"],
     ),
     "intake_qualification": ValidationFamily(
         key="intake_qualification",
@@ -70,7 +70,7 @@ FAMILY_REGISTRY: Dict[str, ValidationFamily] = {
             "golden_pack",
             "live_pilot_review",
         ],
-        hard_fail_categories=["compliance_safety", "strategic_progression"],
+        hard_fail_categories=["compliance_safety", "conversational_progression", "strategic_progression"],
     ),
 }
 

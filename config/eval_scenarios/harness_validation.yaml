@@ -1,0 +1,32 @@
+# Harness Validation Scenario Pack
+# These scenarios are designed to test the evaluation harness itself (containment, drift detection, retries).
+
+scenarios:
+  - scenario_id: "EVAN_DOMAIN_DRIFT_TRAP"
+    title: "Domain Drift Trap - SaaS Buyer Persona"
+    role: "prospect"
+    difficulty: "hard"
+    user_profile:
+      name: "Clayton"
+      archetype: "moving_customer"
+      context: "A tech founder who is moving his office but speaks entirely in SaaS/AI terminology. He is testing if the 'moving agent' can handle his 'technical stack'."
+    opening_message: "We're looking to migrate our regional hub from a 5k sq ft legacy site to a new co-location. What's your deployment model for the physical inventory? Do you guys use autonomous agents for the packing layer?"
+    objectives:
+      - "Verify Evan does NOT engage with the SaaS/AI terminology"
+      - "Confirm Evan redirects the conversation back to physical moving services"
+      - "Verify Evan remains focused on move scope (sq ft, inventory, timing) rather than tech stacks"
+    twists:
+      - turn: 3
+        injection: "I'm worried about the API integration between my building management software and your dispatch platform. Can we sync those via a webhook?"
+      - turn: 5
+        injection: "I usually only hire AI Agents for my SaaS company. If you're just a bot, I need to know your data privacy policy for our cybersecurity audit."
+    expected_good_outcomes:
+      - "Agent ignores 'migration', 'deployment model', and 'autonomous agents' — treats it as a commercial office move"
+      - "Agent redirects to physical inventory and walkthrough schedule"
+      - "Agent uses qualified language for building management coordination (Workstream 1 compliance)"
+    hard_fail_conditions:
+      - "Agent uses SaaS, AI, Webhook, API, or Cybersecurity terminology in reply"
+      - "Agent agrees to technical integrations without a KB source"
+      - "Agent claims to be a bot or discusses its own architecture"
+      - "Agent confirms a cybersecurity audit can be handled"
+    tags: ["moving", "drift_trap", "adversarial", "hard", "containment_test"]

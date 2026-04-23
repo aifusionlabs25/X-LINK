@@ -7,6 +7,7 @@ import subprocess
 import sys
 import logging
 from datetime import datetime
+from typing import Optional
 
 router = APIRouter()
 
@@ -81,6 +82,78 @@ def _session_path_for(batch_id: str) -> str:
     os.makedirs(SESSIONS_DIR, exist_ok=True)
     return os.path.join(SESSIONS_DIR, f"{_safe_session_name(batch_id)}.json")
 
+
+def _pid_is_running(pid: Optional[int]) -> bool:
+    try:
+        pid_int = int(pid or 0)
+    except Exception:
+        return False
+    if pid_int <= 0:
+        return False
+    try:
+        output = subprocess.check_output(
+            ["tasklist", "/FI", f"PID eq {pid_int}"],
+            text=True,
+            encoding="utf-8",
+            errors="ignore",
+        )
+        return str(pid_int) in output and "No tasks are running" not in output
+    except Exception:
+        return False
+
+
+def _taskkill_pid(pid: Optional[int]) -> bool:
+    try:
+        pid_int = int(pid or 0)
+    except Exception:
+        return False
+    if pid_int <= 0:
+        return False
+    try:
+        subprocess.call(["taskkill", "/F", "/T", "/PID", str(pid_int)], shell=True)
+        return True
+    except Exception:
+        return False
+
+
+def _kill_dojo_processes() -> bool:
+    killed = False
+    try:
+        ps_cmd = (
+            "powershell -Command "
+            "\"Get-CimInstance Win32_Process | "
+            "Where-Object { $_.Name -eq 'python.exe' -and "
+            "($_.CommandLine -match 'marathon_runner.py' -or $_.CommandLine -match 'run_eval.py') } | "
+            "ForEach-Object { Stop-Process -Id $_.ProcessId -Force }\""
+        )
+        subprocess.call(ps_cmd, shell=True)
+        killed = True
+    except Exception:
+        pass
+    return killed
+
+
+def _write_session_payload(path: str, payload: dict) -> None:
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    with open(path, "w", encoding="utf-8") as f:
+        json.dump(payload, f)
+
+
+def _clear_active_session_file() -> None:
+    active_path = os.path.join(EVALS_DIR, "active_session.json")
+    if os.path.exists(active_path):
+        os.remove(active_path)
+
+
+def _mark_session_stopped(session: dict, reason: str = "Batch manually stopped.") -> dict:
+    payload = dict(session or {})
+    payload["status"] = "stopped"
+    payload["updated_at"] = datetime.now().isoformat()
+    payload["review_step"] = reason
+    payload["review_progress"] = int(payload.get("review_progress") or 0)
+    payload["error"] = reason
+    return payload
+
 @router.get("/config")
 async def get_dojo_config():
     """Aggregates all config-driven data for the Dojo RUN cockpit."""
@@ -146,7 +219,10 @@ async def start_eval(params: dict):
 
         # Launch non-blocking
         # Pass params as a JSON string to the wrapper
-        subprocess.Popen([PYTHON_EXE, script_path, json.dumps(params)])
+        proc = subprocess.Popen([PYTHON_EXE, script_path, json.dumps(params)])
+        session_info["launcher_pid"] = proc.pid
+        _write_session_payload(os.path.join(EVALS_DIR, "active_session.json"), session_info)
+        _write_session_payload(_session_path_for(params["batch_id"]), session_info)
         
         return {"status": "initiated", "message": "Dojo mission dispatched."}
     except Exception as e:
@@ -169,7 +245,9 @@ async def start_marathon(params: dict):
         with open(os.path.join(EVALS_DIR, "active_session.json"), "w", encoding="utf-8") as f:
             json.dump(session_info, f)
 
-        subprocess.Popen([PYTHON_EXE, script_path, json.dumps(params)])
+        proc = subprocess.Popen([PYTHON_EXE, script_path, json.dumps(params)])
+        session_info["launcher_pid"] = proc.pid
+        _write_session_payload(os.path.join(EVALS_DIR, "active_session.json"), session_info)
         
         return {"status": "initiated", "message": "Marathon dispatched."}
     except Exception as e:
@@ -186,6 +264,18 @@ async def get_active_session(batch_id: str = None):
     try:
         with open(active_path, "r", encoding="utf-8") as f:
             session = json.load(f)
+
+        if not batch_id and session.get("status") in {"stopped", "completed", "failed"}:
+            _clear_active_session_file()
+            return {"active": False, "session": session, "telemetry": {}}
+
+        launcher_pid = session.get("launcher_pid") or session.get("controller_pid")
+        if session.get("status") in {"running", "starting"} and launcher_pid and not _pid_is_running(launcher_pid):
+            session = _mark_session_stopped(session, "Stale batch session cleared after process exit.")
+            _clear_active_session_file()
+            if session.get("batch_id"):
+                _write_session_payload(_session_path_for(session["batch_id"]), session)
+            return {"active": False, "session": session, "telemetry": {}}
         
         # If there's an active run, check its live telemetry
         batch_id = session.get("batch_id")
@@ -205,6 +295,43 @@ async def get_active_session(batch_id: str = None):
         }
     except Exception as e:
         return {"active": False, "error": str(e)}
+
+
+@router.post("/stop")
+async def stop_active_session():
+    """Stop the active Dojo eval or marathon session."""
+    active_path = os.path.join(EVALS_DIR, "active_session.json")
+    if not os.path.exists(active_path):
+        return {"status": "idle", "message": "No active Dojo session found."}
+
+    with open(active_path, "r", encoding="utf-8") as f:
+        session = json.load(f)
+
+    batch_id = session.get("batch_id")
+    marathon_id = session.get("marathon_id")
+    pids = [
+        session.get("launcher_pid"),
+        session.get("controller_pid"),
+    ]
+
+    killed = any(_taskkill_pid(pid) for pid in pids if pid)
+    if not killed:
+        killed = _kill_dojo_processes()
+
+    stopped = _mark_session_stopped(session, "Batch stopped from Hub.")
+    if batch_id:
+        _write_session_payload(_session_path_for(batch_id), stopped)
+    if marathon_id:
+        _write_session_payload(_session_path_for(marathon_id), stopped)
+    _clear_active_session_file()
+
+    return {
+        "status": "stopped",
+        "batch_id": batch_id,
+        "marathon_id": marathon_id,
+        "killed": bool(killed),
+        "message": "Active Dojo batch stopped.",
+    }
 
 @router.get("/batch/{batch_id:path}")
 async def get_batch_results(batch_id: str):

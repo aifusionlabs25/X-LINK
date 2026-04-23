@@ -601,7 +601,7 @@ def _build_hermes_patch_brief(agent_slug: str, diagnostic: Dict[str, Any], lesso
         directives.append("Do not overfit to an endless adversarial user. Prefer patches that help the agent end like a normal human once a truthful limit or realistic next step is clear.")
     if any("approved_history" in [str(tag).lower() for tag in lesson.get("tags", [])] for lesson in lessons):
         directives.append("Use previously approved behavior patterns as anchors when possible, and avoid rewriting away from them without evidence.")
-    if failure_category in {"flow_naturalness", "brevity_efficiency"}:
+    if failure_category in {"flow_naturalness", "loop_avoidance", "conversational_progression", "brevity_efficiency"}:
         directives.append("Propose one structural conversation-behavior fix, not a generic tone or brevity patch.")
     if agent_slug.lower() == "amy":
         directives.append("Amy is a frontline SDR, not a security architect. Optimize for broad enterprise discovery, graceful limits, and sensible routing.")
@@ -637,7 +637,7 @@ def generate_challengers(
         current_prompt = current_prompt[:4000] + "\n[... truncated for MEL context ...]"
 
     agent_slug = agent_config.get("slug", "unknown")
-    if agent_slug.lower() == "amy" and diagnostic.get("failure_category") == "flow_naturalness":
+    if agent_slug.lower() == "amy" and diagnostic.get("failure_category") in {"flow_naturalness", "loop_avoidance", "conversational_progression"}:
         graceful_boundary_patch = (
             "Amy graceful-boundary mode, critical\n"
             "Amy is a frontline SDR, not the security, compliance, or architecture owner.\n"
@@ -674,7 +674,7 @@ def generate_challengers(
 
     # ── Evan-specific challenger generation (Mullins Moving) ──
     if agent_slug.lower() == "evan" and diagnostic.get("failure_category") in (
-        "flow_naturalness", "compliance_safety", "accuracy_groundedness", "task_progression"
+        "flow_naturalness", "loop_avoidance", "conversational_progression", "compliance_safety", "accuracy_groundedness", "task_progression"
     ):
         consultative_boundary_patch = (
             "Evan consultative-boundary mode, critical\n"

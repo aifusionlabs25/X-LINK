@@ -39,10 +39,12 @@ FAST_MODEL_CATEGORIES = {
     "question_quality",
     "task_progression",
     "strategic_progression",
+    "conversational_progression",
     "closing_quality",
 }
 
 DEEP_MODEL_CATEGORIES = {
+    "loop_avoidance",
     "flow_naturalness",
     "objection_handling",
 }
@@ -68,6 +70,7 @@ def build_scoring_prompt(
         f"[{t['speaker']}]: {t['text']}" for t in transcript
     )
     criteria_text = "\n".join(f"  - {c}" for c in category.get("criteria", []))
+    category_key = category.get("key", "")
 
     contract_text = ""
     if contract:
@@ -106,7 +109,8 @@ def build_scoring_prompt(
             "- If the agent gives one truthful limit, one valid next step, and then stops pushing, that is better than endless forced flexibility.\n"
             "- Do not mistake calm refusal of an unreasonable in-chat request for poor objection handling by default.\n"
             "- Reward clean human endings after a realistic next step is set; do not expect repeated confirmation rituals.\n"
-            "- If the user has already accepted a time, contact path, or next step, repeated reconfirmation should count against flow naturalness.\n"
+            "- If the user has already accepted a time, contact path, or next step, repeated reconfirmation should count against loop avoidance.\n"
+            "- For loop avoidance and conversational progression, score only what is visible in text. Do not infer missing audio warmth, pauses, or cadence.\n"
         )
     elif rubric_name == "amy_frontdoor_sdr_v1":
         director_context = (
@@ -117,6 +121,7 @@ def build_scoring_prompt(
             "- Do punish repetitive refusal loops, sterile deferrals, invented specifics, or dead-end answers with no useful next step.\n"
             "- In security-sensitive conversations, one calm boundary plus one practical next step is stronger than fake depth.\n"
             "- Most realistic Amy conversations are broad enterprise discovery, qualification, and next-step setting, not expert-level security interrogation.\n"
+            "- For loop avoidance and conversational progression, score only what is visible in text. Do not infer missing voice warmth, pauses, or pacing.\n"
         )
     elif rubric_name == "hospitality_concierge_v1":
         director_context = (
@@ -147,6 +152,15 @@ def build_scoring_prompt(
             "- Low-pressure progression is better than pushy or robotic sales behavior.\n"
         )
 
+    category_scope = ""
+    if category_key in {"loop_avoidance", "conversational_progression"}:
+        category_scope = (
+            "CATEGORY SCOPE:\n"
+            "- Score only text-observable conversation mechanics.\n"
+            "- Do NOT reward or punish missing audio/video qualities like prosody, pauses, cadence, or visual trust layer.\n"
+            "- Focus on repetition, redundant reconfirmation, logical sequencing, and whether the transcript moves forward cleanly.\n\n"
+        )
+
     return f"""You are an expert evaluator for AI agents. Score the following transcript on ONE specific category.
 
 SCENARIO: {scenario.get('title', 'Unknown')}
@@ -155,6 +169,7 @@ DIFFICULTY: {scenario.get('difficulty', 'Unknown')}
 
 {director_context}
 {contract_text}
+{category_scope}
 
 TRANSCRIPT:
 {transcript_text}

@@ -545,7 +545,7 @@ def test_score_run_emits_category_callbacks(monkeypatch):
         lambda rubric_name="default_v1": {
             "categories": [
                 {"key": "greeting_first_impression", "label": "Greeting", "weight": 10, "criteria": []},
-                {"key": "flow_naturalness", "label": "Flow", "weight": 10, "criteria": []},
+                {"key": "loop_avoidance", "label": "Loop Avoidance", "weight": 10, "criteria": []},
             ]
         },
     )
@@ -574,8 +574,8 @@ def test_score_run_emits_category_callbacks(monkeypatch):
     )
 
     assert scorecard.overall_score > 0
-    assert started == [(1, 2, "greeting_first_impression"), (2, 2, "flow_naturalness")]
-    assert finished == [(1, 2, "greeting_first_impression", 4), (2, 2, "flow_naturalness", 4)]
+    assert started == [(1, 2, "greeting_first_impression"), (2, 2, "loop_avoidance")]
+    assert finished == [(1, 2, "greeting_first_impression", 4), (2, 2, "loop_avoidance", 4)]
 
 
 def test_consultative_sales_prompt_rewards_boundary_setting():
@@ -584,13 +584,14 @@ def test_consultative_sales_prompt_rewards_boundary_setting():
     prompt = scoring.build_scoring_prompt(
         transcript=[{"speaker": "agent_under_test", "text": "I cannot verify that in chat."}],
         scenario={"title": "Security Proof", "role": "security_director", "difficulty": "hard"},
-        category={"key": "flow_naturalness", "label": "Flow", "criteria": []},
+        category={"key": "loop_avoidance", "label": "Loop Avoidance", "criteria": []},
         rubric_name="consultative_sales_v1",
     )
 
     assert "Reward healthy human boundary-setting" in prompt
     assert "one truthful limit, one valid next step" in prompt
     assert "Reward clean human endings" in prompt
+    assert "Score only text-observable conversation mechanics" in prompt
 
 
 def test_amy_frontdoor_rubric_scores_as_sdr_not_security_architect():
@@ -639,7 +640,7 @@ def test_hybrid_scoring_routes_fast_and_deep_models(monkeypatch):
     scenario = {"opening_message": "Hi"}
 
     fast = scoring.score_category(transcript, scenario, {"key": "accuracy_groundedness", "label": "Accuracy", "weight": 10})
-    deep = scoring.score_category(transcript, scenario, {"key": "flow_naturalness", "label": "Flow", "weight": 10})
+    deep = scoring.score_category(transcript, scenario, {"key": "loop_avoidance", "label": "Loop Avoidance", "weight": 10})
 
     assert fast.score == 4
     assert deep.score == 4
@@ -686,7 +687,7 @@ def test_score_run_marks_harness_autoscore_as_artifact(monkeypatch):
         "load_rubric",
         lambda rubric_name="default_v1": {
             "categories": [
-                {"key": "flow_naturalness", "label": "Flow", "weight": 10, "criteria": []},
+                {"key": "loop_avoidance", "label": "Loop Avoidance", "weight": 10, "criteria": []},
             ]
         },
     )

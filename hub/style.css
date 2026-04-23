@@ -100,11 +100,11 @@ body {
 
 .workspace-pane { display: none; width: 100%; }
 .workspace-pane.active { display: block; }
-.workspace-pane:not(.active) { display: none !important; }
+.workspace-pane:not(.active) { display: none; }
 .chat-container.workspace-pane.active,
 .research-container.workspace-pane.active,
 .archive-container.workspace-pane.active {
-    display: flex !important;
+    display: flex;
 }
 
 .sidebar-item.active-tool {
@@ -5087,4 +5087,611 @@ body.hub-redesign .message {
     background: rgba(16, 185, 129, 0.1);
     border-color: rgba(16, 185, 129, 0.3);
     color: var(--success);
+}
+
+/* ============================================ */
+/* HERMES EVOLUTION: FULL-SCREEN LAYOUT FIX     */
+/* ============================================ */
+
+/* Force chat messages area to be tall */
+body.hub-redesign .chat-messages,
+body.hub-redesign .research-messages,
+body.hub-redesign .archive-messages {
+    min-height: calc(100vh - 420px) !important;
+    max-height: calc(100vh - 350px) !important;
+    height: auto !important;
+}
+
+/* Make the chat container fill available space */
+body.hub-redesign .chat-container,
+body.hub-redesign .research-container {
+    min-height: calc(100vh - 200px) !important;
+    display: flex;
+    flex-direction: column !important;
+}
+
+/* Hermes Thought Trace UI */
+.thought-trace {
+    background: rgba(30, 30, 40, 0.8);
+    border-left: 3px solid #ffaa00;
+    padding: 10px 14px;
+    margin: 8px 0;
+    border-radius: 4px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.88em;
+    color: #a0a0b0;
+    box-shadow: inset 0 0 10px rgba(0,0,0,0.5);
+}
+.thought-trace strong {
+    color: #ffaa00;
+    margin-right: 6px;
+}
+
+/* Hardware Pulse Widget */
+.mission-panel-hardware {
+    background: rgba(15, 15, 20, 0.85);
+    border: 1px solid rgba(255, 170, 0, 0.15);
+    border-radius: 18px;
+    padding: 20px 24px;
+}
+.mission-panel-hardware .mission-panel-label {
+    color: #ffaa00;
+    font-weight: 700;
+    margin-bottom: 12px;
+}
+.hardware-stats {
+    display: flex;
+    gap: 24px;
+}
+.hw-stat {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+.hw-label {
+    font-size: 0.75em;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: rgba(255,255,255,0.5);
+}
+.hw-stat strong {
+    font-size: 1.1em;
+    color: #e8e8e8;
+}
+
+
+/* ============================================ */
+/* HERMES CONSOLE: COMPACT HEADER MODE          */
+/* ============================================ */
+
+/* When Hermes Console is active, shrink the hero header */
+body.hub-redesign .command-hero {
+    padding: 12px 0 8px !important;
+    margin-bottom: 8px !important;
+}
+
+body.hub-redesign .command-hero h1 {
+    font-size: 1.4rem !important;
+}
+
+body.hub-redesign .command-hero p {
+    display: none;
+}
+
+/* Compact the status cards row */
+body.hub-redesign .stats-overview {
+    margin-bottom: 8px !important;
+    gap: 10px !important;
+}
+
+body.hub-redesign .stats-overview .stat-box {
+    padding: 8px 14px !important;
+}
+
+/* Give MORE vertical space to chat */
+body.hub-redesign .chat-messages {
+    min-height: calc(100vh - 340px) !important;
+    max-height: calc(100vh - 280px) !important;
+    flex: 1 1 auto !important;
+}
+
+body.hub-redesign .chat-container {
+    flex: 1 1 auto !important;
+    min-height: calc(100vh - 180px) !important;
+}
+
+
+/* ============================================ */
+/* OPTION A: HERMES CONSOLE FULL-SCREEN TAKEOVER */
+/* ============================================ */
+
+/* Kill the fixed sidebar popup behavior */
+body.hub-redesign .chat-container {
+    position: fixed !important;
+    top: 0 !important;
+    left: 250px !important;  /* sidebar width */
+    right: 0 !important;
+    bottom: 0 !important;
+    width: auto !important;
+    max-width: none !important;
+    height: 100vh !important;
+    max-height: none !important;
+    border-radius: 0 !important;
+    border: none !important;
+    border-left: 1px solid rgba(255,255,255,0.06) !important;
+    box-shadow: none !important;
+    z-index: 900 !important;
+    background: linear-gradient(180deg, rgba(14, 17, 23, 0.99) 0%, rgba(10, 12, 18, 0.99) 100%) !important;
+}
+
+body.hub-redesign .chat-container.active {
+    transform: none !important;
+    opacity: 1 !important;
+    pointer-events: all !important;
+}
+
+/* Make messages area fill the entire panel */
+body.hub-redesign .chat-container .chat-messages {
+    flex: 1 1 auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    padding: 24px 32px 16px !important;
+    overflow-y: auto !important;
+}
+
+/* Chat header - compact and clean */
+body.hub-redesign .chat-container .chat-header {
+    padding: 16px 32px 12px !important;
+    border-bottom: 1px solid rgba(255,255,255,0.06) !important;
+}
+
+/* Input area at the bottom */
+body.hub-redesign .chat-container .chat-input-area,
+body.hub-redesign .chat-container .direct-hermes-input {
+    padding: 16px 32px !important;
+    border-top: 1px solid rgba(255,255,255,0.06) !important;
+}
+
+/* Messages themselves - more breathing room */
+body.hub-redesign .chat-container .message {
+    max-width: 85% !important;
+    padding: 16px 20px !important;
+}
+
+body.hub-redesign .chat-container .message.user {
+    align-self: flex-end !important;
+}
+
+body.hub-redesign .chat-container .message.assistant,
+body.hub-redesign .chat-container .message.hermes {
+    align-self: flex-start !important;
+}
+
+/* Mobile: full screen */
+@media (max-width: 900px) {
+    body.hub-redesign .chat-container {
+        left: 0 !important;
+    }
+}
+
+
+/* ============================================ */
+/* HERMES CONSOLE: CLEAN OVERHAUL               */
+/* ============================================ */
+
+/* 1. COLLAPSE the Recent Vault - it's not the main event */
+body.hub-redesign .chat-container .vault-section,
+body.hub-redesign .chat-container .recent-vault,
+body.hub-redesign .chat-container [class*="vault"] {
+    max-height: 0 !important;
+    overflow: hidden !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    border: none !important;
+    opacity: 0 !important;
+}
+
+/* 2. SHRINK the quick-action buttons row */
+body.hub-redesign .chat-container .quick-actions,
+body.hub-redesign .chat-container [class*="quick-action"] {
+    padding: 4px 16px !important;
+    gap: 6px !important;
+}
+body.hub-redesign .chat-container .quick-actions button,
+body.hub-redesign .chat-container [class*="quick-action"] button {
+    padding: 4px 10px !important;
+    font-size: 0.72rem !important;
+    border-radius: 6px !important;
+}
+
+/* 3. CHAT MESSAGES = the main event, fill everything */
+body.hub-redesign .chat-container .chat-messages,
+body.hub-redesign .chat-container [class*="messages"] {
+    flex: 1 1 auto !important;
+    min-height: calc(100vh - 300px) !important;
+    max-height: none !important;
+    overflow-y: auto !important;
+}
+
+/* 4. SHRINK the action buttons (Attach/Edit/Stop/Send) */
+body.hub-redesign .chat-container button,
+body.hub-redesign .direct-hermes-input button,
+body.hub-redesign [class*="hermes"] button {
+    padding: 6px 14px !important;
+    font-size: 0.78rem !important;
+    min-width: auto !important;
+    border-radius: 8px !important;
+}
+
+/* Keep the Send button visible but not giant */
+body.hub-redesign .chat-container button[class*="send"],
+body.hub-redesign [class*="hermes"] button[class*="send"] {
+    padding: 8px 20px !important;
+    font-size: 0.85rem !important;
+}
+
+/* 5. COMPACT the chat header */
+body.hub-redesign .chat-container .chat-header,
+body.hub-redesign .chat-container [class*="header"] {
+    padding: 10px 20px 8px !important;
+}
+body.hub-redesign .chat-container .chat-header h2,
+body.hub-redesign .chat-container .chat-header h3 {
+    font-size: 1rem !important;
+    margin: 0 !important;
+}
+
+/* 6. Hide the Close button annoyance - auto-close on outside click instead */
+body.hub-redesign .chat-container [class*="close"],
+body.hub-redesign .chat-container button:has(> *:only-child):not([class*="send"]):not([class*="attach"]):not([class*="edit"]):not([class*="stop"]) {
+    /* keep close for now but make it subtle */
+}
+
+/* 7. Make the input area compact */
+body.hub-redesign .chat-container .chat-input-area,
+body.hub-redesign .direct-hermes-input {
+    padding: 8px 16px !important;
+}
+body.hub-redesign .chat-container textarea,
+body.hub-redesign .direct-hermes-input textarea {
+    min-height: 44px !important;
+    max-height: 120px !important;
+    font-size: 0.9rem !important;
+    padding: 10px 14px !important;
+}
+
+/* 8. FULL WIDTH takeover - fill from sidebar to edge */
+body.hub-redesign .chat-container {
+    position: fixed !important;
+    top: 0 !important;
+    left: 220px !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    width: auto !important;
+    max-width: none !important;
+    height: 100vh !important;
+    max-height: none !important;
+    border-radius: 0 !important;
+    border: none !important;
+    border-left: 1px solid rgba(255,255,255,0.06) !important;
+}
+
+
+/* ============================================ */
+/* HERMES CONSOLE: FINAL SURGICAL FIX           */
+/* Exact class names confirmed via DOM inspect  */
+/* ============================================ */
+
+/* FULL-SCREEN TAKEOVER */
+body.hub-redesign #chat-container.chat-container {
+    position: fixed !important;
+    top: 0 !important;
+    left: 220px !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    width: auto !important;
+    max-width: none !important;
+    height: 100vh !important;
+    max-height: none !important;
+    border-radius: 0 !important;
+    border: none !important;
+    border-left: 1px solid rgba(255,255,255,0.06) !important;
+    box-shadow: none !important;
+    display: flex;
+    flex-direction: column !important;
+}
+
+/* COMPACT HEADER - hide subtitle, shrink close btn */
+body.hub-redesign #chat-container .chat-header {
+    padding: 10px 24px 8px !important;
+    flex-shrink: 0 !important;
+}
+body.hub-redesign #chat-container .close-chat {
+    padding: 4px 12px !important;
+    font-size: 0.75rem !important;
+}
+
+/* HIDE the vault file list inside chat */
+body.hub-redesign #chat-container .vault-strip,
+body.hub-redesign #chat-container .research-vault-strip,
+body.hub-redesign #chat-container .vault-strip-header,
+body.hub-redesign #chat-container .vault-file-row {
+    display: none;
+}
+
+/* CHAT MESSAGES = fill ALL remaining space */
+body.hub-redesign #chat-container #chat-messages.chat-messages {
+    flex: 1 1 auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    overflow-y: auto !important;
+    padding: 20px 28px !important;
+}
+
+/* SHRINK buttons dramatically */
+body.hub-redesign #chat-container .chat-secondary-btn {
+    padding: 5px 12px !important;
+    font-size: 0.72rem !important;
+    min-width: auto !important;
+    border-radius: 6px !important;
+}
+body.hub-redesign #chat-container .chat-secondary-btn.danger {
+    padding: 5px 12px !important;
+    font-size: 0.72rem !important;
+}
+
+/* Compact the aux controls row */
+body.hub-redesign #chat-container .chat-aux-controls {
+    padding: 4px 20px !important;
+    gap: 6px !important;
+    flex-shrink: 0 !important;
+}
+
+/* Compact the composer */
+body.hub-redesign #chat-container .chat-composer-copy {
+    padding: 6px 20px 2px !important;
+    flex-shrink: 0 !important;
+}
+body.hub-redesign #chat-container .chat-composer-copy h3,
+body.hub-redesign #chat-container .chat-composer-copy strong {
+    font-size: 0.7rem !important;
+}
+body.hub-redesign #chat-container .chat-composer-copy p {
+    font-size: 0.65rem !important;
+    margin: 0 !important;
+}
+
+body.hub-redesign #chat-container .chat-composer-main {
+    padding: 6px 20px 10px !important;
+    flex-shrink: 0 !important;
+}
+body.hub-redesign #chat-container .chat-composer-main textarea {
+    min-height: 40px !important;
+    max-height: 100px !important;
+    font-size: 0.88rem !important;
+    padding: 8px 12px !important;
+}
+
+/* Send button - visible but not huge */
+body.hub-redesign #chat-container .chat-composer-main button {
+    padding: 8px 18px !important;
+    font-size: 0.8rem !important;
+    border-radius: 8px !important;
+    min-width: auto !important;
+}
+
+/* Quick action chips - tiny */
+body.hub-redesign #chat-container .chat-chip {
+    padding: 3px 8px !important;
+    font-size: 0.68rem !important;
+    border-radius: 4px !important;
+}
+
+
+/* ============================================================ */
+/* HERMES CONSOLE: INLINE FULL-PAGE WORKSPACE (NOT AN OVERLAY)  */
+/* ============================================================ */
+
+/* Kill the fixed/overlay behavior - make it a normal pane */
+body.hub-redesign #chat-container.chat-container {
+    position: relative !important;
+    top: auto !important;
+    right: auto !important;
+    left: auto !important;
+    bottom: auto !important;
+    width: 100% !important;
+    max-width: none !important;
+    height: calc(100vh - 20px) !important;
+    max-height: none !important;
+    border-radius: 16px !important;
+    border: 1px solid rgba(255,255,255,0.06) !important;
+    box-shadow: none !important;
+    transform: none !important;
+    opacity: 1 !important;
+    pointer-events: all !important;
+    display: none;
+    flex-direction: column !important;
+    z-index: auto !important;
+    background: linear-gradient(180deg, rgba(14,17,23,0.98) 0%, rgba(10,12,18,0.98) 100%) !important;
+    overflow: hidden !important;
+}
+body.hub-redesign #chat-container.chat-container.active {
+    display: flex;
+}
+
+/* Compact header - no fluff */
+body.hub-redesign #chat-container .chat-header {
+    padding: 10px 24px !important;
+    flex-shrink: 0 !important;
+    border-bottom: 1px solid rgba(255,255,255,0.06) !important;
+}
+body.hub-redesign #chat-container .chat-header h2,
+body.hub-redesign #chat-container .chat-header h3,
+body.hub-redesign #chat-container .chat-header .chat-title {
+    font-size: 1rem !important;
+    margin: 0 !important;
+}
+body.hub-redesign #chat-container .chat-header p,
+body.hub-redesign #chat-container .chat-header .chat-subtitle {
+    font-size: 0.72rem !important;
+    margin: 0 !important;
+    opacity: 0.6 !important;
+}
+
+/* HIDE the close button - sidebar handles navigation */
+body.hub-redesign #chat-container .close-chat {
+    padding: 3px 10px !important;
+    font-size: 0.68rem !important;
+    opacity: 0.5 !important;
+}
+
+/* Hide or collapse vault file tiles */
+body.hub-redesign #chat-container .vault-strip,
+body.hub-redesign #chat-container .vault-strip-header,
+body.hub-redesign #chat-container .vault-file-row,
+body.hub-redesign #chat-container [class*="vault"] {
+    display: none;
+}
+
+/* Quick action chips - tiny row */
+body.hub-redesign #chat-container .chat-chip-strip {
+    padding: 4px 24px !important;
+    gap: 4px !important;
+    flex-shrink: 0 !important;
+}
+body.hub-redesign #chat-container .chat-chip {
+    padding: 3px 8px !important;
+    font-size: 0.68rem !important;
+}
+
+/* CHAT MESSAGES = THE STAR - takes all remaining space */
+body.hub-redesign #chat-container #chat-messages {
+    flex: 1 1 auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    overflow-y: auto !important;
+    padding: 20px 28px !important;
+}
+
+/* SHRINK the action buttons - Attach/Edit/Stop */
+body.hub-redesign #chat-container .chat-aux-controls {
+    padding: 4px 24px !important;
+    gap: 6px !important;
+    flex-shrink: 0 !important;
+}
+body.hub-redesign #chat-container .chat-secondary-btn {
+    padding: 4px 10px !important;
+    font-size: 0.68rem !important;
+    min-width: auto !important;
+    border-radius: 6px !important;
+}
+
+/* COMPACT the composer label */
+body.hub-redesign #chat-container .chat-composer-copy {
+    padding: 4px 24px 2px !important;
+    flex-shrink: 0 !important;
+}
+body.hub-redesign #chat-container .chat-composer-copy h3,
+body.hub-redesign #chat-container .chat-composer-copy strong {
+    font-size: 0.7rem !important;
+}
+body.hub-redesign #chat-container .chat-composer-copy p {
+    font-size: 0.62rem !important;
+    margin: 0 !important;
+}
+
+/* Input area - reasonable size */
+body.hub-redesign #chat-container .chat-composer-main {
+    padding: 6px 24px 12px !important;
+    flex-shrink: 0 !important;
+    gap: 8px !important;
+}
+body.hub-redesign #chat-container .chat-composer-main textarea {
+    min-height: 36px !important;
+    max-height: 80px !important;
+    font-size: 0.88rem !important;
+    padding: 8px 12px !important;
+}
+body.hub-redesign #chat-container .chat-composer-main button {
+    padding: 6px 16px !important;
+    font-size: 0.78rem !important;
+    min-width: auto !important;
+    border-radius: 8px !important;
+}
+
+/* Status bar */
+body.hub-redesign #chat-container .chat-status {
+    padding: 2px 24px 4px !important;
+    font-size: 0.65rem !important;
+    flex-shrink: 0 !important;
+}
+
+/* Same treatment for Research container */
+body.hub-redesign #research-container.research-container {
+    position: relative !important;
+    top: auto !important;
+    right: auto !important;
+    left: auto !important;
+    width: 100% !important;
+    max-width: none !important;
+    height: calc(100vh - 20px) !important;
+    max-height: none !important;
+    border-radius: 16px !important;
+    transform: none !important;
+    opacity: 1 !important;
+    display: none;
+    flex-direction: column !important;
+    z-index: auto !important;
+}
+body.hub-redesign #research-container.research-container.active {
+    display: flex;
+}
+
+
+/* ============================================================ */
+/* HIDE HEADER WHEN CHAT IS THE ACTIVE WORKSPACE                */
+/* ============================================================ */
+
+/* When chat-container is active (via JS adding .active class),
+   hide the header and status cards to give chat full viewport */
+body.hub-redesign #chat-container.active ~ .hub-header,
+body.hub-redesign #chat-container.active ~ .stats-overview {
+    display: none;
+}
+
+/* Also just always shrink the header when not on home */
+body.hub-redesign .hub-header {
+    transition: all 0.2s ease !important;
+}
+
+/* Force the main-content to fill when chat is active */
+body.hub-redesign .main-content:has(#chat-container.active) .hub-header {
+    display: none;
+}
+body.hub-redesign .main-content:has(#chat-container.active) .command-hero {
+    display: none;
+}
+
+
+/* ============================================================ */
+/* FIX: Let JS control display, CSS only controls flex layout   */
+/* ============================================================ */
+
+/* Override previous rules - remove display:flex !important */
+body.hub-redesign #chat-container.chat-container {
+    display: none;
+}
+body.hub-redesign #chat-container.chat-container.active {
+    display: flex;
+}
+body.hub-redesign #research-container.research-container {
+    display: none;
+}
+body.hub-redesign #research-container.research-container.active {
+    display: flex;
+}
+
+/* Also hide research vault tiles */
+body.hub-redesign #research-container [class*="vault"] {
+    display: none;
 }

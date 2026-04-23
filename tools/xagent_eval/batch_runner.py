@@ -152,6 +152,7 @@ AMY_UNVERIFIED_SPECIFICITY_PATTERNS = [
 ]
 
 
+
 def _ollama_generate_text(
     model: str,
     prompt: str,
@@ -210,6 +211,7 @@ def _ollama_generate_text(
     return None, error
 
 
+
 def _generate_user_sim_text(
     prompt: str,
     *,
@@ -252,6 +254,7 @@ def _generate_user_sim_text(
     return None, last_error
 
 
+
 def _contains_non_latin_script(text: str) -> bool:
     for ch in text or "":
         if ord(ch) <= 127:
@@ -262,6 +265,7 @@ def _contains_non_latin_script(text: str) -> bool:
     return False
 
 
+
 def _sentence_split(text: str) -> List[str]:
     text = re.sub(r"\s+", " ", text or "").strip()
     if not text:
@@ -270,11 +274,13 @@ def _sentence_split(text: str) -> List[str]:
     return [part.strip() for part in parts if part.strip()]
 
 
+
 def _compact_text(text: str, limit: int = 240) -> str:
     cleaned = re.sub(r"\s+", " ", text or "").strip()
     if len(cleaned) <= limit:
         return cleaned
     return cleaned[: max(0, limit - 3)].rstrip() + "..."
+
 
 
 def _compile_eval_persona(agent_slug: str, persona: str, agent_domain: str, guardrails: str = "") -> str:
@@ -330,6 +336,7 @@ def _compile_eval_persona(agent_slug: str, persona: str, agent_domain: str, guar
     )
 
 
+
 def _build_agent_context_window(conversation: Optional[List[str]]) -> str:
     """Keep only the most relevant recent exchanges for stateless turn generation."""
     if not conversation:
@@ -347,6 +354,7 @@ def _build_agent_context_window(conversation: Optional[List[str]]) -> str:
         earlier = len(conversation) - len(recent_lines)
         window = f"[Earlier exchanges omitted: {earlier}]\n{window}"
     return window
+
 
 
 def _build_agent_state_summary(
@@ -381,6 +389,7 @@ def _build_agent_state_summary(
     return "\n".join(f"- {bit}" for bit in summary_bits if bit)
 
 
+
 def _dedupe_sentences(text: str) -> str:
     seen = set()
     kept: List[str] = []
@@ -393,11 +402,13 @@ def _dedupe_sentences(text: str) -> str:
     return " ".join(kept).strip()
 
 
+
 def _limit_sentences(text: str, max_sentences: int = 2) -> str:
     sentences = _sentence_split(text)
     if not sentences:
         return ""
     return " ".join(sentences[:max_sentences]).strip()
+
 
 
 def _strip_prompt_leakage(text: str) -> str:
@@ -420,8 +431,10 @@ def _strip_prompt_leakage(text: str) -> str:
     return cleaned
 
 
+
 def _amy_signature(text: str) -> str:
     return re.sub(r"[^a-z0-9]+", " ", (text or "").lower()).strip()
+
 
 
 def _amy_recent_agent_replies(conversation: Optional[List[str]]) -> List[str]:
@@ -437,6 +450,7 @@ def _amy_recent_agent_replies(conversation: Optional[List[str]]) -> List[str]:
     return replies
 
 
+
 def _amy_recent_user_messages(conversation: Optional[List[str]]) -> List[str]:
     messages: List[str] = []
     for line in conversation or []:
@@ -450,6 +464,7 @@ def _amy_recent_user_messages(conversation: Optional[List[str]]) -> List[str]:
     return messages
 
 
+
 def _amy_recent_proof_pressure_count(
     scenario_id: str,
     conversation: Optional[List[str]],
@@ -461,6 +476,7 @@ def _amy_recent_proof_pressure_count(
     return sum(1 for msg in window if _amy_is_proof_pressure(scenario_id, msg))
 
 
+
 def _amy_pick_variant(candidates: List[str], conversation: Optional[List[str]]) -> str:
     used = {_amy_signature(item) for item in _amy_recent_agent_replies(conversation)}
     for candidate in candidates:
@@ -469,9 +485,11 @@ def _amy_pick_variant(candidates: List[str], conversation: Optional[List[str]]) 
     return candidates[0] if candidates else ""
 
 
+
 def _amy_conversation_has_email(conversation: Optional[List[str]], user_msg: str) -> bool:
     corpus = "\n".join((conversation or []) + [user_msg or ""])
     return "[redacted_email]" in corpus.lower() or bool(re.search(r"[\w\.-]+@[\w\.-]+\.\w+", corpus))
+
 
 
 def _amy_is_proof_pressure(scenario_id: str, user_msg: str) -> bool:
@@ -497,6 +515,7 @@ def _amy_is_proof_pressure(scenario_id: str, user_msg: str) -> bool:
             ]
         )
     )
+
 
 
 def _amy_user_accepted_next_step(user_msg: str) -> bool:
@@ -525,6 +544,7 @@ def _amy_user_accepted_next_step(user_msg: str) -> bool:
     )
 
 
+
 def _amy_is_terminal_close(reply: str) -> bool:
     lowered = (reply or "").lower()
     return any(
@@ -542,6 +562,7 @@ def _amy_is_terminal_close(reply: str) -> bool:
             "i do not want to overstate anything beyond what i can verify here",
         ]
     )
+
 
 
 def _amy_safe_reframe(
@@ -675,6 +696,7 @@ def _amy_safe_reframe(
     )
 
 
+
 def _sanitize_amy_reply(
     reply: str,
     scenario: dict,
@@ -722,6 +744,7 @@ def _sanitize_amy_reply(
     return cleaned
 
 
+
 def _sanitize_agent_reply(
     agent_slug: str,
     scenario: dict,
@@ -736,17 +759,20 @@ def _sanitize_agent_reply(
         return _sanitize_amy_reply(cleaned, scenario, user_msg, close_mode, conversation)
     return cleaned or "I do not want to overstate that here."
 
+
 def redact_sensitive(text: str) -> str:
     if not isinstance(text, str): return text
     text = re.sub(r'[\w\.-]+@[\w\.-]+\.\w+', '[REDACTED_EMAIL]', text)
     text = re.sub(r'\b(?:\+?1[-.\s]?)?\(?[0-9]{3}\)?[-.\s]?[0-9]{3}[-.\s]?[0-9]{4}\b', '[REDACTED_PHONE]', text)
     return text
 
+
 def recursively_redact(data):
     if isinstance(data, dict): return {k: recursively_redact(v) for k, v in data.items()}
     elif isinstance(data, list): return [recursively_redact(i) for i in data]
     elif isinstance(data, str): return redact_sensitive(data)
     return data
+
 
 
 def save_run_artifacts(
@@ -791,186 +817,27 @@ def save_run_artifacts(
     return saved
 
 
-def build_failure_scorecard(
-    metadata: RunMetadata,
-    transcript: List[dict],
-) -> Scorecard:
-    """Materialize runtime or scoring failures so batches never collapse into NO_DATA."""
-    if metadata.status == "error":
-        classification = "review_runtime_failure"
-        notes = metadata.error_message or "The run failed before scoring completed."
-    elif metadata.transcript_status == "failed":
-        classification = "review_transcript_failure"
-        notes = "The run did not produce a reviewable transcript."
-    else:
-        classification = "review_scoring_failure"
-        notes = metadata.error_message or "The run completed, but scoring could not be produced."
 
-    end_state = metadata.completion_reason or metadata.end_state_label or "runtime_failure"
-    categories = [
-        CategoryScore(
-            key="runtime_reliability",
-            label="Runtime Reliability",
-            score=1,
-            weight=5,
-            notes=notes,
-            fail_flag=True,
-        ),
-        CategoryScore(
-            key="transcript_completeness",
-            label="Transcript Completeness",
-            score=1 if transcript else 0,
-            weight=3,
-            notes=f"Captured {len(transcript)} normalized turns before failure.",
-            fail_flag=True,
-        ),
-    ]
-    critical_failures = [metadata.error_message or "Runtime failure during MEL eval."]
-    return Scorecard(
-        run_id=metadata.run_id,
-        scenario_id=metadata.scenario_id,
-        target_agent=metadata.target_agent,
-        overall_score=0.0,
-        pass_fail="FAIL_BLOCK_RELEASE",
-        classification=classification,
-        end_state_label=end_state,
-        categories=categories,
-        warnings=["Run ended before a valid scored conversation could be completed."],
-        critical_failures=critical_failures,
-    )
+def _detect_domain_contamination(text: str, agent_domain: str) -> bool:
+    """Detect if the sim-user output has drifted into unrelated business domains."""
+    if not text:
+        return False
+    
+    # Domains where SaaS/AI talk is a sign of contamination
+    service_domains = ["Moving & Logistics", "Home Services", "Field Service Operations"]
+    
+    if agent_domain in service_domains:
+        contamination_keywords = [
+            "saas", "ai agent", "ai platform", "software as a service", "data center",
+            "cybersecurity", "siem", "soc", "mdr", "cloud migration", "azure", "aws",
+            "it infrastructure", "api integration", "technical stack", "deployment model"
+        ]
+        text_lower = text.lower()
+        if any(kw in text_lower for kw in contamination_keywords):
+            return True
+            
+    return False
 
-
-def aggregate_batch(
-    batch_id: str,
-    inputs: EvalInputs,
-    scorecards: List[Scorecard],
-    run_ids: List[str],
-) -> BatchSummary:
-    """Aggregate multiple scorecards into a batch summary."""
-    summary = BatchSummary(
-        batch_id=batch_id,
-        target_agent=inputs.target_agent,
-        environment=inputs.environment,
-        scenario_pack=inputs.scenario_pack,
-        scenario_pack_class=inputs.scenario_pack_class,
-        scenario_manifest_id=inputs.scenario_manifest_id,
-        scenario_manifest_path=inputs.scenario_manifest_path,
-        total_runs=len(run_ids),
-        run_ids=run_ids,
-    )
-
-    if scorecards:
-        # Counts
-        summary.passed = sum(1 for s in scorecards if s.pass_fail in ("PASS", "PASS_WITH_WARNINGS"))
-        summary.failed = summary.total_runs - summary.passed
-        summary.pass_rate = round((summary.passed / summary.total_runs) * 100, 1) if summary.total_runs > 0 else 0
-        summary.average_score = round(sum(s.overall_score for s in scorecards) / len(scorecards), 1)
-
-        # Category averages
-        cat_scores = {}
-        cat_counts = {}
-        for sc in scorecards:
-            for cat in sc.categories:
-                if cat.key not in cat_scores:
-                    cat_scores[cat.key] = 0
-                    cat_counts[cat.key] = 0
-                cat_scores[cat.key] += cat.score
-                cat_counts[cat.key] += 1
-
-        summary.category_averages = {
-            k: round(v / cat_counts[k], 1)
-            for k, v in cat_scores.items()
-        }
-
-        # Include full run data for the Hub
-        summary.runs = [s.to_dict() for s in scorecards]
-        summary.data["runtime_failure_count"] = sum(
-            1 for s in scorecards if str(s.classification).startswith("review_")
-        )
-
-        # Top failure categories (< 3.0 on a 5-point scale)
-        low_cats = sorted(summary.category_averages.items(), key=lambda x: x[1])
-        summary.top_failure_categories = [k for k, v in low_cats if v < 3.0][:3]
-    else:
-        summary.verdict = "NO_DATA"
-        summary.failed = summary.total_runs
-        summary.data["runtime_failure_count"] = summary.total_runs
-
-    # Pass reviewer status fields if they exist in data (populated in tool.py)
-    summary.reviewer_status = summary.data.get("reviewer_status", "skipped")
-    summary.reviewer_error = summary.data.get("reviewer_error")
-    summary.review_artifact_path = summary.data.get("review_artifact_path")
-
-    if not scorecards:
-        return summary
-
-    # Verdict
-    has_block = any(s.pass_fail == "FAIL_BLOCK_RELEASE" for s in scorecards)
-    if has_block:
-        summary.verdict = "NO_SHIP"
-    elif summary.pass_rate >= 80:
-        summary.verdict = "SHIP"
-    elif summary.pass_rate >= 60:
-        summary.verdict = "CONDITIONAL"
-    else:
-        summary.verdict = "NO_SHIP"
-
-    return summary
-
-
-def save_batch_artifacts(batch_id: str, summary: BatchSummary) -> List[str]:
-    """Save batch-level artifacts."""
-    batch_dir = os.path.join(VAULT_DIR, "evals", "batches", batch_id)
-    os.makedirs(batch_dir, exist_ok=True)
-    saved = []
-
-    # batch_summary.json
-    json_path = os.path.join(batch_dir, "batch_summary.json")
-    with open(json_path, "w", encoding="utf-8") as f:
-        json.dump(summary.to_dict(), f, indent=2)
-    saved.append(json_path)
-
-    # batch_summary.txt
-    txt_path = os.path.join(batch_dir, "batch_summary.txt")
-    with open(txt_path, "w", encoding="utf-8") as f:
-        f.write(f"X-AGENT EVAL — BATCH SUMMARY\n")
-        f.write(f"{'='*50}\n")
-        f.write(f"Batch ID:       {summary.batch_id}\n")
-        f.write(f"Target Agent:   {summary.target_agent}\n")
-        f.write(f"Environment:    {summary.environment}\n")
-        f.write(f"Scenario Pack:  {summary.scenario_pack}\n")
-        f.write(f"Pack Class:     {summary.scenario_pack_class}\n")
-        if summary.scenario_manifest_id:
-            f.write(f"Manifest ID:    {summary.scenario_manifest_id}\n")
-        if summary.scenario_manifest_path:
-            f.write(f"Manifest Path:  {summary.scenario_manifest_path}\n")
-        f.write(f"Total Runs:     {summary.total_runs}\n")
-        f.write(f"Passed:         {summary.passed}\n")
-        f.write(f"Failed:         {summary.failed}\n")
-        f.write(f"Pass Rate:      {summary.pass_rate}%\n")
-        f.write(f"Average Score:  {summary.average_score}\n")
-        f.write(f"Verdict:        {summary.verdict}\n")
-        f.write(f"\nCategory Averages:\n")
-        for k, v in summary.category_averages.items():
-            f.write(f"  {k}: {v}/5.0\n")
-        if summary.top_failure_categories:
-            f.write(f"\nTop Failure Areas:\n")
-            for cat in summary.top_failure_categories:
-                f.write(f"  ⚠ {cat}\n")
-    saved.append(txt_path)
-
-    import shutil
-    for idx, run_id in enumerate(summary.run_ids):
-        run_tx_path = os.path.join(VAULT_DIR, "evals", "runs", run_id, "transcript.txt")
-        if os.path.exists(run_tx_path):
-            try:
-                dest_path = os.path.join(batch_dir, f"{run_id}_transcript.txt")
-                shutil.copy2(run_tx_path, dest_path)
-                saved.append(dest_path)
-            except Exception as e:
-                pass
-
-    return saved
 
 
 def _map_domain_context(text: str, agent_domain: str) -> str:
@@ -991,6 +858,7 @@ def _map_domain_context(text: str, agent_domain: str) -> str:
         text = text.replace("AI solutions", "Operational Efficiency Tools")
         text = text.replace("software", "field dispatch system")
     return text
+
 
 
 def _generate_synthetic_identity() -> dict:
@@ -1019,6 +887,7 @@ def _generate_synthetic_identity() -> dict:
         "court_date": "next Tuesday",
         "callback_preference": "Noon via phone"
     }
+
 
 
 def _build_sim_user_rules(
@@ -1054,6 +923,8 @@ def _build_sim_user_rules(
         "- Do NOT act like a scripted FAQ machine or a pure adversarial evaluator.",
         "- Do NOT say 'Tell me more' or 'That sounds great'.",
         "- NEVER leave your response empty.",
+        f"- STAY in the {agent_domain} domain at all costs.",
+        f"- You are a prospect in the {agent_domain} industry. Do NOT mention SaaS, AI agents, data centers, cybersecurity, or software pricing models unless specifically part of your scenario profile. If you feel yourself drifting, snap back to {agent_domain}.",
     ]
 
     if close_mode:
@@ -1074,6 +945,7 @@ def _build_sim_user_rules(
 
     lines.append(f"- Stay consistent with the {agent_domain} domain.")
     return "\n".join(lines)
+
 
 
 async def execute_simulated_run(
@@ -1107,9 +979,6 @@ async def execute_simulated_run(
         realism_label=scenario.get("realism_label"),
         source_scenario_id=scenario.get("source_scenario_id"),
     )
-
-    transcript = []
-    conversation = []
 
     # Map contract archetypes
     user_archetype = "a prospect"
@@ -1168,347 +1037,375 @@ async def execute_simulated_run(
     opening_msg = _map_domain_context(scenario.get("opening_message", "Hello."), agent_domain)
     conversation_start_mode = (getattr(contract, "conversation_start_mode", "user_first") or "user_first").lower()
 
-    try:
-        if conversation_start_mode == "speak_first":
-            opener_prompt = (
-                f"{agent_prompt}\n\n"
-                f"### [OPENING MODE]\n"
-                f"You are speaking first before the user has asked anything yet.\n"
-                f"Give one short spoken opening line only. Identify yourself if your prompt requires it.\n"
-                f"Do not answer the scenario opening question yet because the user has not asked it.\n\n"
-                f"{inputs.target_agent.capitalize()}:"
-            )
-            opener_reply, opener_error = _ollama_generate_text(
-                MODEL,
-                opener_prompt,
-                options={"temperature": 0.3, "stop": ["User:", "\n\n", f"{inputs.target_agent.capitalize()}:"]},
-                read_timeout=OLLAMA_AGENT_READ_TIMEOUT,
-                workflow="mel_agent_eval",
-                metadata={"agent": inputs.target_agent, "run_id": run_id, "scenario_id": scenario.get("scenario_id"), "phase": "opener"},
-            )
-            if opener_error:
-                metadata.status = "error"
-                metadata.error_message = opener_error
-                metadata.completion_reason = "agent_generation_failed"
-                logger.error(f"Run {run_id} opening generation failed: {opener_error}")
-                return metadata, transcript, None
-
-            opener_reply = _sanitize_agent_reply(
-                inputs.target_agent,
-                scenario,
-                "",
-                opener_reply or "Hi, I am here to help.",
-                False,
-                conversation,
-            )
-
-            transcript.append({
-                "turn": len(transcript) + 1,
-                "speaker": "agent_under_test",
-                "text": opener_reply or "Hi, I am here to help.",
-                "target_agent": inputs.target_agent,
-                "scenario_id": scenario.get("scenario_id"),
-                "run_id": run_id,
-                "batch_id": batch_id,
-                "conversation_start_mode": conversation_start_mode,
-            })
-            conversation.append(f"{inputs.target_agent.capitalize()}: {opener_reply or 'Hi, I am here to help.'}")
-
-        # Start with user's opening message
-        user_msg = opening_msg
-
-        # ── Conversation Turn Loop ────────────────────────────
-        for turn_num in range(1, inputs.max_turns + 1):
-            # Check for twist injection
-            if turn_num in twists:
-                user_msg = twists[turn_num]
-
-            # Record user turn
-            transcript.append({
-                "turn": len(transcript) + 1,
-                "speaker": "test_user",
-                "text": user_msg,
-                "target_agent": inputs.target_agent,
-                "scenario_id": scenario.get("scenario_id"),
-                "run_id": run_id,
-                "batch_id": batch_id,
-            })
-            conversation.append(f"User: {user_msg}")
-
-            amy_recent_proof_pressure = 0
-            if inputs.target_agent.lower() == "amy":
-                amy_recent_proof_pressure = _amy_recent_proof_pressure_count(
-                    scenario.get("scenario_id", ""),
-                    conversation[:-1],
-                    user_msg,
+    max_drift_retries = 2
+    drift_attempt = 0
+    
+    while drift_attempt <= max_drift_retries:
+        transcript = []
+        conversation = []
+        drift_detected = False
+        
+        try:
+            if conversation_start_mode == "speak_first":
+                opener_prompt = (
+                    f"{agent_prompt}\n\n"
+                    f"### [OPENING MODE]\n"
+                    f"You are speaking first before the user has asked anything yet.\n"
+                    f"Give one short spoken opening line only. Identify yourself if your prompt requires it.\n"
+                    f"Do not answer the scenario opening question yet because the user has not asked it.\n\n"
+                    f"{inputs.target_agent.capitalize()}:"
                 )
-                if amy_recent_proof_pressure >= 2:
-                    close_mode = True
-                    close_reason = "proof_pressure_loop"
-
-            # ── Execute on_turn Callback (Turn Start) ───────────
-            if on_turn:
-                on_turn(turn_num, user_msg, "")
-
-            # ── Endgame Controller: Trigger Check ────────────────
-            if not close_mode:
-                # 1. Turn proximity
-                if turn_num >= inputs.max_turns - max_close_turns:
-                    close_mode = True
-                    close_reason = "turn_limit_proximity"
-                
-                # 2. Must-collect satisfaction (Heuristic)
-                if must_collect and turn_num > 1:
-                    all_found = True
-                    tx_lower = "\n".join(conversation).lower()
-                    for item in must_collect:
-                        if item.lower() not in tx_lower:
-                            all_found = False
-                            break
-                    if all_found:
-                        close_mode = True
-                        close_reason = "must_collect_satisfied"
-                
-                # 3. Repetition check
-                for phrase, count in agent_cta_map.items():
-                    if count >= repeat_limit + 1: # Strict 3rd strike
-                        close_mode = True
-                        close_reason = "repetition_limit_hit"
-                        break
-
-            # ── Generate Agent Response ──────────────────────
-            current_agent_prompt = agent_prompt
-            if close_mode:
-                preferred = close_strategy.get("preferred_close", "graceful_exit")
-                current_agent_prompt += (
-                    f"\n\n### [ENDGAME MODE: {close_reason.upper()}]\n"
-                    f"Gather sufficient info or handle turn limit. Priority: {preferred.replace('_', ' ')}.\n"
-                    f"Summarize next steps, confirm handoff, and close professionally."
+                opener_reply, opener_error = _ollama_generate_text(
+                    MODEL,
+                    opener_prompt,
+                    options={"temperature": 0.3, "stop": ["User:", "\n\n", f"{inputs.target_agent.capitalize()}:"]},
+                    read_timeout=OLLAMA_AGENT_READ_TIMEOUT,
+                    workflow="mel_agent_eval",
+                    metadata={"agent": inputs.target_agent, "run_id": run_id, "scenario_id": scenario.get("scenario_id"), "phase": "opener"},
                 )
+                if opener_error:
+                    metadata.status = "error"
+                    metadata.error_message = opener_error
+                    metadata.completion_reason = "agent_generation_failed"
+                    logger.error(f"Run {run_id} opening generation failed: {opener_error}")
+                    return metadata, transcript, None
 
-            recent_context = _build_agent_context_window(conversation)
-            state_summary = _build_agent_state_summary(
-                transcript,
-                scenario_objective,
-                scenario_goal,
-                close_mode,
-                close_reason,
-                must_collect,
-            )
-            prompt = (
-                f"{current_agent_prompt}\n\n"
-                f"### [SCENARIO]\n"
-                f"Context: {_compact_text(scenario_objective, 260)}\n"
-                f"Goal: {_compact_text(scenario_goal, 220)}\n\n"
-                f"### [STATE]\n{state_summary}\n\n"
-                f"### [RECENT EXCHANGES]\n{recent_context}\n"
-                f"{inputs.target_agent.capitalize()}:"
-            )
-
-            agent_reply, agent_error = _ollama_generate_text(
-                MODEL,
-                prompt,
-                options={
-                    "temperature": 0.4,
-                    "num_predict": 160,
-                    "stop": ["User:", "\n\n", f"{inputs.target_agent.capitalize()}:"],
-                },
-                read_timeout=OLLAMA_AGENT_READ_TIMEOUT,
-                workflow="mel_agent_eval",
-                metadata={"agent": inputs.target_agent, "run_id": run_id, "scenario_id": scenario.get("scenario_id"), "phase": "agent_turn", "turn": str(turn_num)},
-            )
-            if agent_error:
-                metadata.status = "error"
-                metadata.error_message = agent_error
-                metadata.completion_reason = "agent_generation_failed"
-                logger.error(f"Run {run_id} agent generation failed: {agent_error}")
-                break
-
-            if not agent_reply:
-                agent_reply = "I appreciate your interest. How can I help you today."
-
-            agent_reply = _sanitize_agent_reply(
-                inputs.target_agent,
-                scenario,
-                user_msg,
-                agent_reply,
-                close_mode,
-                conversation,
-            )
-
-            if (
-                inputs.target_agent.lower() == "amy"
-                and amy_recent_proof_pressure >= 2
-                and not _amy_is_terminal_close(agent_reply)
-            ):
-                agent_reply = _amy_safe_reframe(
-                    user_msg,
-                    scenario.get("scenario_id", ""),
-                    True,
-                    "loop",
+                opener_reply = _sanitize_agent_reply(
+                    inputs.target_agent,
+                    scenario,
+                    "",
+                    opener_reply or "Hi, I am here to help.",
+                    False,
                     conversation,
                 )
 
-            # ── Execute on_turn Callback (Turn Complete) ───────────
-            if on_turn:
-                on_turn(turn_num, user_msg, agent_reply)
+                transcript.append({
+                    "turn": len(transcript) + 1,
+                    "speaker": "agent_under_test",
+                    "text": opener_reply or "Hi, I am here to help.",
+                    "target_agent": inputs.target_agent,
+                    "scenario_id": scenario.get("scenario_id"),
+                    "run_id": run_id,
+                    "batch_id": batch_id,
+                    "conversation_start_mode": conversation_start_mode,
+                })
+                conversation.append(f"{inputs.target_agent.capitalize()}: {opener_reply or 'Hi, I am here to help.'}")
 
-            transcript.append({
-                "turn": len(transcript) + 1,
-                "speaker": "agent_under_test",
-                "text": agent_reply,
-                "target_agent": inputs.target_agent,
-                "scenario_id": scenario.get("scenario_id"),
-                "run_id": run_id,
-                "batch_id": batch_id,
-                "close_mode": close_mode
-            })
-            conversation.append(f"{inputs.target_agent.capitalize()}: {agent_reply}")
+            # Start with user's opening message
+            user_msg = opening_msg
 
-            if (
-                inputs.target_agent.lower() == "amy"
-                and _amy_is_proof_pressure(scenario.get("scenario_id", ""), user_msg)
-                and _amy_user_accepted_next_step(user_msg)
-                and _amy_is_terminal_close(agent_reply)
-            ):
-                metadata.completion_reason = "accepted_handoff_terminal_close"
-                break
+            # ── Conversation Turn Loop ────────────────────────────
+            for turn_num in range(1, inputs.max_turns + 1):
+                # Check for twist injection
+                if turn_num in twists:
+                    user_msg = twists[turn_num]
 
-            # ── Repetition & Stall Breaker (Harden) ───────────
-            # Identifies Mirror Loops (User repeating) and Agent Loops (Stalled/Repetitive)
-            
-            # A. Agent Repetition (Must trigger faster if it's the SAME refusal)
-            a_full = agent_reply.lower().strip(".!? ")
-            a_head = a_full[:40] if len(a_full) > 40 else a_full
-            a_tail = a_full[-40:] if len(a_full) > 40 else a_full
-            
-            # Track counts for Full, Head, and Tail
-            agent_cta_map[a_full] = agent_cta_map.get(a_full, 0) + 1
-            agent_cta_map[f"H:{a_head}"] = agent_cta_map.get(f"H:{a_head}", 0) + 1
-            agent_cta_map[f"T:{a_tail}"] = agent_cta_map.get(f"T:{a_tail}", 0) + 1
-            
-            repetition_tripped = (
-                agent_cta_map[a_full] >= 3 or 
-                agent_cta_map[f"H:{a_head}"] >= 3 or 
-                agent_cta_map[f"T:{a_tail}"] >= 3
-            )
-            
-            if repetition_tripped:
-                logger.warning(f"🛑 [CIRCUIT BREAKER] Agent repetition loop detected in {run_id}. Terminating.")
-                metadata.completion_reason = "repetition_limit_hit"
-                break
+                # Record user turn
+                transcript.append({
+                    "turn": len(transcript) + 1,
+                    "speaker": "test_user",
+                    "text": user_msg,
+                    "target_agent": inputs.target_agent,
+                    "scenario_id": scenario.get("scenario_id"),
+                    "run_id": run_id,
+                    "batch_id": batch_id,
+                })
+                conversation.append(f"User: {user_msg}")
 
-            # B. User "Question Loop" Detector (Mirror Breaker)
-            # If the User Judge repeats the same question 3 times, identify as a loop
-            u_clean = user_msg.lower().strip() 
-            if "?" in u_clean or len(u_clean) > 10:
-                # Use a fuzzier signature for questions to catch "Can you answer X?" vs "answer X?"
-                q_sig = u_clean.replace("?", "").strip()
-                agent_questions[q_sig] = agent_questions.get(q_sig, 0) + 1
-                if agent_questions[q_sig] >= 3:
-                    logger.warning(f"🛑 [CIRCUIT BREAKER] User (Judge) entered a question loop. Terminating.")
-                    metadata.completion_reason = "user_judge_loop_hit"
+                amy_recent_proof_pressure = 0
+                if inputs.target_agent.lower() == "amy":
+                    amy_recent_proof_pressure = _amy_recent_proof_pressure_count(
+                        scenario.get("scenario_id", ""),
+                        conversation[:-1],
+                        user_msg,
+                    )
+                    if amy_recent_proof_pressure >= 2:
+                        close_mode = True
+                        close_reason = "proof_pressure_loop"
+
+                # ── Execute on_turn Callback (Turn Start) ───────────
+                if on_turn:
+                    on_turn(turn_num, user_msg, "")
+
+                # ── Endgame Controller: Trigger Check ────────────────
+                if not close_mode:
+                    # 1. Turn proximity
+                    if turn_num >= inputs.max_turns - max_close_turns:
+                        close_mode = True
+                        close_reason = "turn_limit_proximity"
+                    
+                    # 2. Must-collect satisfaction (Heuristic)
+                    if must_collect and turn_num > 1:
+                        all_found = True
+                        tx_lower = "\n".join(conversation).lower()
+                        for item in must_collect:
+                            if item.lower() not in tx_lower:
+                                all_found = False
+                                break
+                        if all_found:
+                            close_mode = True
+                            close_reason = "must_collect_satisfied"
+                    
+                    # 3. Repetition check
+                    for phrase, count in agent_cta_map.items():
+                        if count >= repeat_limit + 1: # Strict 3rd strike
+                            close_mode = True
+                            close_reason = "repetition_limit_hit"
+                            break
+
+                # ── Generate Agent Response ──────────────────────
+                current_agent_prompt = agent_prompt
+                if close_mode:
+                    preferred = close_strategy.get("preferred_close", "graceful_exit")
+                    current_agent_prompt += (
+                        f"\n\n### [ENDGAME MODE: {close_reason.upper()}]\n"
+                        f"Gather sufficient info or handle turn limit. Priority: {preferred.replace('_', ' ')}.\n"
+                        f"Summarize next steps, confirm handoff, and close professionally."
+                    )
+
+                recent_context = _build_agent_context_window(conversation)
+                state_summary = _build_agent_state_summary(
+                    transcript,
+                    scenario_objective,
+                    scenario_goal,
+                    close_mode,
+                    close_reason,
+                    must_collect,
+                )
+                prompt = (
+                    f"{current_agent_prompt}\n\n"
+                    f"### [SCENARIO]\n"
+                    f"Context: {_compact_text(scenario_objective, 260)}\n"
+                    f"Goal: {_compact_text(scenario_goal, 220)}\n\n"
+                    f"### [STATE]\n{state_summary}\n\n"
+                    f"### [RECENT EXCHANGES]\n{recent_context}\n"
+                    f"{inputs.target_agent.capitalize()}:"
+                )
+
+                agent_reply, agent_error = _ollama_generate_text(
+                    MODEL,
+                    prompt,
+                    options={
+                        "temperature": 0.4,
+                        "num_predict": 160,
+                        "stop": ["User:", "\n\n", f"{inputs.target_agent.capitalize()}:"],
+                    },
+                    read_timeout=OLLAMA_AGENT_READ_TIMEOUT,
+                    workflow="mel_agent_eval",
+                    metadata={"agent": inputs.target_agent, "run_id": run_id, "scenario_id": scenario.get("scenario_id"), "phase": "agent_turn", "turn": str(turn_num)},
+                )
+                if agent_error:
+                    metadata.status = "error"
+                    metadata.error_message = agent_error
+                    metadata.completion_reason = "agent_generation_failed"
+                    logger.error(f"Run {run_id} agent generation failed: {agent_error}")
                     break
 
-            # ── Loop Detection: Break if closing ───────────
-            if close_mode:
-                closure_keywords = ["goodbye", "have a great", "talk soon", "closed", "thank you", "thanks", "done"]
-                if any(x in agent_reply.lower() for x in closure_keywords):
+                if not agent_reply:
+                    agent_reply = "I appreciate your interest. How can I help you today."
+
+                agent_reply = _sanitize_agent_reply(
+                    inputs.target_agent,
+                    scenario,
+                    user_msg,
+                    agent_reply,
+                    close_mode,
+                    conversation,
+                )
+
+                if (
+                    inputs.target_agent.lower() == "amy"
+                    and amy_recent_proof_pressure >= 2
+                    and not _amy_is_terminal_close(agent_reply)
+                ):
+                    agent_reply = _amy_safe_reframe(
+                        user_msg,
+                        scenario.get("scenario_id", ""),
+                        True,
+                        "loop",
+                        conversation,
+                    )
+
+                # ── Execute on_turn Callback (Turn Complete) ───────────
+                if on_turn:
+                    on_turn(turn_num, user_msg, agent_reply)
+
+                transcript.append({
+                    "turn": len(transcript) + 1,
+                    "speaker": "agent_under_test",
+                    "text": agent_reply,
+                    "target_agent": inputs.target_agent,
+                    "scenario_id": scenario.get("scenario_id"),
+                    "run_id": run_id,
+                    "batch_id": batch_id,
+                    "close_mode": close_mode
+                })
+                conversation.append(f"{inputs.target_agent.capitalize()}: {agent_reply}")
+
+                if (
+                    inputs.target_agent.lower() == "amy"
+                    and _amy_is_proof_pressure(scenario.get("scenario_id", ""), user_msg)
+                    and _amy_user_accepted_next_step(user_msg)
+                    and _amy_is_terminal_close(agent_reply)
+                ):
+                    metadata.completion_reason = "accepted_handoff_terminal_close"
                     break
 
-            # ── Generate Next User Response (Simulator) ────
-            user_profile = scenario.get("user_profile", {})
-            user_context = _map_domain_context(user_profile.get("context", "A prospect visiting the website."), agent_domain)
-            user_role = scenario.get("role", "cooperative_user")
-
-            # Identify if agent is asking for a required slot
-            slot_intercepted = False
-            intercept_text = ""
-            reply_lower = agent_reply.lower()
-            for slot in required_slots:
-                keywords = [slot.replace("_", " ")]
-                if slot == "email": keywords.append("email address")
-                if slot == "phone": keywords.append("number")
-                if slot == "full_name": keywords.extend(["name", "who am i speaking with"])
+                # ── Repetition & Stall Breaker (Harden) ───────────
+                # Identifies Mirror Loops (User repeating) and Agent Loops (Stalled/Repetitive)
                 
-                if any(kw in reply_lower for kw in keywords):
-                    slot_dodges[slot] = slot_dodges.get(slot, 0) + 1
-                    if close_mode or slot_dodges[slot] >= 2:
-                        val = user_identity.get(slot, "I'm not sure.")
-                        intercept_text = f"Sure, my {slot.replace('_', ' ')} is {val}. "
-                        slot_intercepted = True
+                # A. Agent Repetition (Must trigger faster if it's the SAME refusal)
+                a_full = agent_reply.lower().strip(".!? ")
+                a_head = a_full[:40] if len(a_full) > 40 else a_full
+                a_tail = a_full[-40:] if len(a_full) > 40 else a_full
+                
+                # Track counts for Full, Head, and Tail
+                agent_cta_map[a_full] = agent_cta_map.get(a_full, 0) + 1
+                agent_cta_map[f"H:{a_head}"] = agent_cta_map.get(f"H:{a_head}", 0) + 1
+                agent_cta_map[f"T:{a_tail}"] = agent_cta_map.get(f"T:{a_tail}", 0) + 1
+                
+                repetition_tripped = (
+                    agent_cta_map[a_full] >= 3 or 
+                    agent_cta_map[f"H:{a_head}"] >= 3 or 
+                    agent_cta_map[f"T:{a_tail}"] >= 3
+                )
+                
+                if repetition_tripped:
+                    logger.warning(f"🛑 [CIRCUIT BREAKER] Agent repetition loop detected in {run_id}. Terminating.")
+                    metadata.completion_reason = "repetition_limit_hit"
+                    break
+
+                # B. User "Question Loop" Detector (Mirror Breaker)
+                # If the User Judge repeats the same question 3 times, identify as a loop
+                u_clean = user_msg.lower().strip() 
+                if "?" in u_clean or len(u_clean) > 10:
+                    # Use a fuzzier signature for questions to catch "Can you answer X?" vs "answer X?"
+                    q_sig = u_clean.replace("?", "").strip()
+                    agent_questions[q_sig] = agent_questions.get(q_sig, 0) + 1
+                    if agent_questions[q_sig] >= 3:
+                        logger.warning(f"🛑 [CIRCUIT BREAKER] User (Judge) entered a question loop. Terminating.")
+                        metadata.completion_reason = "user_judge_loop_hit"
                         break
 
-            # SURGICAL CONTEXT: Inject Role and Domain into Simulator
-            user_rules = _build_sim_user_rules(
-                scenario,
-                agent_domain=agent_domain,
-                close_mode=close_mode,
-                slot_intercepted=slot_intercepted,
-            )
-            conv_text = "\n".join(conversation)
-            user_gen_prompt = (
-                f"You are {user_profile.get('name', 'a prospect')} talking to {inputs.target_agent}.\n"
-                f"SITUATION: {user_context}\n"
-                f"DOMAIN: {agent_domain}\n"
-                f"Your goal: {scenario_goal}\n"
-                f"{'Provide your contact info now: ' + json.dumps(user_identity) if slot_intercepted or close_mode else ''}\n\n"
-                f"{user_rules}\n\n"
-                f"[CONVERSATION]\n{conv_text}\n{inputs.target_agent}: {agent_reply}\n"
-                f"{user_profile.get('name', 'User')}: {intercept_text}"
-            )
+                # ── Loop Detection: Break if closing ───────────
+                if close_mode:
+                    closure_keywords = ["goodbye", "have a great", "talk soon", "closed", "thank you", "thanks", "done"]
+                    if any(x in agent_reply.lower() for x in closure_keywords):
+                        break
 
-            raw_user_reply, user_error = _generate_user_sim_text(
-                user_gen_prompt,
-                preferred_model=getattr(inputs, "sim_user_model", None),
-                metadata={"agent": inputs.target_agent, "run_id": run_id, "scenario_id": scenario.get("scenario_id"), "phase": "user_turn", "turn": str(turn_num)},
-            )
-            if user_error:
-                logger.warning(f"Run {run_id} user simulator fallback triggered: {user_error}")
-                raw_user_reply = ""
+                # ── Generate Next User Response (Simulator) ────
+                user_profile = scenario.get("user_profile", {})
+                user_context = _map_domain_context(user_profile.get("context", "A prospect visiting the website."), agent_domain)
+                user_role = scenario.get("role", "cooperative_user")
 
-            user_msg = f"{intercept_text}{raw_user_reply or ''}".strip()
-            if not user_msg or len(user_msg) < 5:
-                # Dynamic fallback pool — 20 questions, shuffled, never repeats
-                _all_fallbacks = [
-                    f"What specific results have other companies seen with X Agents in {agent_domain}?",
-                    "Walk me through the onboarding process from start to finish.",
-                    "What does pricing look like for a company our size?",
-                    "How quickly can we go live after signing?",
-                    f"What makes X Agents different from competitors in {agent_domain}?",
-                    "Can you show me a case study or demo?",
-                    "What kind of support do you offer post-launch?",
-                    "Who on your team would we be working with during setup?",
-                    f"How would X Agents handle peak hours in {agent_domain}?",
-                    "What happens if X Agents can't answer a customer's question?",
-                    "How does the handoff to a human work in practice?",
-                    "What CRM or ticketing systems do X Agents integrate with?",
-                    "Can we customize the agent's personality and tone for our brand?",
-                    "What analytics and reporting do you provide?",
-                    "How do you handle data privacy and security?",
-                    "Can multiple team members manage the agent?",
-                    "What's the biggest deployment you've done so far?",
-                    f"How do you train the agent on our specific {agent_domain} workflows?",
-                    "Is there a free trial or pilot program?",
-                    "What does the contract look like, monthly or annual?",
-                ]
-                # Filter out already-used fallbacks in this scenario
-                available = [q for q in _all_fallbacks if q not in _used_fallbacks]
-                if not available:
-                    available = _all_fallbacks  # Reset if all exhausted
-                user_msg = random.choice(available)
-                _used_fallbacks.add(user_msg)
+                # Identify if agent is asking for a required slot
+                slot_intercepted = False
+                intercept_text = ""
+                reply_lower = agent_reply.lower()
+                for slot in required_slots:
+                    keywords = [slot.replace("_", " ")]
+                    if slot == "email": keywords.append("email address")
+                    if slot == "phone": keywords.append("number")
+                    if slot == "full_name": keywords.extend(["name", "who am i speaking with"])
+                    
+                    if any(kw in reply_lower for kw in keywords):
+                        slot_dodges[slot] = slot_dodges.get(slot, 0) + 1
+                        if close_mode or slot_dodges[slot] >= 2:
+                            val = user_identity.get(slot, "I'm not sure.")
+                            intercept_text = f"Sure, my {slot.replace('_', ' ')} is {val}. "
+                            slot_intercepted = True
+                            break
 
-        if metadata.status != "error":
-            metadata.status = "success"
-            metadata.classification = "valid_product_signal"
-        metadata.close_mode_triggered = close_mode
-        metadata.close_reason = close_reason
+                # SURGICAL CONTEXT: Inject Role and Domain into Simulator
+                user_rules = _build_sim_user_rules(
+                    scenario,
+                    agent_domain=agent_domain,
+                    close_mode=close_mode,
+                    slot_intercepted=slot_intercepted,
+                )
+                conv_text = "\n".join(conversation)
+                user_gen_prompt = (
+                    f"You are {user_profile.get('name', 'a prospect')} talking to {inputs.target_agent}.\n"
+                    f"SITUATION: {user_context}\n"
+                    f"DOMAIN: {agent_domain}\n"
+                    f"Your goal: {scenario_goal}\n"
+                    f"{'Provide your contact info now: ' + json.dumps(user_identity) if slot_intercepted or close_mode else ''}\n\n"
+                    f"{user_rules}\n\n"
+                    f"[CONVERSATION]\n{conv_text}\n{inputs.target_agent}: {agent_reply}\n"
+                    f"{user_profile.get('name', 'User')}: {intercept_text}"
+                )
 
-    except Exception as e:
-        metadata.status = "error"
-        metadata.error_message = str(e)
-        logger.error(f"Run {run_id} failed: {e}")
+                raw_user_reply, user_error = _generate_user_sim_text(
+                    user_gen_prompt,
+                    preferred_model=getattr(inputs, "sim_user_model", None),
+                    metadata={"agent": inputs.target_agent, "run_id": run_id, "scenario_id": scenario.get("scenario_id"), "phase": "user_turn", "turn": str(turn_num)},
+                )
+                if user_error:
+                    logger.warning(f"Run {run_id} user simulator fallback triggered: {user_error}")
+                    raw_user_reply = ""
+
+                user_msg = f"{intercept_text}{raw_user_reply or ''}".strip()
+
+                # Detection: Cross-Domain Drift Check
+                if _detect_domain_contamination(raw_user_reply, agent_domain):
+                    logger.warning(f"⚠️ [DRIFT DETECTED] Sim-user contaminated run {run_id} with SaaS/AI talk in {agent_domain} domain.")
+                    drift_detected = True
+                    break
+
+                if not user_msg or len(user_msg) < 5:
+                    # Dynamic fallback pool — 20 questions, shuffled, never repeats
+                    _all_fallbacks = [
+                        _map_domain_context(f"What specific results have other customers seen with your services in {agent_domain}?", agent_domain),
+                        _map_domain_context("Walk me through the process from start to finish.", agent_domain),
+                        _map_domain_context("What does pricing look like for a client similar to us?", agent_domain),
+                        _map_domain_context("How quickly can we start after we agree on a plan?", agent_domain),
+                        _map_domain_context(f"What makes your team different from others in {agent_domain}?", agent_domain),
+                        _map_domain_context("Can you show me a case study or an example of your work?", agent_domain),
+                        _map_domain_context("What kind of support do you offer after we begin the relationship?", agent_domain),
+                        _map_domain_context("Who on your team would we be working with directly?", agent_domain),
+                        _map_domain_context(f"How would you handle peak hours in {agent_domain}?", agent_domain),
+                        _map_domain_context("What happens if you can't answer a specific question right away?", agent_domain),
+                        _map_domain_context("How does the handoff to the right specialist work in practice?", agent_domain),
+                        _map_domain_context("What systems or tools do you typically integrate with during service?", agent_domain),
+                        _map_domain_context("Can we customize the approach and tone for our specific requirements?", agent_domain),
+                        _map_domain_context("What reporting or updates do you provide during the process?", agent_domain),
+                        _map_domain_context("How do you handle data privacy and security?", agent_domain),
+                        _map_domain_context("Can multiple team members on our side manage this relationship?", agent_domain),
+                        _map_domain_context("What's the biggest project or move you've done so far?", agent_domain),
+                        _map_domain_context(f"How do you train the team on our specific {agent_domain} workflows?", agent_domain),
+                        _map_domain_context("Is there an initial trial or pilot period?", agent_domain),
+                        _map_domain_context("What does the agreement look like long-term?", agent_domain),
+                    ]
+                    # Filter out already-used fallbacks in this scenario
+                    available = [q for q in _all_fallbacks if q not in _used_fallbacks]
+                    if not available:
+                        available = _all_fallbacks  # Reset if all exhausted
+                    user_msg = random.choice(available)
+                    _used_fallbacks.add(user_msg)
+
+            # End of turn loop
+            if drift_detected:
+                drift_attempt += 1
+                if drift_attempt <= max_drift_retries:
+                    logger.info(f"🔄 [RETRYING] Drift retry {drift_attempt}/{max_drift_retries} for run {run_id}")
+                    continue
+                else:
+                    logger.error(f"💀 [DRIFT FAILURE] Maximum retries reached for contaminated run {run_id}. Marking as contaminated.")
+                    metadata.status = "contaminated"
+                    metadata.completion_reason = "sim_user_domain_drift"
+                    break
+            else:
+                # Clean exit from while loop - everything succeeded
+                if metadata.status != "error":
+                    metadata.status = "success"
+                    metadata.classification = "valid_product_signal"
+                break
+
+        except Exception as e:
+            metadata.status = "error"
+            metadata.error_message = str(e)
+            logger.error(f"Run {run_id} failed: {e}")
+            break
 
     metadata.completed_at = datetime.now().isoformat()
     normalized = normalize_transcript(transcript)
@@ -1532,7 +1429,6 @@ async def execute_simulated_run(
     metadata.is_reviewable = metadata.status == "success" and len(normalized) >= 4
     
     # ── Context Capping: Prevent Scorer Hangs ────────────────
-    # Truncate to the last 5000 characters if it's massive
     scoring_transcript = normalized
     if len(normalized) > 250:
         scoring_transcript = normalized[-250:]
@@ -1595,3 +1491,198 @@ async def execute_simulated_run(
         scorecard = build_failure_scorecard(metadata, normalized)
 
     return metadata, normalized, scorecard
+
+
+def build_failure_scorecard(
+    metadata: RunMetadata,
+    transcript: List[dict],
+) -> Scorecard:
+    """Materialize runtime or scoring failures so batches never collapse into NO_DATA."""
+    if metadata.status == "error":
+        classification = "review_runtime_failure"
+        notes = metadata.error_message or "The run failed before scoring completed."
+    elif metadata.status == "contaminated":
+        classification = "sim_user_domain_drift"
+        notes = "Run contaminated: Sim-user drifted into unrelated domains (e.g. SaaS/AI talk)."
+    elif metadata.transcript_status == "failed":
+        classification = "review_transcript_failure"
+        notes = "The run did not produce a reviewable transcript."
+    else:
+        classification = "review_scoring_failure"
+        notes = metadata.error_message or "The run completed, but scoring could not be produced."
+
+    end_state = metadata.completion_reason or metadata.end_state_label or "runtime_failure"
+    categories = [
+        CategoryScore(
+            key="runtime_reliability",
+            label="Runtime Reliability",
+            score=1,
+            weight=5,
+            notes=notes,
+            fail_flag=True,
+        ),
+        CategoryScore(
+            key="transcript_completeness",
+            label="Transcript Completeness",
+            score=1 if transcript else 0,
+            weight=3,
+            notes=f"Captured {len(transcript)} normalized turns before failure.",
+            fail_flag=True,
+        ),
+    ]
+    critical_failures = [metadata.error_message or "Runtime failure during MEL eval."]
+    return Scorecard(
+        run_id=metadata.run_id,
+        scenario_id=metadata.scenario_id,
+        target_agent=metadata.target_agent,
+        overall_score=0.0,
+        pass_fail="FAIL_BLOCK_RELEASE",
+        classification=classification,
+        end_state_label=end_state,
+        categories=categories,
+        warnings=["Run ended before a valid scored conversation could be completed."],
+        critical_failures=critical_failures,
+    )
+
+
+
+def aggregate_batch(
+    batch_id: str,
+    inputs: EvalInputs,
+    scorecards: List[Scorecard],
+    run_ids: List[str],
+) -> BatchSummary:
+    """Aggregate multiple scorecards into a batch summary."""
+    summary = BatchSummary(
+        batch_id=batch_id,
+        target_agent=inputs.target_agent,
+        environment=inputs.environment,
+        scenario_pack=inputs.scenario_pack,
+        scenario_pack_class=inputs.scenario_pack_class,
+        scenario_manifest_id=inputs.scenario_manifest_id,
+        scenario_manifest_path=inputs.scenario_manifest_path,
+        total_runs=len(run_ids),
+        run_ids=run_ids,
+    )
+
+    if scorecards:
+        # Exclude contaminated runs from pass-rate math
+        effective_scorecards = [s for s in scorecards if s.classification != "sim_user_domain_drift"]
+        total_effective = len(effective_scorecards)
+        contaminated_count = len(scorecards) - total_effective
+
+        # Counts
+        summary.passed = sum(1 for s in effective_scorecards if s.pass_fail in ("PASS", "PASS_WITH_WARNINGS"))
+        summary.failed = total_effective - summary.passed
+        summary.pass_rate = round((summary.passed / total_effective) * 100, 1) if total_effective > 0 else 0
+        summary.average_score = round(sum(s.overall_score for s in effective_scorecards) / total_effective, 1) if total_effective > 0 else 0
+        
+        summary.data["contaminated_run_count"] = contaminated_count
+
+        # Category averages
+        cat_scores = {}
+        cat_counts = {}
+        for sc in effective_scorecards:
+            for cat in sc.categories:
+                if cat.key not in cat_scores:
+                    cat_scores[cat.key] = 0
+                    cat_counts[cat.key] = 0
+                cat_scores[cat.key] += cat.score
+                cat_counts[cat.key] += 1
+
+        summary.category_averages = {
+            k: round(v / cat_counts[k], 1)
+            for k, v in cat_scores.items()
+        }
+
+        # Include full run data for the Hub
+        summary.runs = [s.to_dict() for s in scorecards]
+        summary.data["runtime_failure_count"] = sum(
+            1 for s in scorecards if str(s.classification).startswith("review_")
+        )
+
+        # Top failure categories (< 3.0 on a 5-point scale)
+        low_cats = sorted(summary.category_averages.items(), key=lambda x: x[1])
+        summary.top_failure_categories = [k for k, v in low_cats if v < 3.0][:3]
+    else:
+        summary.verdict = "NO_DATA"
+        summary.failed = summary.total_runs
+        summary.data["runtime_failure_count"] = summary.total_runs
+
+    # Pass reviewer status fields if they exist in data (populated in tool.py)
+    summary.reviewer_status = summary.data.get("reviewer_status", "skipped")
+    summary.reviewer_error = summary.data.get("reviewer_error")
+    summary.review_artifact_path = summary.data.get("review_artifact_path")
+
+    if not scorecards:
+        return summary
+
+    # Verdict
+    has_block = any(s.pass_fail == "FAIL_BLOCK_RELEASE" for s in scorecards)
+    if has_block:
+        summary.verdict = "NO_SHIP"
+    elif summary.pass_rate >= 80:
+        summary.verdict = "SHIP"
+    elif summary.pass_rate >= 60:
+        summary.verdict = "CONDITIONAL"
+    else:
+        summary.verdict = "NO_SHIP"
+
+    return summary
+
+
+
+def save_batch_artifacts(batch_id: str, summary: BatchSummary) -> List[str]:
+    """Save batch-level artifacts."""
+    batch_dir = os.path.join(VAULT_DIR, "evals", "batches", batch_id)
+    os.makedirs(batch_dir, exist_ok=True)
+    saved = []
+
+    # batch_summary.json
+    json_path = os.path.join(batch_dir, "batch_summary.json")
+    with open(json_path, "w", encoding="utf-8") as f:
+        json.dump(summary.to_dict(), f, indent=2)
+    saved.append(json_path)
+
+    # batch_summary.txt
+    txt_path = os.path.join(batch_dir, "batch_summary.txt")
+    with open(txt_path, "w", encoding="utf-8") as f:
+        f.write(f"X-AGENT EVAL — BATCH SUMMARY\n")
+        f.write(f"{'='*50}\n")
+        f.write(f"Batch ID:       {summary.batch_id}\n")
+        f.write(f"Target Agent:   {summary.target_agent}\n")
+        f.write(f"Environment:    {summary.environment}\n")
+        f.write(f"Scenario Pack:  {summary.scenario_pack}\n")
+        f.write(f"Pack Class:     {summary.scenario_pack_class}\n")
+        if summary.scenario_manifest_id:
+            f.write(f"Manifest ID:    {summary.scenario_manifest_id}\n")
+        if summary.scenario_manifest_path:
+            f.write(f"Manifest Path:  {summary.scenario_manifest_path}\n")
+        f.write(f"Total Runs:     {summary.total_runs}\n")
+        f.write(f"Passed:         {summary.passed}\n")
+        f.write(f"Failed:         {summary.failed}\n")
+        f.write(f"Pass Rate:      {summary.pass_rate}%\n")
+        f.write(f"Average Score:  {summary.average_score}\n")
+        f.write(f"Verdict:        {summary.verdict}\n")
+        f.write(f"\nCategory Averages:\n")
+        for k, v in summary.category_averages.items():
+            f.write(f"  {k}: {v}/5.0\n")
+        if summary.top_failure_categories:
+            f.write(f"\nTop Failure Areas:\n")
+            for cat in summary.top_failure_categories:
+                f.write(f"  ⚠ {cat}\n")
+    saved.append(txt_path)
+
+    import shutil
+    for idx, run_id in enumerate(summary.run_ids):
+        run_tx_path = os.path.join(VAULT_DIR, "evals", "runs", run_id, "transcript.txt")
+        if os.path.exists(run_tx_path):
+            try:
+                dest_path = os.path.join(batch_dir, f"{run_id}_transcript.txt")
+                shutil.copy2(run_tx_path, dest_path)
+                saved.append(dest_path)
+            except Exception as e:
+                pass
+
+    return saved
+
